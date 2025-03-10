@@ -26,6 +26,18 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavigation = (href: string) => {
+    setMobileMenuOpen(false);
+    if (href.startsWith('/#')) {
+      // Handle anchor links
+      const id = href.substring(2);
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <header
       className={cn(
@@ -53,6 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                 key={item.name}
                 to={item.href}
                 className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => handleNavigation(item.href)}
               >
                 <span className="mr-2">{item.icon}</span>
                 <span>{item.name}</span>
@@ -83,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                 key={item.name}
                 to={item.href}
                 className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => handleNavigation(item.href)}
               >
                 <span className="mr-2">{item.icon}</span>
                 <span>{item.name}</span>

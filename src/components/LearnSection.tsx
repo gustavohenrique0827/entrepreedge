@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -124,56 +125,58 @@ const LearnSection: React.FC = () => {
     const progressPercent = (course.completed / course.modules) * 100;
     
     return (
-      <Card className="glass overflow-hidden h-full flex flex-col transition-all duration-300 transform hover:translate-y-[-4px] hover:shadow-md">
-        <div className="relative h-36">
-          <img 
-            src={course.image} 
-            alt={course.title} 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute top-2 right-2 flex gap-2">
-            {course.new && (
-              <Badge className="bg-blue-500 hover:bg-blue-600">Novo</Badge>
-            )}
-            {course.popular && (
-              <Badge className="bg-amber-500 hover:bg-amber-600">Popular</Badge>
-            )}
-          </div>
-        </div>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-lg line-clamp-2">{course.title}</CardTitle>
-          </div>
-          <CardDescription className="line-clamp-2 mt-1">{course.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="pb-2 flex-grow">
-          <div className="flex justify-between items-center text-sm mb-2">
-            <span className="text-muted-foreground">
-              {course.completed} de {course.modules} módulos
-            </span>
-            <span className="font-medium">{Math.round(progressPercent)}%</span>
-          </div>
-          <Progress value={progressPercent} className="h-1.5 mb-4" />
-          
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Duração</p>
-              <p className="font-medium">{course.duration}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Nível</p>
-              <p className={`inline-block px-2 py-0.5 rounded-full text-xs ${getLevelColor(course.level)}`}>
-                {course.level}
-              </p>
+      <Link to={`/course/${course.id}`}>
+        <Card className="glass overflow-hidden h-full flex flex-col transition-all duration-300 transform hover:translate-y-[-4px] hover:shadow-md">
+          <div className="relative h-36">
+            <img 
+              src={course.image} 
+              alt={course.title} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute top-2 right-2 flex gap-2">
+              {course.new && (
+                <Badge className="bg-blue-500 hover:bg-blue-600">Novo</Badge>
+              )}
+              {course.popular && (
+                <Badge className="bg-amber-500 hover:bg-amber-600">Popular</Badge>
+              )}
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="pt-2">
-          <button className="w-full py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-            {course.completed > 0 ? 'Continuar' : 'Começar curso'}
-          </button>
-        </CardFooter>
-      </Card>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-lg line-clamp-2">{course.title}</CardTitle>
+            </div>
+            <CardDescription className="line-clamp-2 mt-1">{course.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-2 flex-grow">
+            <div className="flex justify-between items-center text-sm mb-2">
+              <span className="text-muted-foreground">
+                {course.completed} de {course.modules} módulos
+              </span>
+              <span className="font-medium">{Math.round(progressPercent)}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-1.5 mb-4" />
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Duração</p>
+                <p className="font-medium">{course.duration}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Nível</p>
+                <p className={`inline-block px-2 py-0.5 rounded-full text-xs ${getLevelColor(course.level)}`}>
+                  {course.level}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-2">
+            <button className="w-full py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+              {course.completed > 0 ? 'Continuar' : 'Começar curso'}
+            </button>
+          </CardFooter>
+        </Card>
+      </Link>
     );
   }
 };
