@@ -127,11 +127,11 @@ const FinanceTracker: React.FC = () => {
                       <div className={`h-10 w-10 rounded-full flex items-center justify-center ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
                         {transaction.type === 'income' ? (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3L20 11L17.6 13.4L13 8.8V21H11V8.8L6.4 13.4L4 11L12 3Z" fill={transaction.type === 'income' ? '#10B981' : '#EF4444'} />
+                            <path d="M12 3L20 11L17.6 13.4L13 8.8V21H11V8.8L6.4 13.4L4 11L12 3Z" fill="#10B981" />
                           </svg>
                         ) : (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 21L4 13L6.4 10.6L11 15.2V3H13V15.2L17.6 10.6L20 13L12 21Z" fill={transaction.type === 'income' ? '#10B981' : '#EF4444'} />
+                            <path d="M12 21L4 13L6.4 10.6L11 15.2V3H13V15.2L17.6 10.6L20 13L12 21Z" fill="#EF4444" />
                           </svg>
                         )}
                       </div>
