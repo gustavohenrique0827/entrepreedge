@@ -31,7 +31,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 transition-all duration-300 ease-in-out px-6 py-4',
+        'sticky top-0 z-40 transition-all duration-300 ease-in-out px-4 py-2 sm:px-6 sm:py-3',
         scrolled ? 'glass shadow-sm backdrop-blur-lg' : 'bg-transparent'
       )}
     >
@@ -44,32 +44,32 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Input 
                 type="search" 
                 placeholder="Pesquisar..." 
-                className="w-full pl-9 bg-background/50"
+                className="w-full pl-9 bg-background/50 text-sm"
               />
             </div>
           </div>
 
           {/* Title on mobile */}
-          <div className="md:hidden font-semibold">
+          <div className="md:hidden text-sm font-medium">
             EntrepreEdge
           </div>
 
           {/* User navigation */}
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <HelpCircle size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <HelpCircle size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Bell size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Moon size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Moon size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Settings size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Settings size={16} />
             </Button>
-            <Button variant="outline" size="icon" className="rounded-full ml-2 bg-primary/10">
-              <User size={18} className="text-primary" />
+            <Button variant="outline" size="icon" className="rounded-full ml-2 bg-primary/10 h-8 w-8">
+              <User size={16} className="text-primary" />
             </Button>
           </div>
 
@@ -78,7 +78,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-foreground focus:outline-none"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               {mobileMenuOpen ? (
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               ) : (
@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Input 
                 type="search" 
                 placeholder="Pesquisar..." 
-                className="w-full pl-9"
+                className="w-full pl-9 text-sm"
               />
             </div>
             {items && items.length > 0 && (
@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                   <a 
                     key={index}
                     href={item.href}
-                    className="flex items-center p-2 rounded-md hover:bg-primary/10"
+                    className="flex items-center p-2 text-sm rounded-md hover:bg-primary/10"
                   >
                     <span className="mr-3 text-primary">{item.icon}</span>
                     <span>{item.name}</span>
