@@ -1,21 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Bell, Moon, Settings, User } from 'lucide-react';
+import { Bell, Moon, Settings, User, Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
-interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-interface NavbarProps {
-  items: NavItem[];
-}
-
-const Navbar: React.FC<NavbarProps> = ({ items }) => {
+const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -29,18 +20,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavigation = (href: string) => {
-    setMobileMenuOpen(false);
-    if (href.startsWith('#')) {
-      // Handle anchor links
-      const id = href.substring(1);
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
-
   return (
     <header
       className={cn(
@@ -50,28 +29,28 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     >
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {items.map((item) => (
-              <Button
-                key={item.name}
-                variant="ghost"
-                className={cn(
-                  "flex items-center text-sm font-medium gap-2",
-                  location.hash === item.href || (item.href === '#dashboard' && !location.hash)
-                    ? "bg-accent/50 text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => handleNavigation(item.href)}
-              >
-                <span className="mr-1">{item.icon}</span>
-                <span>{item.name}</span>
-              </Button>
-            ))}
-          </nav>
+          {/* Search bar */}
+          <div className="hidden md:flex items-center flex-1 max-w-md">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                type="search" 
+                placeholder="Pesquisar..." 
+                className="w-full pl-9 bg-background/50"
+              />
+            </div>
+          </div>
+
+          {/* Title on mobile */}
+          <div className="md:hidden font-semibold">
+            EntrepreEdge
+          </div>
 
           {/* User navigation */}
           <div className="flex items-center space-x-1">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <HelpCircle size={18} />
+            </Button>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell size={18} />
             </Button>
@@ -104,17 +83,14 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className="mt-4 pb-4 md:hidden flex flex-col space-y-4 animate-fade-in">
-            {items.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => handleNavigation(item.href)}
-              >
-                <span className="mr-2">{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            <div className="relative w-full mb-4">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                type="search" 
+                placeholder="Pesquisar..." 
+                className="w-full pl-9"
+              />
+            </div>
           </nav>
         )}
       </div>
