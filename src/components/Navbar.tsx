@@ -6,7 +6,7 @@ import { Bell, Moon, Settings, User, Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-interface NavbarProps {
+export interface NavbarProps {
   items?: Array<{
     name: string;
     href: string;
