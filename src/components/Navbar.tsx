@@ -6,7 +6,15 @@ import { Bell, Moon, Settings, User, Search, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  items?: Array<{
+    name: string;
+    href: string;
+    icon: React.ReactNode;
+  }>;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -91,6 +99,20 @@ const Navbar: React.FC = () => {
                 className="w-full pl-9"
               />
             </div>
+            {items && items.length > 0 && (
+              <div className="space-y-2">
+                {items.map((item, index) => (
+                  <a 
+                    key={index}
+                    href={item.href}
+                    className="flex items-center p-2 rounded-md hover:bg-primary/10"
+                  >
+                    <span className="mr-3 text-primary">{item.icon}</span>
+                    <span>{item.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </nav>
         )}
       </div>
