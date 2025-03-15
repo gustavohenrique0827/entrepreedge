@@ -19,6 +19,7 @@ const Auth = () => {
   
   // Register form state
   const [companyName, setCompanyName] = useState('');
+  const [companyCnpj, setCompanyCnpj] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -55,14 +56,44 @@ const Auth = () => {
     }
   };
   
+  // Format CNPJ as user types
+  const formatCnpj = (value: string) => {
+    // Remove any non-digit character
+    const cnpj = value.replace(/\D/g, '');
+    
+    // Apply CNPJ mask (XX.XXX.XXX/XXXX-XX)
+    return cnpj
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .substring(0, 18);
+  };
+  
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedCnpj = formatCnpj(e.target.value);
+    setCompanyCnpj(formattedCnpj);
+  };
+  
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate register form
-    if (!companyName || !registerEmail || !registerPassword || !confirmPassword) {
+    if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword) {
       toast({
         title: "Erro de validação",
         description: "Por favor, preencha todos os campos.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Basic CNPJ validation (should have 14 digits)
+    const cnpjDigits = companyCnpj.replace(/\D/g, '');
+    if (cnpjDigits.length !== 14) {
+      toast({
+        title: "Erro de validação",
+        description: "CNPJ inválido. Por favor, verifique o número informado.",
         variant: "destructive"
       });
       return;
@@ -81,6 +112,7 @@ const Auth = () => {
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userEmail', registerEmail);
     localStorage.setItem('companyName', companyName);
+    localStorage.setItem('companyCnpj', companyCnpj);
     
     toast({
       title: "Cadastro realizado com sucesso",
@@ -161,6 +193,16 @@ const Auth = () => {
                         placeholder="Sua Empresa Ltda."
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cnpj">CNPJ</Label>
+                      <Input 
+                        id="cnpj" 
+                        placeholder="XX.XXX.XXX/XXXX-XX"
+                        value={companyCnpj}
+                        onChange={handleCnpjChange}
+                        maxLength={18}
                       />
                     </div>
                     <div className="space-y-2">
