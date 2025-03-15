@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Bell, Moon, Settings, User, Search, HelpCircle } from 'lucide-react';
+import { Bell, Moon, Settings, User, Search, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from "@/hooks/use-toast";
 
 export interface NavbarProps {
   items?: Array<{
@@ -18,6 +18,8 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,10 +30,23 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('companyName');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso.",
+    });
+    navigate('/auth');
+  };
+
+  const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
+
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 transition-all duration-300 ease-in-out px-6 py-4',
+        'sticky top-0 z-40 transition-all duration-300 ease-in-out px-4 py-3',
         scrolled ? 'glass shadow-sm backdrop-blur-lg' : 'bg-transparent'
       )}
     >
@@ -44,32 +59,40 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Input 
                 type="search" 
                 placeholder="Pesquisar..." 
-                className="w-full pl-9 bg-background/50"
+                className="w-full pl-9 bg-background/50 text-sm"
               />
             </div>
           </div>
 
           {/* Title on mobile */}
-          <div className="md:hidden font-semibold">
-            EntrepreEdge
+          <div className="md:hidden font-semibold text-sm">
+            {companyName}
           </div>
 
           {/* User navigation */}
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <HelpCircle size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <HelpCircle size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Bell size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Moon size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Moon size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Settings size={18} />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <Settings size={16} />
             </Button>
-            <Button variant="outline" size="icon" className="rounded-full ml-2 bg-primary/10">
-              <User size={18} className="text-primary" />
+            <Button variant="outline" size="icon" className="rounded-full ml-1 bg-primary/10 h-8 w-8">
+              <User size={16} className="text-primary" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full h-8 w-8 text-red-500 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} />
             </Button>
           </div>
 
@@ -78,7 +101,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-foreground focus:outline-none"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               {mobileMenuOpen ? (
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               ) : (
@@ -96,7 +119,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Input 
                 type="search" 
                 placeholder="Pesquisar..." 
-                className="w-full pl-9"
+                className="w-full pl-9 text-sm"
               />
             </div>
             {items && items.length > 0 && (
@@ -105,7 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                   <a 
                     key={index}
                     href={item.href}
-                    className="flex items-center p-2 rounded-md hover:bg-primary/10"
+                    className="flex items-center p-2 rounded-md hover:bg-primary/10 text-sm"
                   >
                     <span className="mr-3 text-primary">{item.icon}</span>
                     <span>{item.name}</span>
@@ -113,6 +136,15 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                 ))}
               </div>
             )}
+            
+            <Button 
+              variant="ghost" 
+              className="flex items-center justify-start p-2 rounded-md hover:bg-red-50 text-red-500 text-sm"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} className="mr-3" />
+              <span>Sair</span>
+            </Button>
           </nav>
         )}
       </div>
