@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,28 @@ const Auth = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
+  // Create test user on component mount if it doesn't exist
+  useEffect(() => {
+    // Check if test user already exists
+    if (!localStorage.getItem('testUserCreated')) {
+      // Create test user credentials
+      localStorage.setItem('testEmail', 'teste@empresa.com');
+      localStorage.setItem('testPassword', 'senha123');
+      localStorage.setItem('testCompanyName', 'Empresa Teste LTDA');
+      localStorage.setItem('testCompanyCnpj', '12.345.678/0001-90');
+      localStorage.setItem('testUserCreated', 'true');
+      
+      // Set test credentials in the form for easy access
+      setLoginEmail('teste@empresa.com');
+      setLoginPassword('senha123');
+      
+      toast({
+        title: "Usuário de teste criado",
+        description: "Email: teste@empresa.com | Senha: senha123",
+      });
+    }
+  }, [toast]);
+  
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -37,7 +58,28 @@ const Auth = () => {
       return;
     }
     
-    // Simulate successful login
+    // Check if it's the test user
+    const isTestUser = loginEmail === localStorage.getItem('testEmail') && 
+                       loginPassword === localStorage.getItem('testPassword');
+                       
+    if (isTestUser) {
+      // Set logged in user data
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userEmail', loginEmail);
+      localStorage.setItem('companyName', localStorage.getItem('testCompanyName') || '');
+      localStorage.setItem('companyCnpj', localStorage.getItem('testCompanyCnpj') || '');
+      localStorage.setItem('onboardingCompleted', 'true'); // Skip onboarding for test user
+      
+      toast({
+        title: "Login bem-sucedido",
+        description: "Bem-vindo ao sistema de teste!",
+      });
+      
+      navigate('/');
+      return;
+    }
+    
+    // Continue with normal login flow
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userEmail', loginEmail);
     
@@ -122,6 +164,11 @@ const Auth = () => {
     navigate('/onboarding');
   };
   
+  const fillTestCredentials = () => {
+    setLoginEmail(localStorage.getItem('testEmail') || 'teste@empresa.com');
+    setLoginPassword(localStorage.getItem('testPassword') || 'senha123');
+  };
+  
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -179,6 +226,14 @@ const Auth = () => {
                       />
                     </div>
                     <Button type="submit" className="w-full">Entrar</Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={fillTestCredentials}
+                    >
+                      Usar credenciais de teste
+                    </Button>
                   </div>
                 </form>
               </TabsContent>
