@@ -33,21 +33,21 @@ const Sidebar = ({ className }: SidebarProps) => {
     },
     { 
       name: 'Finanças', 
-      href: '/#finances', 
+      href: '/finances', 
       icon: <BarChart2 className="h-5 w-5" />,
-      active: location.hash === '#finances'
+      active: location.pathname === '/finances'
     },
     { 
       name: 'Metas', 
-      href: '/#goals', 
+      href: '/goals', 
       icon: <Target className="h-5 w-5" />,
-      active: location.hash === '#goals'
+      active: location.pathname === '/goals'
     },
     { 
       name: 'Aprendizado', 
-      href: '/#learn', 
+      href: '/learn', 
       icon: <BookOpen className="h-5 w-5" />,
-      active: location.hash === '#learn'
+      active: location.pathname === '/learn'
     },
     { 
       name: 'Contato', 
@@ -60,31 +60,23 @@ const Sidebar = ({ className }: SidebarProps) => {
   const bottomMenuItems = [
     { 
       name: 'Configurações', 
-      href: '#', 
-      icon: <Settings className="h-5 w-5" /> 
+      href: '/settings', 
+      icon: <Settings className="h-5 w-5" />,
+      active: location.pathname === '/settings'
     },
     { 
       name: 'Perfil', 
-      href: '#', 
-      icon: <User className="h-5 w-5" /> 
+      href: '/profile', 
+      icon: <User className="h-5 w-5" />,
+      active: location.pathname === '/profile'
     },
     { 
       name: 'Ajuda', 
-      href: '#', 
-      icon: <HelpCircle className="h-5 w-5" /> 
+      href: '/help', 
+      icon: <HelpCircle className="h-5 w-5" />,
+      active: location.pathname === '/help'
     },
   ];
-
-  const handleNavigation = (href: string) => {
-    if (href.startsWith('/#')) {
-      // Handle anchor links
-      const id = href.substring(2);
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
 
   return (
     <aside
@@ -125,7 +117,6 @@ const Sidebar = ({ className }: SidebarProps) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  onClick={() => handleNavigation(item.href)}
                   className={cn(
                     "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                     item.active
@@ -150,6 +141,7 @@ const Sidebar = ({ className }: SidebarProps) => {
                 to={item.href}
                 className={cn(
                   "flex items-center px-3 py-2 text-sm font-medium rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors",
+                  item.active && "bg-sidebar-accent text-sidebar-accent-foreground",
                   collapsed && "justify-center"
                 )}
               >

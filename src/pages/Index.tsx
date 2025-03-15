@@ -1,18 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import FinanceTracker from '@/components/FinanceTracker';
 import GoalTracker from '@/components/GoalTracker';
 import LearnSection from '@/components/LearnSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Home, BarChart2, Target, BookOpen, TrendingUp, CheckCircle, BookOpenCheck, Activity } from 'lucide-react';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
   // Get company data from localStorage
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
@@ -78,89 +75,54 @@ const Index = () => {
             />
           </div>
           
-          <Tabs defaultValue="dashboard" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="glass">
-              <TabsTrigger value="dashboard" className="flex items-center gap-1 text-xs">
-                <Home size={14} />
-                <span>Resumo</span>
-              </TabsTrigger>
-              <TabsTrigger value="finances" className="flex items-center gap-1 text-xs">
-                <BarChart2 size={14} />
-                <span>Finanças</span>
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="flex items-center gap-1 text-xs">
-                <Target size={14} />
-                <span>Metas</span>
-              </TabsTrigger>
-              <TabsTrigger value="learn" className="flex items-center gap-1 text-xs">
-                <BookOpen size={14} />
-                <span>Aprendizado</span>
-              </TabsTrigger>
-            </TabsList>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card className="glass">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-1">
+                  <BarChart2 size={16} /> 
+                  Resumo Financeiro
+                </CardTitle>
+                <CardDescription className="text-xs">Visão geral do seu saldo e transações recentes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[220px] overflow-hidden">
+                  <FinanceTracker />
+                </div>
+              </CardContent>
+            </Card>
             
-            <TabsContent value="dashboard" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="glass">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-1">
-                      <BarChart2 size={16} /> 
-                      Resumo Financeiro
-                    </CardTitle>
-                    <CardDescription className="text-xs">Visão geral do seu saldo e transações recentes</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[220px] overflow-hidden">
-                      <FinanceTracker />
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="glass">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-1">
-                      <Target size={16} /> 
-                      Progresso de Metas
-                    </CardTitle>
-                    <CardDescription className="text-xs">Acompanhamento das suas metas atuais</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[220px] overflow-auto">
-                      <GoalTracker />
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="glass col-span-1 lg:col-span-2">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-1">
-                      <BookOpen size={16} /> 
-                      Cursos Recomendados
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      Baseados no seu segmento: {businessType}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[260px] overflow-auto">
-                      <LearnSection />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+            <Card className="glass">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-1">
+                  <Target size={16} /> 
+                  Progresso de Metas
+                </CardTitle>
+                <CardDescription className="text-xs">Acompanhamento das suas metas atuais</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[220px] overflow-auto">
+                  <GoalTracker />
+                </div>
+              </CardContent>
+            </Card>
             
-            <TabsContent value="finances">
-              <FinanceTracker />
-            </TabsContent>
-            
-            <TabsContent value="goals">
-              <GoalTracker />
-            </TabsContent>
-            
-            <TabsContent value="learn">
-              <LearnSection />
-            </TabsContent>
-          </Tabs>
+            <Card className="glass col-span-1 lg:col-span-2">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-1">
+                  <BookOpen size={16} /> 
+                  Cursos Recomendados
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Baseados no seu segmento: {businessType}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[260px] overflow-auto">
+                  <LearnSection />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

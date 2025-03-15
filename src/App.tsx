@@ -11,6 +11,9 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Finances from "./pages/Finances";
+import Goals from "./pages/Goals";
+import Learn from "./pages/Learn";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +36,21 @@ const App = () => {
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/finances" element={
+              <ProtectedRoute>
+                <Finances />
+              </ProtectedRoute>
+            } />
+            <Route path="/goals" element={
+              <ProtectedRoute>
+                <Goals />
+              </ProtectedRoute>
+            } />
+            <Route path="/learn" element={
+              <ProtectedRoute>
+                <Learn />
               </ProtectedRoute>
             } />
             <Route path="/onboarding" element={
