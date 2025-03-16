@@ -7,7 +7,8 @@ import GoalTracker from '@/components/GoalTracker';
 import LearnSection from '@/components/LearnSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Home, BarChart2, Target, BookOpen, TrendingUp, CheckCircle, BookOpenCheck, Activity } from 'lucide-react';
+import { AlertCircle, BarChart2, Target, BookOpen, TrendingUp, CheckCircle, BookOpenCheck, Activity } from 'lucide-react';
+import StatCard from '@/components/StatCard';
 
 const Index = () => {
   // Get company data from localStorage
@@ -33,18 +34,18 @@ const Index = () => {
         
         <div className="container px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">{companyName}</h1>
+            <h1 className="text-2xl font-bold mb-1">Dashboard | {companyName}</h1>
             <p className="text-sm text-muted-foreground">
               {businessType && `${businessType} • `}
-              Dashboard de gestão empresarial
+              Visão geral do seu negócio
             </p>
           </div>
           
           <Alert className="mb-6 border-primary/20 bg-primary/5">
             <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertTitle className="text-sm font-medium">Notificação</AlertTitle>
+            <AlertTitle className="text-sm font-medium">Bem-vindo ao seu painel de controle</AlertTitle>
             <AlertDescription className="text-xs">
-              Você tem metas de crescimento definidas. Acompanhe seu progresso na seção de metas.
+              Aqui você encontrará um resumo das principais informações do seu negócio.
             </AlertDescription>
           </Alert>
           
@@ -75,7 +76,7 @@ const Index = () => {
             />
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             <Card className="glass">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-1">
@@ -85,7 +86,7 @@ const Index = () => {
                 <CardDescription className="text-xs">Visão geral do seu saldo e transações recentes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[220px] overflow-hidden">
+                <div className="h-[200px] overflow-hidden">
                   <FinanceTracker />
                 </div>
               </CardContent>
@@ -100,29 +101,29 @@ const Index = () => {
                 <CardDescription className="text-xs">Acompanhamento das suas metas atuais</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[220px] overflow-auto">
+                <div className="h-[200px] overflow-auto">
                   <GoalTracker />
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="glass col-span-1 lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-1">
-                  <BookOpen size={16} /> 
-                  Cursos Recomendados
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Baseados no seu segmento: {businessType}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[260px] overflow-auto">
-                  <LearnSection />
-                </div>
-              </CardContent>
-            </Card>
           </div>
+          
+          <Card className="glass mb-6">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-1">
+                <BookOpen size={16} /> 
+                Cursos Recomendados
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Baseados no seu segmento: {businessType || "Seu negócio"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px] overflow-auto">
+                <LearnSection />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
