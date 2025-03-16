@@ -13,7 +13,8 @@ import {
   X, 
   Settings, 
   User,
-  HelpCircle
+  HelpCircle,
+  LayoutDashboard
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,7 +29,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     { 
       name: 'Dashboard', 
       href: '/', 
-      icon: <Home className="h-5 w-5" />,
+      icon: <LayoutDashboard className="h-5 w-5" />,
       active: location.pathname === '/'
     },
     { 

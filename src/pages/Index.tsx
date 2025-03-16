@@ -37,7 +37,7 @@ const Index = () => {
             <h1 className="text-2xl font-bold mb-1">Dashboard | {companyName}</h1>
             <p className="text-sm text-muted-foreground">
               {businessType && `${businessType} • `}
-              Visão geral do seu negócio
+              Resumo geral do seu negócio
             </p>
           </div>
           
