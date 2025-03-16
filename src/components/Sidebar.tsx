@@ -27,10 +27,16 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   const menuItems = [
     { 
-      name: 'Dashboard', 
+      name: 'Início', 
       href: '/', 
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      icon: <Home className="h-5 w-5" />,
       active: location.pathname === '/'
+    },
+    { 
+      name: 'Dashboard', 
+      href: '/dashboard', 
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      active: location.pathname === '/dashboard'
     },
     { 
       name: 'Finanças', 

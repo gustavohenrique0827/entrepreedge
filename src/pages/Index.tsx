@@ -7,24 +7,16 @@ import GoalTracker from '@/components/GoalTracker';
 import LearnSection from '@/components/LearnSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, BarChart2, Target, BookOpen, TrendingUp, CheckCircle, BookOpenCheck, Activity } from 'lucide-react';
-import StatCard from '@/components/StatCard';
+import { AlertCircle, BarChart2, Target, BookOpen, CheckCircle, BookOpenCheck } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   // Get company data from localStorage
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
-  const annualRevenue = localStorage.getItem('annualRevenue') || '0';
-  const targetRevenue = localStorage.getItem('targetRevenue') || '0';
+  const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   
-  // Calculate financial metrics
-  const currentRevenueValue = parseInt(annualRevenue) || 0;
-  const targetRevenueValue = parseInt(targetRevenue) || 0;
-  const monthlyRevenue = Math.round(currentRevenueValue / 12);
-  const targetGrowth = currentRevenueValue > 0 
-    ? Math.round(((targetRevenueValue - currentRevenueValue) / currentRevenueValue) * 100) 
-    : 0;
-
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -34,60 +26,100 @@ const Index = () => {
         
         <div className="container px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">Dashboard | {companyName}</h1>
+            <h1 className="text-2xl font-bold mb-1">Bem-vindo(a), {companyName}</h1>
             <p className="text-sm text-muted-foreground">
               {businessType && `${businessType} • `}
-              Resumo geral do seu negócio
+              Resumo das suas atividades
             </p>
           </div>
           
-          <Alert className="mb-6 border-primary/20 bg-primary/5">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertTitle className="text-sm font-medium">Bem-vindo ao seu painel de controle</AlertTitle>
-            <AlertDescription className="text-xs">
-              Aqui você encontrará um resumo das principais informações do seu negócio.
-            </AlertDescription>
-          </Alert>
+          {!onboardingCompleted ? (
+            <Alert className="mb-6 border-amber-500/20 bg-amber-500/5">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-sm font-medium">Complete seu cadastro</AlertTitle>
+              <AlertDescription className="text-xs">
+                Para aproveitar todas as funcionalidades, complete seu cadastro.
+                <Link to="/onboarding">
+                  <Button variant="link" className="h-auto p-0 ml-2 text-xs text-amber-500">
+                    Completar agora
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="mb-6 border-primary/20 bg-primary/5">
+              <AlertCircle className="h-4 w-4 text-primary" />
+              <AlertTitle className="text-sm font-medium">Resumo do seu negócio</AlertTitle>
+              <AlertDescription className="text-xs">
+                Veja abaixo um panorama geral das suas informações mais importantes.
+              </AlertDescription>
+            </Alert>
+          )}
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <SummaryCard 
-              title="Receita Mensal" 
-              value={`R$ ${monthlyRevenue.toLocaleString('pt-BR')}`} 
-              description={`Meta anual: R$ ${Math.round(targetRevenueValue / 12).toLocaleString('pt-BR')}`} 
-              icon={<Activity className="h-4 w-4" />} 
-            />
-            <SummaryCard 
-              title="Meta de Crescimento" 
-              value={`${targetGrowth}%`} 
-              description="Para o próximo ano" 
-              icon={<TrendingUp className="h-4 w-4" />} 
-            />
-            <SummaryCard 
-              title="Metas Definidas" 
-              value="3" 
-              description="2 em andamento" 
-              icon={<CheckCircle className="h-4 w-4" />} 
-            />
-            <SummaryCard 
-              title="Cursos Disponíveis" 
-              value="8" 
-              description="Segmentados para seu negócio" 
-              icon={<BookOpenCheck className="h-4 w-4" />} 
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Link to="/dashboard" className="block">
+              <Card className="glass h-full hover:shadow-md transition-all">
+                <CardContent className="p-4 flex flex-col h-full">
+                  <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
+                    <BarChart2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Dashboard</h3>
+                  <p className="text-sm text-muted-foreground mb-auto">Visualize seus indicadores financeiros e metas de negócio.</p>
+                  <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">Ver dashboard</Button>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link to="/goals" className="block">
+              <Card className="glass h-full hover:shadow-md transition-all">
+                <CardContent className="p-4 flex flex-col h-full">
+                  <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
+                    <Target className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Metas</h3>
+                  <p className="text-sm text-muted-foreground mb-auto">Acompanhe suas metas e objetivos estratégicos.</p>
+                  <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">Ver metas</Button>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link to="/learn" className="block">
+              <Card className="glass h-full hover:shadow-md transition-all">
+                <CardContent className="p-4 flex flex-col h-full">
+                  <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Aprendizado</h3>
+                  <p className="text-sm text-muted-foreground mb-auto">Acesse cursos personalizados para o seu negócio.</p>
+                  <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">Ver cursos</Button>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             <Card className="glass">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-1">
-                  <BarChart2 size={16} /> 
-                  Resumo Financeiro
+                  <CheckCircle size={16} /> 
+                  Suas atividades recentes
                 </CardTitle>
-                <CardDescription className="text-xs">Visão geral do seu saldo e transações recentes</CardDescription>
+                <CardDescription className="text-xs">Ações realizadas nos últimos dias</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[200px] overflow-hidden">
-                  <FinanceTracker />
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="bg-background/50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Meta de vendas atualizada</p>
+                    <p className="text-xs text-muted-foreground">Ontem às 14:30</p>
+                  </div>
+                  <div className="bg-background/50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Curso "Gestão financeira" iniciado</p>
+                    <p className="text-xs text-muted-foreground">Há 2 dias</p>
+                  </div>
+                  <div className="bg-background/50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Perfil de negócio atualizado</p>
+                    <p className="text-xs text-muted-foreground">Há 3 dias</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -95,54 +127,36 @@ const Index = () => {
             <Card className="glass">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-1">
-                  <Target size={16} /> 
-                  Progresso de Metas
+                  <BookOpenCheck size={16} /> 
+                  Aprendizado recomendado
                 </CardTitle>
-                <CardDescription className="text-xs">Acompanhamento das suas metas atuais</CardDescription>
+                <CardDescription className="text-xs">
+                  Baseado no seu segmento: {businessType || "Seu negócio"}
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[200px] overflow-auto">
-                  <GoalTracker />
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="bg-background/50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Fundamentos de gestão financeira</p>
+                    <p className="text-xs text-muted-foreground">8 módulos • 2h 30min</p>
+                  </div>
+                  <div className="bg-background/50 p-3 rounded-md">
+                    <p className="text-sm font-medium">Marketing digital para empreendedores</p>
+                    <p className="text-xs text-muted-foreground">6 módulos • 1h 45min</p>
+                  </div>
+                  <Link to="/learn" className="block text-center">
+                    <Button variant="outline" size="sm" className="w-full mt-2">
+                      Ver todos os cursos
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </div>
-          
-          <Card className="glass mb-6">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-1">
-                <BookOpen size={16} /> 
-                Cursos Recomendados
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Baseados no seu segmento: {businessType || "Seu negócio"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] overflow-auto">
-                <LearnSection />
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
   );
 };
-
-const SummaryCard = ({ title, value, description, icon }) => (
-  <Card className="glass">
-    <CardContent className="pt-4">
-      <div className="flex justify-between items-start mb-1">
-        <div className="bg-primary/10 p-1.5 rounded-full">
-          {icon}
-        </div>
-      </div>
-      <h3 className="font-semibold text-base mt-1">{value}</h3>
-      <p className="text-xs font-medium text-muted-foreground">{title}</p>
-      <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-    </CardContent>
-  </Card>
-);
 
 export default Index;
