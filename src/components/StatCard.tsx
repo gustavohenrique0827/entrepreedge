@@ -5,7 +5,8 @@ import AnimatedNumber from './AnimatedNumber';
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
+  description?: string;
   change?: number;
   icon: React.ReactNode;
   format?: (value: number) => string;
@@ -15,6 +16,7 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
+  description,
   change,
   icon,
   format = (val) => val.toLocaleString('pt-BR'),
@@ -22,6 +24,9 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
   const isPositive = change && change > 0;
   const isNegative = change && change < 0;
+
+  // Determine if the value is numeric and should be animated
+  const isNumericValue = typeof value === 'number';
 
   return (
     <div className={cn(
@@ -35,11 +40,19 @@ const StatCard: React.FC<StatCardProps> = ({
       
       <div className="mt-1">
         <h3 className="text-2xl font-semibold">
-          <AnimatedNumber 
-            value={value} 
-            formatValue={format} 
-          />
+          {isNumericValue ? (
+            <AnimatedNumber 
+              value={value as number} 
+              formatValue={format} 
+            />
+          ) : (
+            value
+          )}
         </h3>
+        
+        {description && (
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        )}
         
         {change !== undefined && (
           <div className="flex items-center mt-1">
