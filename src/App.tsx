@@ -15,6 +15,8 @@ import Finances from "./pages/Finances";
 import Goals from "./pages/Goals";
 import Learn from "./pages/Learn";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,16 @@ const App = () => {
             <Route path="/course/:courseId" element={
               <ProtectedRoute>
                 <CourseDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             <Route path="/onboarding" element={
