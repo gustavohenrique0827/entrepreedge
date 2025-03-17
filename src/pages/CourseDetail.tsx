@@ -11,14 +11,12 @@ import {
   Play,
   CheckCircle2,
   ArrowLeft,
-  ExternalLink,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from '@/components/ui/use-toast';
 
 const MOCK_COURSES = [
@@ -42,25 +40,25 @@ const MOCK_COURSES = [
       {
         title: "Introdução ao Empreendedorismo",
         lessons: [
-          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/embed/y8trd3gjJt0" },
-          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/embed/PMQRfA-K5pM" },
-          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/VuP9c-7-0Ps" }
+          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/embed/y8trd3gjJt0?si=5Zx_2uxu5B-cVTVV" },
+          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/embed/PMQRfA-K5pM?si=Qz9Rjlm7Vv9ygWe8" },
+          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/VuP9c-7-0Ps?si=OKbHiHdPgc89kd8R" }
         ]
       },
       {
         title: "Planejamento de Negócios",
         lessons: [
-          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ks0N6fkzoms" },
-          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/I5mBN3KuEcE" },
-          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/embed/wLW_-bPCyLk" }
+          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ks0N6fkzoms?si=zzAzzd26_6UoL27x" },
+          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/I5mBN3KuEcE?si=uY0F-_TjC-1FXTPP" },
+          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/embed/wLW_-bPCyLk?si=UbLzv2IVNT4Xla1o" }
         ]
       },
       {
         title: "Marketing para Pequenos Negócios",
         lessons: [
-          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/lXwGeZL2tmY" },
-          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/4CnY7LVUE_Y" },
-          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/yBimw45Tn5M" }
+          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/lXwGeZL2tmY?si=1YVsFzcLNILWTB0n" },
+          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/4CnY7LVUE_Y?si=91FMoE8YtxWGa3E2" },
+          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/yBimw45Tn5M?si=jqQJl-y_1NTrfR_g" }
         ]
       }
     ]
@@ -85,17 +83,17 @@ const MOCK_COURSES = [
       {
         title: "Fundamentos Financeiros",
         lessons: [
-          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/BwZYMbCLTzU" },
-          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/NG_O2zEUh5M" },
-          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/RFeZwRVNM9c" }
+          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/BwZYMbCLTzU?si=QTz5VDn7e0KVd8EZ" },
+          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/NG_O2zEUh5M?si=ZAB5aY1wLpB7IeHY" },
+          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/RFeZwRVNM9c?si=eXsGh8vKm-P0O2JZ" }
         ]
       },
       {
         title: "Gestão Financeira",
         lessons: [
-          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/1y5ImXm5aOo" },
-          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/JBEz-6ELbTU" },
-          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ZUHpg5SnQjU" }
+          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/1y5ImXm5aOo?si=qp_PZxRXibK_Zy3n" },
+          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/JBEz-6ELbTU?si=aSklqT3k0c2eDRPm" },
+          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ZUHpg5SnQjU?si=X9eQ2-L4SrcqRxEf" }
         ]
       }
     ]
@@ -248,6 +246,7 @@ const CourseDetail = () => {
                       src={selectedLesson.url}
                       title={`Aula ${selectedLesson.moduleIndex + 1}.${selectedLesson.lessonIndex + 1}`}
                       frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       className="w-full h-full"
                     ></iframe>
@@ -470,7 +469,6 @@ const CourseDetail = () => {
                   <div>
                     <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Português</Badge>
                     <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">Certificado</Badge>
-                    <Badge className="ml-2 bg-red-100 text-red-800 hover:bg-red-200">YouTube</Badge>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3">

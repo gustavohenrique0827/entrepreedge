@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 interface Course {
@@ -235,14 +233,6 @@ const LearnSection: React.FC = () => {
     console.log(`Navigating to course: ${courseId}`);
   };
 
-  const handleYoutubeClick = (url: string) => {
-    // Notify the user that they'll be watching on YouTube
-    toast({
-      title: "Abrindo conteúdo do YouTube",
-      description: "Você será redirecionado para assistir o vídeo no YouTube.",
-    });
-  };
-
   return (
     <div className="animate-slide-up">
       <div className="mb-4">
@@ -290,9 +280,6 @@ const LearnSection: React.FC = () => {
             {course.popular && (
               <Badge className="bg-amber-500 hover:bg-amber-600 text-[10px] py-0 h-5">Popular</Badge>
             )}
-            {course.youtubeUrl && (
-              <Badge className="bg-red-500 hover:bg-red-600 text-[10px] py-0 h-5">YouTube</Badge>
-            )}
           </div>
         </div>
         <CardHeader className="pb-1 pt-2 px-3">
@@ -322,36 +309,17 @@ const LearnSection: React.FC = () => {
               </p>
             </div>
           </div>
-          
-          {course.youtubeUrl && (
-            <div className="mt-2 text-xs">
-              <p className="text-muted-foreground">Canal</p>
-              <p className="font-medium">{course.youtubeChannel}</p>
-            </div>
-          )}
         </CardContent>
         <CardFooter className="pt-1 pb-2 px-3">
-          {course.youtubeUrl ? (
-            <a
-              href={course.youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors"
-              onClick={() => handleYoutubeClick(course.youtubeUrl!)}
-            >
-              Assistir no YouTube <ExternalLink className="ml-1 h-3 w-3" />
-            </a>
-          ) : (
-            <Link 
-              to={`/course/${course.id}`} 
-              className="w-full"
-              onClick={() => handleCourseClick(course.id)}
-            >
-              <button className="w-full py-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-                {course.completed > 0 ? 'Continuar' : 'Começar curso'}
-              </button>
-            </Link>
-          )}
+          <Link 
+            to={`/course/${course.id}`} 
+            className="w-full"
+            onClick={() => handleCourseClick(course.id)}
+          >
+            <button className="w-full py-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+              {course.completed > 0 ? 'Continuar' : 'Começar curso'}
+            </button>
+          </Link>
         </CardFooter>
       </Card>
     );
