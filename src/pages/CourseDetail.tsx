@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   BarChart2, 
@@ -18,93 +18,25 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
-
-const MOCK_COURSES = [
-  {
-    id: "1",
-    title: "Fundamentos do Empreendedorismo",
-    description: "Aprenda os conceitos básicos para iniciar seu negócio de sucesso.",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1470&auto=format&fit=crop",
-    author: "Maria Silva",
-    duration: "3 horas",
-    about: "Este curso foi desenvolvido para ajudar empreendedores iniciantes a construir uma base sólida para seus negócios. Abordamos conceitos fundamentais que são essenciais para o sucesso empresarial. Os módulos foram organizados de forma progressiva, permitindo que você construa seu conhecimento passo a passo, desde os conceitos básicos até estratégias mais avançadas. Cada aula inclui exemplos práticos e exercícios para ajudar você a aplicar o conhecimento adquirido em seu próprio negócio imediatamente.",
-    prerequisite: "Nenhum conhecimento prévio é necessário. Este curso é ideal para iniciantes no empreendedorismo.",
-    benefits: [
-      "Desenvolver uma visão clara de negócio",
-      "Identificar oportunidades de mercado",
-      "Compreender conceitos financeiros básicos",
-      "Desenvolver estratégias de marketing eficientes",
-      "Estruturar processos operacionais"
-    ],
-    modules: [
-      {
-        title: "Introdução ao Empreendedorismo",
-        lessons: [
-          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/embed/y8trd3gjJt0?si=5Zx_2uxu5B-cVTVV" },
-          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/embed/PMQRfA-K5pM?si=Qz9Rjlm7Vv9ygWe8" },
-          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/VuP9c-7-0Ps?si=OKbHiHdPgc89kd8R" }
-        ]
-      },
-      {
-        title: "Planejamento de Negócios",
-        lessons: [
-          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ks0N6fkzoms?si=zzAzzd26_6UoL27x" },
-          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/I5mBN3KuEcE?si=uY0F-_TjC-1FXTPP" },
-          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/embed/wLW_-bPCyLk?si=UbLzv2IVNT4Xla1o" }
-        ]
-      },
-      {
-        title: "Marketing para Pequenos Negócios",
-        lessons: [
-          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/lXwGeZL2tmY?si=1YVsFzcLNILWTB0n" },
-          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/4CnY7LVUE_Y?si=91FMoE8YtxWGa3E2" },
-          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/yBimw45Tn5M?si=jqQJl-y_1NTrfR_g" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "2",
-    title: "Finanças para Empreendedores",
-    description: "Gerencie o dinheiro do seu negócio de forma eficiente e sustentável.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1415&auto=format&fit=crop",
-    author: "Carlos Mendes",
-    duration: "4 horas",
-    about: "Este curso foi desenvolvido para empreendedores que desejam aprimorar suas habilidades financeiras. Compreender os aspectos financeiros do seu negócio é fundamental para tomar decisões estratégicas e garantir a sustentabilidade a longo prazo. Neste curso, você aprenderá desde os conceitos básicos até técnicas avançadas de gestão financeira, tudo adaptado para a realidade de pequenos e médios negócios.",
-    prerequisite: "Conhecimento básico de matemática. Não é necessário experiência prévia em finanças.",
-    benefits: [
-      "Controlar eficientemente as finanças do seu negócio",
-      "Entender indicadores financeiros importantes",
-      "Tomar decisões baseadas em dados financeiros",
-      "Planejar crescimento sustentável",
-      "Evitar problemas de fluxo de caixa"
-    ],
-    modules: [
-      {
-        title: "Fundamentos Financeiros",
-        lessons: [
-          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/BwZYMbCLTzU?si=QTz5VDn7e0KVd8EZ" },
-          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/NG_O2zEUh5M?si=ZAB5aY1wLpB7IeHY" },
-          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/RFeZwRVNM9c?si=eXsGh8vKm-P0O2JZ" }
-        ]
-      },
-      {
-        title: "Gestão Financeira",
-        lessons: [
-          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/1y5ImXm5aOo?si=qp_PZxRXibK_Zy3n" },
-          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/JBEz-6ELbTU?si=aSklqT3k0c2eDRPm" },
-          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ZUHpg5SnQjU?si=X9eQ2-L4SrcqRxEf" }
-        ]
-      }
-    ]
-  }
-];
+import { findCourseById } from '@/lib/courseData';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-  const course = MOCK_COURSES.find(c => c.id === courseId);
+  const navigate = useNavigate();
+  const course = courseId ? findCourseById(courseId) : undefined;
+  
   const [selectedLesson, setSelectedLesson] = useState<{moduleIndex: number, lessonIndex: number, url: string} | null>(null);
   const [openModules, setOpenModules] = useState<{[key: number]: boolean}>({0: true});
+  
+  useEffect(() => {
+    if (!course) {
+      toast({
+        title: "Curso não encontrado",
+        description: "O curso que você está procurando não existe.",
+        variant: "destructive"
+      });
+    }
+  }, [course]);
   
   const navItems = [
     {
@@ -417,49 +349,14 @@ const CourseDetail = () => {
               <div className="glass p-6 rounded-xl mb-6">
                 <h2 className="text-xl font-bold mb-4">O que você vai aprender</h2>
                 <ul className="space-y-3">
-                  {course.benefits ? (
-                    course.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>{benefit}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <>
-                      <li className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>Como identificar oportunidades de negócio viáveis</span>
-                      </li>
-                      <li className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>Desenvolver uma mentalidade empreendedora</span>
-                      </li>
-                      <li className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>Técnicas de planejamento financeiro para pequenos negócios</span>
-                      </li>
-                      <li className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>Estratégias de marketing eficientes e de baixo custo</span>
-                      </li>
-                      <li className="flex items-start">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                        </svg>
-                        <span>Como analisar o mercado e a concorrência</span>
-                      </li>
-                    </>
-                  )}
+                  {course.benefits && course.benefits.map((benefit, index) => (
+                    <li key={index} className="flex items-start">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                        <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                      </svg>
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
               

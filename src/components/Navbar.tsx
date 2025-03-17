@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -5,6 +6,12 @@ import { Bell, Moon, Settings, User, Search, HelpCircle, LogOut } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface NavbarProps {
   items?: Array<{
@@ -42,6 +49,14 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   };
 
   const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
+  
+  const handleHelpClick = () => {
+    navigate('/contact');
+  };
+  
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
 
   return (
     <header
@@ -71,29 +86,93 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
 
           {/* User navigation */}
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-              <HelpCircle size={16} />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-              <Bell size={16} />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-              <Moon size={16} />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-              <Settings size={16} />
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full ml-1 bg-primary/10 h-8 w-8">
-              <User size={16} className="text-primary" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="rounded-full h-8 w-8 text-red-500 hover:bg-red-50"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8"
+                    onClick={handleHelpClick}
+                  >
+                    <HelpCircle size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ajuda e Contato</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                    <Bell size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Notificações</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                    <Moon size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Tema</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <Settings size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Configurações do Sistema</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-full ml-1 bg-primary/10 h-8 w-8"
+                    onClick={handleProfileClick}
+                  >
+                    <User size={16} className="text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Perfil de {companyName}</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8 text-red-500 hover:bg-red-50"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Sair</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {/* Mobile menu button */}
