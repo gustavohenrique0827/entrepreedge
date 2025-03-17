@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface Course {
   id: string;
@@ -31,7 +32,7 @@ const LearnSection: React.FC = () => {
   const businessType = localStorage.getItem('businessType') || '';
   const interestedTopics = JSON.parse(localStorage.getItem('interestedTopics') || '[]');
   
-  // All available courses including YouTube courses
+  // All available courses including YouTube courses with working links
   const courses: Course[] = [
     {
       id: '1',
@@ -44,7 +45,7 @@ const LearnSection: React.FC = () => {
       image: 'https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       popular: true,
       categories: ['Gestão financeira', 'Comércio varejista', 'Prestação de serviços'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=BwZYMbCLTzU',
+      youtubeUrl: 'https://www.youtube.com/embed/BwZYMbCLTzU',
       youtubeChannel: 'Sebrae'
     },
     {
@@ -58,7 +59,7 @@ const LearnSection: React.FC = () => {
       image: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       new: true,
       categories: ['Marketing digital', 'Comércio varejista', 'Tecnologia'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=4CnY7LVUE_Y',
+      youtubeUrl: 'https://www.youtube.com/embed/4CnY7LVUE_Y',
       youtubeChannel: 'Conquer'
     },
     {
@@ -71,7 +72,7 @@ const LearnSection: React.FC = () => {
       level: 'Avançado',
       image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Planejamento estratégico', 'Indústria', 'Gestão financeira'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=wZzM96G5ap0',
+      youtubeUrl: 'https://www.youtube.com/embed/wZzM96G5ap0',
       youtubeChannel: 'Escola de Negócios'
     },
     {
@@ -85,7 +86,7 @@ const LearnSection: React.FC = () => {
       image: 'https://images.unsplash.com/photo-1573496358961-3c82861ab8f4?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       popular: true,
       categories: ['Vendas', 'Comércio varejista', 'Comércio atacadista'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=R9jfRjQLoT8',
+      youtubeUrl: 'https://www.youtube.com/embed/R9jfRjQLoT8',
       youtubeChannel: 'O Primo Rico'
     },
     {
@@ -98,7 +99,7 @@ const LearnSection: React.FC = () => {
       level: 'Intermediário',
       image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['RH e liderança', 'Prestação de serviços', 'Indústria'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=ggE_wUNlWy0',
+      youtubeUrl: 'https://www.youtube.com/embed/ggE_wUNlWy0',
       youtubeChannel: 'HSM'
     },
     {
@@ -112,7 +113,7 @@ const LearnSection: React.FC = () => {
       image: 'https://images.unsplash.com/photo-1565514310578-7eefc7a7cfcf?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       new: true,
       categories: ['Gestão financeira', 'Tecnologia', 'Educação'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=ZUHpg5SnQjU',
+      youtubeUrl: 'https://www.youtube.com/embed/ZUHpg5SnQjU',
       youtubeChannel: 'Me Poupe!'
     },
     {
@@ -125,7 +126,7 @@ const LearnSection: React.FC = () => {
       level: 'Iniciante',
       image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Tecnologia', 'Inovação', 'Operações'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=gRYa5JZoU3Y',
+      youtubeUrl: 'https://www.youtube.com/embed/gRYa5JZoU3Y',
       youtubeChannel: 'Rock Content'
     },
     {
@@ -138,7 +139,7 @@ const LearnSection: React.FC = () => {
       level: 'Avançado',
       image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Planejamento estratégico', 'Sustentabilidade', 'Indústria'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=kCpXdZN-Aks',
+      youtubeUrl: 'https://www.youtube.com/embed/kCpXdZN-Aks',
       youtubeChannel: 'Endeavor Brasil'
     },
     {
@@ -151,7 +152,7 @@ const LearnSection: React.FC = () => {
       level: 'Iniciante',
       image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Contabilidade', 'Gestão financeira', 'Comércio varejista'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=w7CyxMoNM3Y',
+      youtubeUrl: 'https://www.youtube.com/embed/w7CyxMoNM3Y',
       youtubeChannel: 'Contabili'
     },
     {
@@ -164,7 +165,7 @@ const LearnSection: React.FC = () => {
       level: 'Intermediário',
       image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Empreendedorismo', 'Inovação', 'Vendas'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=UOevBGt5Ljs',
+      youtubeUrl: 'https://www.youtube.com/embed/UOevBGt5Ljs',
       youtubeChannel: 'Sebrae'
     },
     {
@@ -177,7 +178,7 @@ const LearnSection: React.FC = () => {
       level: 'Intermediário',
       image: 'https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Contabilidade', 'Gestão financeira', 'Tributação'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=t-WGY4K8QU0',
+      youtubeUrl: 'https://www.youtube.com/embed/t-WGY4K8QU0',
       youtubeChannel: 'Contabilizei'
     },
     {
@@ -190,7 +191,7 @@ const LearnSection: React.FC = () => {
       level: 'Avançado',
       image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
       categories: ['Inovação', 'Empreendedorismo', 'Tecnologia'],
-      youtubeUrl: 'https://www.youtube.com/watch?v=qZGslGVEIPg',
+      youtubeUrl: 'https://www.youtube.com/embed/qZGslGVEIPg',
       youtubeChannel: 'Sebrae'
     }
   ];
@@ -228,6 +229,18 @@ const LearnSection: React.FC = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleCourseClick = (courseId: string) => {
+    console.log(`Navigating to course: ${courseId}`);
+  };
+
+  const handleYoutubeClick = (url: string) => {
+    // Notify the user that they'll be watching on YouTube
+    toast({
+      title: "Abrindo conteúdo do YouTube",
+      description: "Você será redirecionado para assistir o vídeo no YouTube.",
+    });
   };
 
   return (
@@ -324,11 +337,16 @@ const LearnSection: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors"
+              onClick={() => handleYoutubeClick(course.youtubeUrl!)}
             >
               Assistir no YouTube <ExternalLink className="ml-1 h-3 w-3" />
             </a>
           ) : (
-            <Link to={`/course/${course.id}`} className="w-full">
+            <Link 
+              to={`/course/${course.id}`} 
+              className="w-full"
+              onClick={() => handleCourseClick(course.id)}
+            >
               <button className="w-full py-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
                 {course.completed > 0 ? 'Continuar' : 'Começar curso'}
               </button>

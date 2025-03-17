@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { useParams, Link } from 'react-router-dom';
@@ -11,12 +11,15 @@ import {
   Play,
   CheckCircle2,
   ArrowLeft,
-  ExternalLink
+  ExternalLink,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from '@/components/ui/use-toast';
 
 const MOCK_COURSES = [
   {
@@ -39,25 +42,25 @@ const MOCK_COURSES = [
       {
         title: "Introdução ao Empreendedorismo",
         lessons: [
-          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/watch?v=y8trd3gjJt0" },
-          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/watch?v=PMQRfA-K5pM" },
-          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=VuP9c-7-0Ps" }
+          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/embed/y8trd3gjJt0" },
+          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/embed/PMQRfA-K5pM" },
+          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/VuP9c-7-0Ps" }
         ]
       },
       {
         title: "Planejamento de Negócios",
         lessons: [
-          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=ks0N6fkzoms" },
-          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=I5mBN3KuEcE" },
-          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=wLW_-bPCyLk" }
+          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ks0N6fkzoms" },
+          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/I5mBN3KuEcE" },
+          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/embed/wLW_-bPCyLk" }
         ]
       },
       {
         title: "Marketing para Pequenos Negócios",
         lessons: [
-          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=lXwGeZL2tmY" },
-          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=4CnY7LVUE_Y" },
-          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=yBimw45Tn5M" }
+          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/lXwGeZL2tmY" },
+          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/4CnY7LVUE_Y" },
+          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/yBimw45Tn5M" }
         ]
       }
     ]
@@ -82,17 +85,17 @@ const MOCK_COURSES = [
       {
         title: "Fundamentos Financeiros",
         lessons: [
-          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=BwZYMbCLTzU" },
-          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=NG_O2zEUh5M" },
-          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=RFeZwRVNM9c" }
+          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/embed/BwZYMbCLTzU" },
+          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/NG_O2zEUh5M" },
+          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/RFeZwRVNM9c" }
         ]
       },
       {
         title: "Gestão Financeira",
         lessons: [
-          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=1y5ImXm5aOo" },
-          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=JBEz-6ELbTU" },
-          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=ZUHpg5SnQjU" }
+          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/embed/1y5ImXm5aOo" },
+          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/embed/JBEz-6ELbTU" },
+          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/embed/ZUHpg5SnQjU" }
         ]
       }
     ]
@@ -102,26 +105,28 @@ const MOCK_COURSES = [
 const CourseDetail = () => {
   const { courseId } = useParams();
   const course = MOCK_COURSES.find(c => c.id === courseId);
+  const [selectedLesson, setSelectedLesson] = useState<{moduleIndex: number, lessonIndex: number, url: string} | null>(null);
+  const [openModules, setOpenModules] = useState<{[key: number]: boolean}>({0: true});
   
   const navItems = [
     {
       name: 'Dashboard',
-      href: '/',
+      href: '/dashboard',
       icon: <Home size={18} />
     },
     {
       name: 'Finanças',
-      href: '/#finances',
+      href: '/finances',
       icon: <BarChart2 size={18} />
     },
     {
       name: 'Metas',
-      href: '/#goals',
+      href: '/goals',
       icon: <Target size={18} />
     },
     {
       name: 'Aprendizado',
-      href: '/#learn',
+      href: '/learn',
       icon: <BookOpen size={18} />
     },
   ];
@@ -143,15 +148,63 @@ const CourseDetail = () => {
     return totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
   };
 
+  // Toggle module open/closed
+  const toggleModule = (moduleIndex: number) => {
+    setOpenModules(prev => ({
+      ...prev,
+      [moduleIndex]: !prev[moduleIndex]
+    }));
+  };
+
   // Mark lesson as completed
   const toggleLessonCompleted = (moduleIndex: number, lessonIndex: number) => {
     // This would update the state in a real application
+    toast({
+      title: "Progresso atualizado",
+      description: "Seu progresso nesta lição foi atualizado.",
+    });
     console.log(`Toggled completion for module ${moduleIndex}, lesson ${lessonIndex}`);
   };
 
-  // Open YouTube video
-  const openYoutubeVideo = (url: string) => {
-    window.open(url, '_blank');
+  // Start or continue course by selecting first incomplete lesson
+  const startCourse = () => {
+    if (!course) return;
+    
+    for (let i = 0; i < course.modules.length; i++) {
+      for (let j = 0; j < course.modules[i].lessons.length; j++) {
+        const lesson = course.modules[i].lessons[j];
+        if (!lesson.completed) {
+          // Select this lesson and open its module
+          setSelectedLesson({
+            moduleIndex: i,
+            lessonIndex: j,
+            url: lesson.youtubeUrl || ''
+          });
+          setOpenModules(prev => ({...prev, [i]: true}));
+          return;
+        }
+      }
+    }
+    
+    // If all lessons are completed, select the first one
+    if (course.modules.length > 0 && course.modules[0].lessons.length > 0) {
+      setSelectedLesson({
+        moduleIndex: 0,
+        lessonIndex: 0,
+        url: course.modules[0].lessons[0].youtubeUrl || ''
+      });
+      setOpenModules(prev => ({...prev, [0]: true}));
+    }
+  };
+
+  // Play specific lesson
+  const playLesson = (moduleIndex: number, lessonIndex: number, url: string) => {
+    setSelectedLesson({
+      moduleIndex,
+      lessonIndex,
+      url
+    });
+    setOpenModules(prev => ({...prev, [moduleIndex]: true}));
   };
 
   if (!course) {
@@ -178,7 +231,7 @@ const CourseDetail = () => {
       <div className="flex-1 ml-[240px] transition-all duration-300">
         <Navbar items={navItems} />
         
-        <div className="container px-4 py-12">
+        <div className="container px-4 py-6">
           <div className="flex items-center mb-6">
             <Link to="/learn" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft size={18} className="mr-2" />
@@ -190,17 +243,29 @@ const CourseDetail = () => {
             <div className="lg:col-span-2">
               <div className="glass p-6 rounded-xl mb-8">
                 <div className="aspect-video rounded-lg overflow-hidden mb-6 relative">
-                  <img 
-                    src={course.image} 
-                    alt={course.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Button className="rounded-full" size="lg">
-                      <Play className="mr-2" size={20} />
-                      Começar curso
-                    </Button>
-                  </div>
+                  {selectedLesson ? (
+                    <iframe
+                      src={selectedLesson.url}
+                      title={`Aula ${selectedLesson.moduleIndex + 1}.${selectedLesson.lessonIndex + 1}`}
+                      frameBorder="0"
+                      allowFullScreen
+                      className="w-full h-full"
+                    ></iframe>
+                  ) : (
+                    <>
+                      <img 
+                        src={course.image} 
+                        alt={course.title}
+                        className="object-cover w-full h-full"
+                      />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Button className="rounded-full" size="lg" onClick={startCourse}>
+                          <Play className="mr-2" size={20} />
+                          Começar curso
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <h1 className="text-3xl font-bold mb-3">{course.title}</h1>
@@ -230,24 +295,40 @@ const CourseDetail = () => {
                 </div>
               </div>
               
-              <div className="glass p-6 rounded-xl">
+              <div className="glass p-6 rounded-xl mb-8">
                 <h2 className="text-xl font-bold mb-4">Conteúdo do Curso</h2>
                 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {course.modules.map((module, moduleIndex) => (
-                    <Collapsible key={moduleIndex} className="border border-border rounded-lg">
-                      <CollapsibleTrigger className="flex w-full p-4 border-b border-border bg-secondary/20 justify-between items-center hover:bg-secondary/30 transition-colors">
+                    <div key={moduleIndex} className="border border-border rounded-lg overflow-hidden">
+                      <div 
+                        className="flex w-full p-4 border-b border-border bg-secondary/20 justify-between items-center hover:bg-secondary/30 transition-colors cursor-pointer"
+                        onClick={() => toggleModule(moduleIndex)}
+                      >
                         <h3 className="text-lg font-semibold">{module.title}</h3>
-                        <div className="text-xs text-muted-foreground">
-                          {module.lessons.length} aulas
+                        <div className="flex items-center">
+                          <div className="text-xs text-muted-foreground mr-2">
+                            {module.lessons.length} aulas
+                          </div>
+                          {openModules[moduleIndex] ? (
+                            <ChevronUp size={18} />
+                          ) : (
+                            <ChevronDown size={18} />
+                          )}
                         </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
+                      </div>
+                      
+                      {openModules[moduleIndex] && (
                         <div className="divide-y divide-border">
                           {module.lessons.map((lesson, lessonIndex) => (
                             <div 
                               key={lessonIndex} 
-                              className="p-4 flex items-center justify-between"
+                              className={`p-4 flex items-center justify-between ${
+                                selectedLesson && 
+                                selectedLesson.moduleIndex === moduleIndex && 
+                                selectedLesson.lessonIndex === lessonIndex ? 
+                                'bg-primary/10' : ''
+                              }`}
                             >
                               <div className="flex items-center">
                                 {lesson.completed ? (
@@ -269,27 +350,54 @@ const CourseDetail = () => {
                                   <span className="text-xs text-muted-foreground">{lesson.duration}</span>
                                 </div>
                               </div>
-                              {lesson.youtubeUrl ? (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="rounded-full flex items-center gap-1 text-red-500 border-red-300 hover:bg-red-50 hover:text-red-600"
-                                  onClick={() => openYoutubeVideo(lesson.youtubeUrl)}
-                                >
-                                  <ExternalLink size={14} />
-                                  <span className="hidden sm:inline">YouTube</span>
-                                </Button>
-                              ) : (
-                                <Button variant="ghost" size="sm" className="rounded-full">
-                                  <Play size={16} />
-                                </Button>
-                              )}
+                              
+                              <Button 
+                                variant={selectedLesson && 
+                                  selectedLesson.moduleIndex === moduleIndex && 
+                                  selectedLesson.lessonIndex === lessonIndex ? 
+                                  "default" : "ghost"} 
+                                size="sm" 
+                                className="rounded-full"
+                                onClick={() => playLesson(moduleIndex, lessonIndex, lesson.youtubeUrl)}
+                              >
+                                <Play size={16} />
+                              </Button>
                             </div>
                           ))}
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                      )}
+                    </div>
                   ))}
+                </div>
+              </div>
+              
+              <div className="glass p-6 rounded-xl">
+                <h2 className="text-xl font-bold mb-4">Descrição do Curso</h2>
+                <div className="space-y-4 text-sm">
+                  <p className="text-base">{course.about}</p>
+                  
+                  <div>
+                    <h3 className="font-semibold text-base mt-6 mb-2">Pré-requisitos</h3>
+                    <p>{course.prerequisite}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold text-base mt-6 mb-2">Metodologia</h3>
+                    <p>
+                      Este curso utiliza uma abordagem prática e orientada a resultados. Combinamos teoria com exemplos do mundo real 
+                      e exercícios práticos para ajudar você a implementar os conhecimentos em seu próprio negócio. Cada módulo foi 
+                      cuidadosamente desenvolvido para construir sobre o anterior, resultando em uma experiência de aprendizado coesa e abrangente.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold text-base mt-6 mb-2">Público-alvo</h3>
+                    <p>
+                      Este curso é ideal para empreendedores iniciantes, proprietários de pequenos negócios que desejam melhorar suas 
+                      habilidades de gestão, e profissionais que planejam iniciar seu próprio negócio no futuro próximo. Não é necessário 
+                      experiência prévia em negócios, apenas vontade de aprender e motivação para implementar as estratégias ensinadas.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -298,16 +406,16 @@ const CourseDetail = () => {
               <div className="glass p-6 rounded-xl mb-6">
                 <h2 className="text-xl font-bold mb-4">Sobre este curso</h2>
                 <div className="space-y-4 text-sm">
-                  <p>{course.about || "Este curso foi desenvolvido para ajudar empreendedores iniciantes a construir uma base sólida para seus negócios."}</p>
+                  <p>{course.about}</p>
                   
                   <div>
                     <h3 className="font-semibold text-base mb-2">Pré-requisitos</h3>
-                    <p>{course.prerequisite || "Nenhum conhecimento prévio é necessário para começar este curso."}</p>
+                    <p>{course.prerequisite}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="glass p-6 rounded-xl">
+              <div className="glass p-6 rounded-xl mb-6">
                 <h2 className="text-xl font-bold mb-4">O que você vai aprender</h2>
                 <ul className="space-y-3">
                   {course.benefits ? (
@@ -356,15 +464,16 @@ const CourseDetail = () => {
                 </ul>
               </div>
               
-              <div className="glass p-6 rounded-xl mt-6">
+              <div className="glass p-6 rounded-xl">
                 <h2 className="text-xl font-bold mb-4">Detalhes do curso</h2>
                 <div className="space-y-4">
                   <div>
                     <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Português</Badge>
                     <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">Certificado</Badge>
+                    <Badge className="ml-2 bg-red-100 text-red-800 hover:bg-red-200">YouTube</Badge>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="text-xs text-muted-foreground">Total de módulos</p>
                       <p className="font-medium">{course.modules.length}</p>
