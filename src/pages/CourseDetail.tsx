@@ -10,10 +10,13 @@ import {
   BookOpen,
   Play,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const MOCK_COURSES = [
   {
@@ -23,29 +26,38 @@ const MOCK_COURSES = [
     image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1470&auto=format&fit=crop",
     author: "Maria Silva",
     duration: "3 horas",
+    about: "Este curso foi desenvolvido para ajudar empreendedores iniciantes a construir uma base sólida para seus negócios. Abordamos conceitos fundamentais que são essenciais para o sucesso empresarial. Os módulos foram organizados de forma progressiva, permitindo que você construa seu conhecimento passo a passo, desde os conceitos básicos até estratégias mais avançadas. Cada aula inclui exemplos práticos e exercícios para ajudar você a aplicar o conhecimento adquirido em seu próprio negócio imediatamente.",
+    prerequisite: "Nenhum conhecimento prévio é necessário. Este curso é ideal para iniciantes no empreendedorismo.",
+    benefits: [
+      "Desenvolver uma visão clara de negócio",
+      "Identificar oportunidades de mercado",
+      "Compreender conceitos financeiros básicos",
+      "Desenvolver estratégias de marketing eficientes",
+      "Estruturar processos operacionais"
+    ],
     modules: [
       {
         title: "Introdução ao Empreendedorismo",
         lessons: [
-          { title: "O que é empreendedorismo?", duration: "15min", completed: true },
-          { title: "Mentalidade empreendedora", duration: "20min", completed: true },
-          { title: "Identificando oportunidades", duration: "25min", completed: false }
+          { title: "O que é empreendedorismo?", duration: "15min", completed: true, youtubeUrl: "https://www.youtube.com/watch?v=y8trd3gjJt0" },
+          { title: "Mentalidade empreendedora", duration: "20min", completed: true, youtubeUrl: "https://www.youtube.com/watch?v=PMQRfA-K5pM" },
+          { title: "Identificando oportunidades", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=VuP9c-7-0Ps" }
         ]
       },
       {
         title: "Planejamento de Negócios",
         lessons: [
-          { title: "Modelos de negócios", duration: "30min", completed: false },
-          { title: "Análise de mercado", duration: "25min", completed: false },
-          { title: "Plano financeiro básico", duration: "40min", completed: false }
+          { title: "Modelos de negócios", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=ks0N6fkzoms" },
+          { title: "Análise de mercado", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=I5mBN3KuEcE" },
+          { title: "Plano financeiro básico", duration: "40min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=wLW_-bPCyLk" }
         ]
       },
       {
         title: "Marketing para Pequenos Negócios",
         lessons: [
-          { title: "Fundamentos de marketing", duration: "20min", completed: false },
-          { title: "Marketing digital", duration: "35min", completed: false },
-          { title: "Estratégias de baixo custo", duration: "25min", completed: false }
+          { title: "Fundamentos de marketing", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=lXwGeZL2tmY" },
+          { title: "Marketing digital", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=4CnY7LVUE_Y" },
+          { title: "Estratégias de baixo custo", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=yBimw45Tn5M" }
         ]
       }
     ]
@@ -57,21 +69,30 @@ const MOCK_COURSES = [
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1415&auto=format&fit=crop",
     author: "Carlos Mendes",
     duration: "4 horas",
+    about: "Este curso foi desenvolvido para empreendedores que desejam aprimorar suas habilidades financeiras. Compreender os aspectos financeiros do seu negócio é fundamental para tomar decisões estratégicas e garantir a sustentabilidade a longo prazo. Neste curso, você aprenderá desde os conceitos básicos até técnicas avançadas de gestão financeira, tudo adaptado para a realidade de pequenos e médios negócios.",
+    prerequisite: "Conhecimento básico de matemática. Não é necessário experiência prévia em finanças.",
+    benefits: [
+      "Controlar eficientemente as finanças do seu negócio",
+      "Entender indicadores financeiros importantes",
+      "Tomar decisões baseadas em dados financeiros",
+      "Planejar crescimento sustentável",
+      "Evitar problemas de fluxo de caixa"
+    ],
     modules: [
       {
         title: "Fundamentos Financeiros",
         lessons: [
-          { title: "Conceitos básicos", duration: "20min", completed: false },
-          { title: "Fluxo de caixa", duration: "25min", completed: false },
-          { title: "Precificação", duration: "30min", completed: false }
+          { title: "Conceitos básicos", duration: "20min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=BwZYMbCLTzU" },
+          { title: "Fluxo de caixa", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=NG_O2zEUh5M" },
+          { title: "Precificação", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=RFeZwRVNM9c" }
         ]
       },
       {
         title: "Gestão Financeira",
         lessons: [
-          { title: "Controle de despesas", duration: "25min", completed: false },
-          { title: "Planejamento financeiro", duration: "35min", completed: false },
-          { title: "Análise de resultados", duration: "30min", completed: false }
+          { title: "Controle de despesas", duration: "25min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=1y5ImXm5aOo" },
+          { title: "Planejamento financeiro", duration: "35min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=JBEz-6ELbTU" },
+          { title: "Análise de resultados", duration: "30min", completed: false, youtubeUrl: "https://www.youtube.com/watch?v=ZUHpg5SnQjU" }
         ]
       }
     ]
@@ -122,6 +143,17 @@ const CourseDetail = () => {
     return totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
   };
 
+  // Mark lesson as completed
+  const toggleLessonCompleted = (moduleIndex: number, lessonIndex: number) => {
+    // This would update the state in a real application
+    console.log(`Toggled completion for module ${moduleIndex}, lesson ${lessonIndex}`);
+  };
+
+  // Open YouTube video
+  const openYoutubeVideo = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   if (!course) {
     return (
       <div className="min-h-screen bg-background flex">
@@ -130,7 +162,7 @@ const CourseDetail = () => {
           <Navbar items={navItems} />
           <div className="container px-4 py-12 mt-16 text-center">
             <h1 className="text-2xl font-bold mb-4">Curso não encontrado</h1>
-            <Link to="/#learn">
+            <Link to="/learn">
               <Button>Voltar para cursos</Button>
             </Link>
           </div>
@@ -148,7 +180,7 @@ const CourseDetail = () => {
         
         <div className="container px-4 py-12">
           <div className="flex items-center mb-6">
-            <Link to="/#learn" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/learn" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft size={18} className="mr-2" />
               <span>Voltar para cursos</span>
             </Link>
@@ -203,36 +235,60 @@ const CourseDetail = () => {
                 
                 <div className="space-y-6">
                   {course.modules.map((module, moduleIndex) => (
-                    <div key={moduleIndex} className="border border-border rounded-lg">
-                      <div className="p-4 border-b border-border bg-secondary/20">
+                    <Collapsible key={moduleIndex} className="border border-border rounded-lg">
+                      <CollapsibleTrigger className="flex w-full p-4 border-b border-border bg-secondary/20 justify-between items-center hover:bg-secondary/30 transition-colors">
                         <h3 className="text-lg font-semibold">{module.title}</h3>
-                      </div>
-                      <div className="divide-y divide-border">
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <div 
-                            key={lessonIndex} 
-                            className="p-4 flex items-center justify-between"
-                          >
-                            <div className="flex items-center">
-                              {lesson.completed ? (
-                                <CheckCircle2 size={20} className="text-green-500 mr-3" />
-                              ) : (
-                                <div className="w-5 h-5 rounded-full border border-border mr-3 flex items-center justify-center">
-                                  <span className="text-xs">{moduleIndex + 1}.{lessonIndex + 1}</span>
+                        <div className="text-xs text-muted-foreground">
+                          {module.lessons.length} aulas
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="divide-y divide-border">
+                          {module.lessons.map((lesson, lessonIndex) => (
+                            <div 
+                              key={lessonIndex} 
+                              className="p-4 flex items-center justify-between"
+                            >
+                              <div className="flex items-center">
+                                {lesson.completed ? (
+                                  <CheckCircle2 
+                                    size={20} 
+                                    className="text-green-500 mr-3 cursor-pointer" 
+                                    onClick={() => toggleLessonCompleted(moduleIndex, lessonIndex)}
+                                  />
+                                ) : (
+                                  <div 
+                                    className="w-5 h-5 rounded-full border border-border mr-3 flex items-center justify-center cursor-pointer"
+                                    onClick={() => toggleLessonCompleted(moduleIndex, lessonIndex)}
+                                  >
+                                    <span className="text-xs">{moduleIndex + 1}.{lessonIndex + 1}</span>
+                                  </div>
+                                )}
+                                <div>
+                                  <h4 className="font-medium">{lesson.title}</h4>
+                                  <span className="text-xs text-muted-foreground">{lesson.duration}</span>
                                 </div>
-                              )}
-                              <div>
-                                <h4 className="font-medium">{lesson.title}</h4>
-                                <span className="text-xs text-muted-foreground">{lesson.duration}</span>
                               </div>
+                              {lesson.youtubeUrl ? (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-full flex items-center gap-1 text-red-500 border-red-300 hover:bg-red-50 hover:text-red-600"
+                                  onClick={() => openYoutubeVideo(lesson.youtubeUrl)}
+                                >
+                                  <ExternalLink size={14} />
+                                  <span className="hidden sm:inline">YouTube</span>
+                                </Button>
+                              ) : (
+                                <Button variant="ghost" size="sm" className="rounded-full">
+                                  <Play size={16} />
+                                </Button>
+                              )}
                             </div>
-                            <Button variant="ghost" size="sm" className="rounded-full">
-                              <Play size={16} />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   ))}
                 </div>
               </div>
@@ -242,55 +298,93 @@ const CourseDetail = () => {
               <div className="glass p-6 rounded-xl mb-6">
                 <h2 className="text-xl font-bold mb-4">Sobre este curso</h2>
                 <div className="space-y-4 text-sm">
-                  <p>
-                    Este curso foi desenvolvido para ajudar empreendedores iniciantes a construir uma base sólida para 
-                    seus negócios. Abordamos conceitos fundamentais que são essenciais para o sucesso empresarial.
-                  </p>
-                  <p>
-                    Os módulos foram organizados de forma progressiva, permitindo que você construa seu conhecimento 
-                    passo a passo, desde os conceitos básicos até estratégias mais avançadas.
-                  </p>
-                  <p>
-                    Cada aula inclui exemplos práticos e exercícios para ajudar você a aplicar o conhecimento adquirido 
-                    em seu próprio negócio imediatamente.
-                  </p>
+                  <p>{course.about || "Este curso foi desenvolvido para ajudar empreendedores iniciantes a construir uma base sólida para seus negócios."}</p>
+                  
+                  <div>
+                    <h3 className="font-semibold text-base mb-2">Pré-requisitos</h3>
+                    <p>{course.prerequisite || "Nenhum conhecimento prévio é necessário para começar este curso."}</p>
+                  </div>
                 </div>
               </div>
               
               <div className="glass p-6 rounded-xl">
                 <h2 className="text-xl font-bold mb-4">O que você vai aprender</h2>
                 <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                    </svg>
-                    <span>Como identificar oportunidades de negócio viáveis</span>
-                  </li>
-                  <li className="flex items-start">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                    </svg>
-                    <span>Desenvolver uma mentalidade empreendedora</span>
-                  </li>
-                  <li className="flex items-start">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                    </svg>
-                    <span>Técnicas de planejamento financeiro para pequenos negócios</span>
-                  </li>
-                  <li className="flex items-start">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                    </svg>
-                    <span>Estratégias de marketing eficientes e de baixo custo</span>
-                  </li>
-                  <li className="flex items-start">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
-                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
-                    </svg>
-                    <span>Como analisar o mercado e a concorrência</span>
-                  </li>
+                  {course.benefits ? (
+                    course.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>{benefit}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>Como identificar oportunidades de negócio viáveis</span>
+                      </li>
+                      <li className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>Desenvolver uma mentalidade empreendedora</span>
+                      </li>
+                      <li className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>Técnicas de planejamento financeiro para pequenos negócios</span>
+                      </li>
+                      <li className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>Estratégias de marketing eficientes e de baixo custo</span>
+                      </li>
+                      <li className="flex items-start">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-500 mr-2 flex-shrink-0 mt-0.5">
+                          <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor" />
+                        </svg>
+                        <span>Como analisar o mercado e a concorrência</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
+              </div>
+              
+              <div className="glass p-6 rounded-xl mt-6">
+                <h2 className="text-xl font-bold mb-4">Detalhes do curso</h2>
+                <div className="space-y-4">
+                  <div>
+                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Português</Badge>
+                    <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">Certificado</Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total de módulos</p>
+                      <p className="font-medium">{course.modules.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total de aulas</p>
+                      <p className="font-medium">
+                        {course.modules.reduce((total, module) => total + module.lessons.length, 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Última atualização</p>
+                      <p className="font-medium">Abril 2023</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Nível</p>
+                      <p className="font-medium">Iniciante a Intermediário</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

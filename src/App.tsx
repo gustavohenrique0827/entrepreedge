@@ -59,17 +59,17 @@ const App = () => {
                 <Learn />
               </ProtectedRoute>
             } />
+            <Route path="/course/:courseId" element={
+              <ProtectedRoute>
+                <CourseDetail />
+              </ProtectedRoute>
+            } />
             <Route path="/onboarding" element={
               isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
             } />
             <Route path="/contact" element={
               <ProtectedRoute>
                 <Contact />
-              </ProtectedRoute>
-            } />
-            <Route path="/course/:courseId" element={
-              <ProtectedRoute>
-                <CourseDetail />
               </ProtectedRoute>
             } />
             
