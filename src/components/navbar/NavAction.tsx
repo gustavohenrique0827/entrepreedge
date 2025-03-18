@@ -23,7 +23,7 @@ const NavAction = ({ icon, label, onClick, variant = 'ghost', className = '' }: 
         <Button 
           variant={variant} 
           size="icon" 
-          className={`rounded-full h-8 w-8 ${className}`}
+          className={`h-8 w-8 ${className}`}
           onClick={onClick}
         >
           {icon}
