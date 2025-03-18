@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { 
@@ -16,6 +16,7 @@ import {
   HelpCircle,
   LayoutDashboard
 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface SidebarProps {
   className?: string;
@@ -24,6 +25,8 @@ interface SidebarProps {
 const Sidebar = ({ className }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const menuItems = [
     { 
@@ -79,11 +82,21 @@ const Sidebar = ({ className }: SidebarProps) => {
     },
     { 
       name: 'Ajuda', 
-      href: '/help', 
+      href: '/contact', 
       icon: <HelpCircle className="h-5 w-5" />,
-      active: location.pathname === '/help'
+      active: location.pathname === '/contact' && location.pathname.includes('help')
     },
   ];
+
+  const handleNavigation = (item: { name: string; href: string }) => {
+    if (item.name === 'Ajuda') {
+      toast({
+        title: "Centro de Ajuda",
+        description: "Você será direcionado para nossa página de contato e suporte.",
+      });
+    }
+    navigate(item.href);
+  };
 
   return (
     <aside
@@ -121,11 +134,11 @@ const Sidebar = ({ className }: SidebarProps) => {
           <div className="px-3 py-4">
             <nav className="space-y-1">
               {menuItems.map((item) => (
-                <Link
+                <Button
                   key={item.name}
-                  to={item.href}
+                  onClick={() => handleNavigation(item)}
                   className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors w-full justify-start",
                     item.active
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
@@ -134,7 +147,7 @@ const Sidebar = ({ className }: SidebarProps) => {
                 >
                   {item.icon}
                   {!collapsed && <span className="ml-3">{item.name}</span>}
-                </Link>
+                </Button>
               ))}
             </nav>
           </div>
@@ -143,18 +156,19 @@ const Sidebar = ({ className }: SidebarProps) => {
         <div className="px-3 py-4 border-t border-sidebar-border">
           <nav className="space-y-1">
             {bottomMenuItems.map((item) => (
-              <Link
+              <Button
                 key={item.name}
-                to={item.href}
+                onClick={() => handleNavigation(item)}
                 className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors",
+                  "flex items-center px-3 py-2 text-sm font-medium rounded-md w-full justify-start",
+                  "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors",
                   item.active && "bg-sidebar-accent text-sidebar-accent-foreground",
                   collapsed && "justify-center"
                 )}
               >
                 {item.icon}
                 {!collapsed && <span className="ml-3">{item.name}</span>}
-              </Link>
+              </Button>
             ))}
           </nav>
         </div>

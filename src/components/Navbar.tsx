@@ -62,6 +62,23 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     navigate('/settings');
   };
 
+  const handleThemeToggle = () => {
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    toast({
+      title: `Tema ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado`,
+      description: "A aparência da aplicação foi atualizada.",
+    });
+  };
+
+  const handleNotificationsClick = () => {
+    toast({
+      title: "Notificações",
+      description: "Você não tem novas notificações no momento.",
+    });
+  };
+
   return (
     <header
       className={cn(
@@ -109,7 +126,12 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8"
+                    onClick={handleNotificationsClick}
+                  >
                     <Bell size={16} />
                   </Button>
                 </TooltipTrigger>
@@ -120,12 +142,17 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8"
+                    onClick={handleThemeToggle}
+                  >
                     <Moon size={16} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Tema</p>
+                  <p>Alternar Tema</p>
                 </TooltipContent>
               </Tooltip>
               

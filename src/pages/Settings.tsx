@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { 
@@ -20,11 +19,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import PreferencesForm from '@/components/PreferencesForm';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('subscription');
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const [currentPlan, setCurrentPlan] = useState(localStorage.getItem('currentPlan') || 'free');
+  
   const navItems = [
     {
       name: 'Dashboard',
@@ -48,15 +51,46 @@ const Settings = () => {
     },
   ];
 
-  const currentPlan = localStorage.getItem('currentPlan') || 'free';
+  useEffect(() => {
+    const savedPlan = localStorage.getItem('currentPlan');
+    if (savedPlan) {
+      setCurrentPlan(savedPlan);
+    }
+  }, []);
 
   const handleSelectPlan = (planId: string) => {
+    setCurrentPlan(planId);
     localStorage.setItem('currentPlan', planId);
     toast({
       title: "Plano alterado com sucesso!",
       description: "As novas funcionalidades estarão disponíveis em instantes.",
     });
   }
+
+  const handleSaveAppearance = () => {
+    toast({
+      title: "Aparência atualizada",
+      description: "As configurações de aparência foram salvas com sucesso.",
+    });
+  };
+
+  const handleSaveSecurity = () => {
+    toast({
+      title: "Configurações de segurança atualizadas",
+      description: "As configurações de segurança foram salvas com sucesso.",
+    });
+  };
+
+  const handleContactSupport = () => {
+    navigate('/contact');
+  };
+
+  const handleChangeLogo = () => {
+    toast({
+      title: "Alteração de logo",
+      description: "Funcionalidade de alteração de logo em desenvolvimento.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -90,7 +124,6 @@ const Settings = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Plano Iniciante */}
                       <Card className={`border-2 ${currentPlan === 'starter' ? 'border-primary' : 'border-border'}`}>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-xl">Plano Iniciante</CardTitle>
@@ -131,7 +164,6 @@ const Settings = () => {
                         </CardFooter>
                       </Card>
 
-                      {/* Plano Empresarial */}
                       <Card className={`border-2 ${currentPlan === 'business' ? 'border-primary' : 'border-border'}`}>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-xl">Plano Empresarial</CardTitle>
@@ -172,7 +204,6 @@ const Settings = () => {
                         </CardFooter>
                       </Card>
 
-                      {/* Plano Premium */}
                       <Card className={`border-2 ${currentPlan === 'premium' ? 'border-primary' : 'border-border'}`}>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-xl">Plano Premium</CardTitle>
@@ -234,7 +265,7 @@ const Settings = () => {
                             {companyName.substring(0, 2).toUpperCase()}
                           </span>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={handleChangeLogo}>
                           Alterar logo
                         </Button>
                       </div>
@@ -270,12 +301,7 @@ const Settings = () => {
                       </div>
                     </div>
                     
-                    <Button onClick={() => {
-                      toast({
-                        title: "Aparência atualizada",
-                        description: "As configurações de aparência foram salvas com sucesso.",
-                      });
-                    }} className="w-full">
+                    <Button onClick={handleSaveAppearance} className="w-full">
                       Salvar Configurações
                     </Button>
                   </div>
@@ -341,14 +367,16 @@ const Settings = () => {
                       </div>
                     </div>
                     
-                    <Button onClick={() => {
-                      toast({
-                        title: "Configurações de segurança atualizadas",
-                        description: "As configurações de segurança foram salvas com sucesso.",
-                      });
-                    }} className="w-full">
+                    <Button onClick={handleSaveSecurity} className="w-full">
                       Salvar Configurações
                     </Button>
+                    
+                    <div className="text-center mt-4">
+                      <p className="text-sm text-muted-foreground mb-2">Precisa de ajuda com configurações de segurança?</p>
+                      <Button variant="outline" size="sm" onClick={handleContactSupport}>
+                        Entrar em contato com o suporte
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
