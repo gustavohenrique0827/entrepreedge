@@ -58,6 +58,10 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     navigate('/profile');
   };
 
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
   return (
     <header
       className={cn(
@@ -131,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                     variant="ghost" 
                     size="icon" 
                     className="rounded-full h-8 w-8"
-                    onClick={() => navigate('/settings')}
+                    onClick={handleSettingsClick}
                   >
                     <Settings size={16} />
                   </Button>

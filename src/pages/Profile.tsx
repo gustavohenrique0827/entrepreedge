@@ -14,20 +14,26 @@ import {
   MapPin,
   Globe,
   Calendar,
-  Edit
+  Edit,
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import PreferencesForm from '@/components/PreferencesForm';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('company');
   const [isEditing, setIsEditing] = useState(false);
+  const [userEditing, setUserEditing] = useState(false);
+  const { toast } = useToast();
   
   const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
   const businessType = localStorage.getItem('businessType') || 'Comércio varejista';
@@ -47,9 +53,24 @@ const Profile = () => {
     description: 'Empresa especializada em soluções para empreendedores e pequenos negócios.'
   });
   
+  const [userData, setUserData] = useState({
+    firstName: "Admin",
+    lastName: "Usuário",
+    email: userEmail,
+    phone: "(11) 98765-4321"
+  });
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUserData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -64,6 +85,22 @@ const Profile = () => {
     toast({
       title: "Perfil atualizado",
       description: "As informações da empresa foram atualizadas com sucesso.",
+    });
+  };
+  
+  const handleUserSave = () => {
+    localStorage.setItem('userEmail', userData.email);
+    setUserEditing(false);
+    toast({
+      title: "Perfil de usuário atualizado",
+      description: "As informações do usuário foram atualizadas com sucesso.",
+    });
+  };
+  
+  const handleChangePassword = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "A alteração de senha estará disponível em breve.",
     });
   };
   
@@ -366,11 +403,21 @@ const Profile = () => {
             
             <TabsContent value="user">
               <Card className="glass">
-                <CardHeader>
-                  <CardTitle>Perfil do Usuário</CardTitle>
-                  <CardDescription>
-                    Gerencie suas informações pessoais e preferências
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <div>
+                    <CardTitle>Perfil do Usuário</CardTitle>
+                    <CardDescription>
+                      Gerencie suas informações pessoais e preferências
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant={userEditing ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => userEditing ? handleUserSave() : setUserEditing(true)}
+                  >
+                    {userEditing ? "Salvar" : "Editar"}
+                    {!userEditing && <Edit className="ml-2" size={16} />}
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -381,39 +428,80 @@ const Profile = () => {
                           <User size={32} />
                         </AvatarFallback>
                       </Avatar>
-                      <h3 className="font-bold text-lg mb-1">Usuário Admin</h3>
-                      <p className="text-muted-foreground text-sm mb-4">{userEmail}</p>
+                      <h3 className="font-bold text-lg mb-1">{userData.firstName} {userData.lastName}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{userData.email}</p>
                       <Button variant="outline" size="sm" className="mt-2">
                         Atualizar foto
                       </Button>
                     </div>
                     
                     <div className="md:col-span-2 space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="name">Nome</Label>
-                          <Input id="name" defaultValue="Admin" />
+                      {userEditing ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName">Nome</Label>
+                            <Input 
+                              id="firstName" 
+                              name="firstName" 
+                              value={userData.firstName} 
+                              onChange={handleUserChange}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName">Sobrenome</Label>
+                            <Input 
+                              id="lastName" 
+                              name="lastName" 
+                              value={userData.lastName} 
+                              onChange={handleUserChange}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="userEmail">Email</Label>
+                            <Input 
+                              id="userEmail" 
+                              name="email" 
+                              value={userData.email} 
+                              onChange={handleUserChange}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="userPhone">Telefone</Label>
+                            <Input 
+                              id="userPhone" 
+                              name="phone" 
+                              value={userData.phone} 
+                              onChange={handleUserChange}
+                            />
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="surname">Sobrenome</Label>
-                          <Input id="surname" defaultValue="Usuário" />
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-muted-foreground">Nome</Label>
+                            <p>{userData.firstName}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-muted-foreground">Sobrenome</Label>
+                            <p>{userData.lastName}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-muted-foreground">Email</Label>
+                            <p>{userData.email}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-muted-foreground">Telefone</Label>
+                            <p>{userData.phone}</p>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="userEmail">Email</Label>
-                          <Input id="userEmail" defaultValue={userEmail} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="userPhone">Telefone</Label>
-                          <Input id="userPhone" defaultValue="(11) 98765-4321" />
-                        </div>
-                      </div>
+                      )}
                       
                       <Separator />
                       
                       <div className="space-y-4">
                         <div>
                           <h3 className="font-medium mb-2">Segurança</h3>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={handleChangePassword}>
                             Alterar senha
                           </Button>
                         </div>
@@ -425,10 +513,6 @@ const Profile = () => {
                             <p className="text-xs mt-1">Ativo agora</p>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="pt-4">
-                        <Button>Salvar alterações</Button>
                       </div>
                     </div>
                   </div>
@@ -445,7 +529,7 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Preferências do Sistema em desenvolvimento</p>
+                  <PreferencesForm />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -459,7 +543,74 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Configurações de Notificações em desenvolvimento</p>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-4">Notificações por Email</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="email-alerts">Alertas importantes</Label>
+                          <Switch id="email-alerts" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="email-updates">Atualizações do sistema</Label>
+                          <Switch id="email-updates" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="email-marketing">Marketing e novidades</Label>
+                          <Switch id="email-marketing" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-4">Notificações no Sistema</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="system-tasks">Tarefas e lembretes</Label>
+                          <Switch id="system-tasks" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="system-messages">Mensagens</Label>
+                          <Switch id="system-messages" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="system-finance">Alertas financeiros</Label>
+                          <Switch id="system-finance" defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-4">Frequência de Resumos</h3>
+                      <RadioGroup defaultValue="weekly" className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="daily" id="freq-daily" />
+                          <Label htmlFor="freq-daily">Diário</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="weekly" id="freq-weekly" />
+                          <Label htmlFor="freq-weekly">Semanal</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="monthly" id="freq-monthly" />
+                          <Label htmlFor="freq-monthly">Mensal</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    
+                    <Button className="w-full" onClick={() => {
+                      toast({
+                        title: "Notificações atualizadas",
+                        description: "Suas preferências de notificação foram salvas com sucesso.",
+                      });
+                    }}>
+                      Salvar Configurações
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
