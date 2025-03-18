@@ -2,16 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Bell, Moon, Settings, User, Search, HelpCircle, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import SearchBar from './navbar/SearchBar';
+import ActionBar from './navbar/ActionBar';
+import MobileMenu from './navbar/MobileMenu';
 
 export interface NavbarProps {
   items?: Array<{
@@ -90,14 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
         <div className="flex items-center justify-between">
           {/* Search bar */}
           <div className="hidden md:flex items-center flex-1 max-w-md">
-            <div className="relative w-full">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                type="search" 
-                placeholder="Pesquisar..." 
-                className="w-full pl-9 bg-background/50 text-sm"
-              />
-            </div>
+            <SearchBar />
           </div>
 
           {/* Title on mobile */}
@@ -106,105 +93,15 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
           </div>
 
           {/* User navigation */}
-          <div className="flex items-center space-x-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    onClick={handleHelpClick}
-                  >
-                    <HelpCircle size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Ajuda e Contato</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    onClick={handleNotificationsClick}
-                  >
-                    <Bell size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Notificações</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    onClick={handleThemeToggle}
-                  >
-                    <Moon size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Alternar Tema</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    onClick={handleSettingsClick}
-                  >
-                    <Settings size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Configurações do Sistema</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="rounded-full ml-1 bg-primary/10 h-8 w-8"
-                    onClick={handleProfileClick}
-                  >
-                    <User size={16} className="text-primary" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Perfil de {companyName}</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8 text-red-500 hover:bg-red-50"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Sair</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <ActionBar 
+            onHelpClick={handleHelpClick}
+            onNotificationsClick={handleNotificationsClick}
+            onThemeToggle={handleThemeToggle}
+            onSettingsClick={handleSettingsClick}
+            onProfileClick={handleProfileClick}
+            onLogout={handleLogout}
+            companyName={companyName}
+          />
 
           {/* Mobile menu button */}
           <button
@@ -222,41 +119,11 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
         </div>
 
         {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <nav className="mt-4 pb-4 md:hidden flex flex-col space-y-4 animate-fade-in">
-            <div className="relative w-full mb-4">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                type="search" 
-                placeholder="Pesquisar..." 
-                className="w-full pl-9 text-sm"
-              />
-            </div>
-            {items && items.length > 0 && (
-              <div className="space-y-2">
-                {items.map((item, index) => (
-                  <a 
-                    key={index}
-                    href={item.href}
-                    className="flex items-center p-2 rounded-md hover:bg-primary/10 text-sm"
-                  >
-                    <span className="mr-3 text-primary">{item.icon}</span>
-                    <span>{item.name}</span>
-                  </a>
-                ))}
-              </div>
-            )}
-            
-            <Button 
-              variant="ghost" 
-              className="flex items-center justify-start p-2 rounded-md hover:bg-red-50 text-red-500 text-sm"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} className="mr-3" />
-              <span>Sair</span>
-            </Button>
-          </nav>
-        )}
+        <MobileMenu 
+          isOpen={mobileMenuOpen} 
+          items={items} 
+          onLogout={handleLogout} 
+        />
       </div>
     </header>
   );
