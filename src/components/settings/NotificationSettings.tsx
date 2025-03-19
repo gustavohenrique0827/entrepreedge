@@ -55,7 +55,7 @@ const NotificationSettings = () => {
     toast({
       title: "Notificações atualizadas",
       description: "Suas preferências de notificação foram salvas com sucesso.",
-      variant: "success"
+      variant: "default" // Changed from "success" to "default" as it's a valid variant
     });
     
     // Display a test notification if app notifications are enabled
