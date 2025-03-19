@@ -12,10 +12,12 @@ interface SubscriptionFeaturesType {
     crm: boolean;
     hr: boolean;
     projects: boolean;
+    goals: boolean; // Adding goals module
   };
   maxUsers: number;
   customReports: boolean;
   advancedIntegrations: boolean;
+  supportEmail: boolean;
 }
 
 interface SubscriptionContextType {
@@ -34,11 +36,13 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       inventory: false,
       crm: false,
       hr: false,
-      projects: false
+      projects: false,
+      goals: false
     },
     maxUsers: 1,
     customReports: false,
-    advancedIntegrations: false
+    advancedIntegrations: false,
+    supportEmail: false
   },
   starter: {
     modules: {
@@ -47,11 +51,13 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       inventory: false,
       crm: false,
       hr: false,
-      projects: false
+      projects: false,
+      goals: true  // Enabling goals module for starter plan
     },
     maxUsers: 3,
     customReports: false,
-    advancedIntegrations: false
+    advancedIntegrations: false,
+    supportEmail: true // Enabling email support for starter plan
   },
   business: {
     modules: {
@@ -60,11 +66,13 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       inventory: true,
       crm: true,
       hr: false,
-      projects: false
+      projects: false,
+      goals: true
     },
     maxUsers: 15,
     customReports: true,
-    advancedIntegrations: false
+    advancedIntegrations: false,
+    supportEmail: true
   },
   premium: {
     modules: {
@@ -73,11 +81,13 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       inventory: true,
       crm: true,
       hr: true,
-      projects: true
+      projects: true,
+      goals: true
     },
     maxUsers: 999, // Unlimited
     customReports: true,
-    advancedIntegrations: true
+    advancedIntegrations: true,
+    supportEmail: true
   }
 };
 
@@ -127,10 +137,14 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return features.hr;
       case 'projects':
         return features.projects;
+      case 'goals':
+        return features.goals;
       case 'customReports':
         return planFeatures[currentPlan].customReports;
       case 'advancedIntegrations':
         return planFeatures[currentPlan].advancedIntegrations;
+      case 'supportEmail':
+        return planFeatures[currentPlan].supportEmail;
       default:
         return false;
     }

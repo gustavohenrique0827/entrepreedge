@@ -25,7 +25,7 @@ const Goals = () => {
             </p>
           </div>
           
-          {currentPlan === 'free' ? (
+          {!hasAccess('goals') ? (
             <Card className="glass p-6 text-center">
               <div className="flex flex-col items-center space-y-4">
                 <Target size={32} className="text-muted-foreground" />

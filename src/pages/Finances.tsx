@@ -10,6 +10,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 const Finances = () => {
   const { hasAccess } = useSubscription();
 
+  // Financial module is available in all plans
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
