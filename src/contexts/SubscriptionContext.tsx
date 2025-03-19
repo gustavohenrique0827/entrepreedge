@@ -18,6 +18,7 @@ interface SubscriptionFeaturesType {
   customReports: boolean;
   advancedIntegrations: boolean;
   supportEmail: boolean;
+  prioritySupport: boolean; // Adding priority support feature
 }
 
 interface SubscriptionContextType {
@@ -42,7 +43,8 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
     maxUsers: 1,
     customReports: false,
     advancedIntegrations: false,
-    supportEmail: false
+    supportEmail: false,
+    prioritySupport: false
   },
   starter: {
     modules: {
@@ -57,7 +59,8 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
     maxUsers: 3,
     customReports: false,
     advancedIntegrations: false,
-    supportEmail: true // Enabling email support for starter plan
+    supportEmail: true, // Enabling email support for starter plan
+    prioritySupport: false
   },
   business: {
     modules: {
@@ -72,7 +75,8 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
     maxUsers: 15,
     customReports: true,
     advancedIntegrations: false,
-    supportEmail: true
+    supportEmail: true,
+    prioritySupport: true // Enabling priority support for business plan
   },
   premium: {
     modules: {
@@ -87,7 +91,8 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
     maxUsers: 999, // Unlimited
     customReports: true,
     advancedIntegrations: true,
-    supportEmail: true
+    supportEmail: true,
+    prioritySupport: true
   }
 };
 
@@ -145,6 +150,8 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return planFeatures[currentPlan].advancedIntegrations;
       case 'supportEmail':
         return planFeatures[currentPlan].supportEmail;
+      case 'prioritySupport':
+        return planFeatures[currentPlan].prioritySupport;
       default:
         return false;
     }

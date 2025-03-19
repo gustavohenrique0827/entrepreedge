@@ -89,6 +89,10 @@ const SubscriptionPlans = () => {
                 </li>
                 <li className="flex items-center">
                   <Check size={16} className="mr-2 text-primary" />
+                  <span>CRM integrado</span>
+                </li>
+                <li className="flex items-center">
+                  <Check size={16} className="mr-2 text-primary" />
                   <span>Até 15 usuários</span>
                 </li>
                 <li className="flex items-center">
