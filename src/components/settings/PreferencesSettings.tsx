@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,33 @@ const PreferencesSettings = () => {
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'pt-BR');
   const [currency, setCurrency] = useState(localStorage.getItem('currency') || 'BRL');
 
+  // Apply preferences when component mounts and when they change
+  useEffect(() => {
+    // Update document lang attribute
+    document.documentElement.lang = language.split('-')[0];
+    
+    // Update global preferences object
+    const preferences = {
+      companyName,
+      language,
+      currency
+    };
+    
+    localStorage.setItem('preferences', JSON.stringify(preferences));
+    
+    // Apply currency formatting globally
+    if (currency === 'BRL') {
+      window.currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    } else if (currency === 'USD') {
+      window.currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    } else if (currency === 'EUR') {
+      window.currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+    }
+    
+    // Update document title with company name
+    document.title = `${companyName} - Painel de Controle`;
+  }, [companyName, language, currency]);
+
   const handleSavePreferences = () => {
     localStorage.setItem('companyName', companyName);
     localStorage.setItem('language', language);
@@ -22,6 +49,26 @@ const PreferencesSettings = () => {
       title: "Preferências salvas",
       description: "Suas configurações pessoais foram atualizadas.",
     });
+    
+    // Force reload after language change to apply translations
+    if (language !== localStorage.getItem('language')) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  };
+
+  // Format a sample amount according to the selected currency
+  const formatSampleAmount = () => {
+    const amount = 1234.56;
+    if (currency === 'BRL') {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
+    } else if (currency === 'USD') {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    } else if (currency === 'EUR') {
+      return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
+    }
+    return amount.toString();
   };
 
   return (
@@ -65,6 +112,9 @@ const PreferencesSettings = () => {
               <SelectItem value="EUR">Euro (€)</SelectItem>
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Exemplo: {formatSampleAmount()}
+          </p>
         </div>
         
         <Button className="mt-4 w-full" onClick={handleSavePreferences}>

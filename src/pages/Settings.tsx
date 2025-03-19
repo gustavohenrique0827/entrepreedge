@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { Home, BarChart2, Target, BookOpen } from 'lucide-react';
@@ -9,10 +9,47 @@ import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState("subscription");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  
+  // Save active tab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('settingsTab', activeTab);
+  }, [activeTab]);
+
+  // Apply any stored settings on page load
+  useEffect(() => {
+    // Apply dark mode
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Apply font size
+    const fontSize = localStorage.getItem('fontSize') || 'medium';
+    document.documentElement.setAttribute('data-font-size', fontSize);
+    
+    // Reset body classes
+    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
+    
+    // Apply appropriate font size class
+    if (fontSize === 'small') {
+      document.documentElement.classList.add('text-sm');
+    } else if (fontSize === 'medium') {
+      document.documentElement.classList.add('text-base');
+    } else if (fontSize === 'large') {
+      document.documentElement.classList.add('text-lg');
+    }
+    
+    // Update document title
+    document.title = `${companyName} - Configurações`;
+  }, [companyName]);
+  
   const navItems = [
     {
       name: 'Dashboard',

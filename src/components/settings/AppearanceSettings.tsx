@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,32 @@ const AppearanceSettings = () => {
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [fontSize, setFontSize] = useState(localStorage.getItem('fontSize') || 'medium');
   const [notifications, setNotifications] = useState(localStorage.getItem('notifications') !== 'false');
+
+  // Apply dark mode when component mounts and when changed
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Apply font size when component mounts and when changed
+  useEffect(() => {
+    document.documentElement.setAttribute('data-font-size', fontSize);
+    
+    // Apply font size classes
+    if (fontSize === 'small') {
+      document.documentElement.classList.add('text-sm');
+      document.documentElement.classList.remove('text-base', 'text-lg');
+    } else if (fontSize === 'medium') {
+      document.documentElement.classList.add('text-base');
+      document.documentElement.classList.remove('text-sm', 'text-lg');
+    } else if (fontSize === 'large') {
+      document.documentElement.classList.add('text-lg');
+      document.documentElement.classList.remove('text-sm', 'text-base');
+    }
+  }, [fontSize]);
 
   const handleDarkModeChange = (checked: boolean) => {
     setDarkMode(checked);

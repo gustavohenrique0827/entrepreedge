@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,24 @@ const NotificationSettings = () => {
   const [appNotifications, setAppNotifications] = useState(localStorage.getItem('appNotifications') !== 'false');
   const [financialAlerts, setFinancialAlerts] = useState(localStorage.getItem('financialAlerts') !== 'false');
   const [goalReminders, setGoalReminders] = useState(localStorage.getItem('goalReminders') !== 'false');
+
+  // Apply notification settings globally
+  useEffect(() => {
+    const notificationSettings = {
+      email: emailNotifications,
+      app: appNotifications,
+      financial: financialAlerts,
+      goals: goalReminders
+    };
+    
+    // Store settings object as JSON for easy access
+    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+    
+    // Update global notification state if needed
+    if (window.updateNotificationSettings) {
+      window.updateNotificationSettings(notificationSettings);
+    }
+  }, [emailNotifications, appNotifications, financialAlerts, goalReminders]);
 
   const handleEmailChange = (checked: boolean) => {
     setEmailNotifications(checked);
@@ -37,7 +55,18 @@ const NotificationSettings = () => {
     toast({
       title: "Notificações atualizadas",
       description: "Suas preferências de notificação foram salvas com sucesso.",
+      variant: "success"
     });
+    
+    // Display a test notification if app notifications are enabled
+    if (appNotifications) {
+      setTimeout(() => {
+        toast({
+          title: "Notificação de teste",
+          description: "Esta é uma notificação de teste para verificar suas configurações.",
+        });
+      }, 1500);
+    }
   };
 
   return (
