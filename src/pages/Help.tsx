@@ -68,7 +68,7 @@ const Help = () => {
                     <AccordionTrigger>Como faço para adicionar novos usuários?</AccordionTrigger>
                     <AccordionContent>
                       O número de usuários que você pode adicionar depende do seu plano de assinatura. 
-                      Para adicionar um novo usuário, acesse "Configurações" > "Usuários" e clique em "Adicionar Usuário".
+                      Para adicionar um novo usuário, acesse "Configurações" {'>'} "Usuários" e clique em "Adicionar Usuário".
                       Preencha as informações necessárias e o novo usuário receberá um email com instruções de acesso.
                     </AccordionContent>
                   </AccordionItem>
