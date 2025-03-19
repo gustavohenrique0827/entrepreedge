@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -22,8 +22,12 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ className }: SidebarProps) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const location = useLocation();
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', collapsed.toString());
+  }, [collapsed]);
 
   const menuItems = [
     { 
