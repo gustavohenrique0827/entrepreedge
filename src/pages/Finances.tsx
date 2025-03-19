@@ -5,8 +5,11 @@ import Sidebar from '@/components/Sidebar';
 import FinanceTracker from '@/components/FinanceTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart2 } from 'lucide-react';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const Finances = () => {
+  const { hasAccess } = useSubscription();
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />

@@ -1,10 +1,5 @@
 
-interface Window {
-  currencyFormatter?: Intl.NumberFormat;
-  updateNotificationSettings?: (settings: {
-    email: boolean;
-    app: boolean;
-    financial: boolean;
-    goals: boolean;
-  }) => void;
+declare interface Window {
+  currencyFormatter: Intl.NumberFormat;
+  updateNotificationSettings?: (settings: Record<string, boolean>) => void;
 }

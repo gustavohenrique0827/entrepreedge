@@ -5,8 +5,11 @@ import Sidebar from '@/components/Sidebar';
 import GoalTracker from '@/components/GoalTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target } from 'lucide-react';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const Goals = () => {
+  const { hasAccess, currentPlan } = useSubscription();
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -22,18 +25,37 @@ const Goals = () => {
             </p>
           </div>
           
-          <Card className="glass">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-1">
-                <Target size={16} /> 
-                Metas
-              </CardTitle>
-              <CardDescription className="text-xs">Define e acompanhe suas metas de negócio</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <GoalTracker />
-            </CardContent>
-          </Card>
+          {currentPlan === 'free' ? (
+            <Card className="glass p-6 text-center">
+              <div className="flex flex-col items-center space-y-4">
+                <Target size={32} className="text-muted-foreground" />
+                <h2 className="text-lg font-medium">Módulo de Metas</h2>
+                <p className="text-muted-foreground">Este módulo está disponível a partir do Plano Iniciante.</p>
+                <button 
+                  className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
+                  onClick={() => {
+                    localStorage.setItem('settingsTab', 'subscription');
+                    window.location.href = '/settings';
+                  }}
+                >
+                  Atualizar plano
+                </button>
+              </div>
+            </Card>
+          ) : (
+            <Card className="glass">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-1">
+                  <Target size={16} /> 
+                  Metas
+                </CardTitle>
+                <CardDescription className="text-xs">Define e acompanhe suas metas de negócio</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <GoalTracker />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

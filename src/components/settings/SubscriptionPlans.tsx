@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const SubscriptionPlans = () => {
   const { toast } = useToast();
-  const currentPlan = localStorage.getItem('currentPlan') || 'free';
+  const { currentPlan, setCurrentPlan } = useSubscription();
 
   const handleSelectPlan = (planId: string) => {
-    localStorage.setItem('currentPlan', planId);
+    setCurrentPlan(planId as any);
     toast({
       title: "Plano alterado com sucesso!",
       description: "As novas funcionalidades estarão disponíveis em instantes.",

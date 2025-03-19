@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import StatCard from './StatCard';
+import AddTransactionDialog from './finances/AddTransactionDialog';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface Transaction {
   id: string;
@@ -24,8 +26,20 @@ const sampleTransactions: Transaction[] = [
 ];
 
 const FinanceTracker: React.FC = () => {
-  const [transactions] = useState<Transaction[]>(sampleTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>(
+    JSON.parse(localStorage.getItem('transactions') || JSON.stringify(sampleTransactions))
+  );
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const { hasAccess, currentPlan } = useSubscription();
+
+  // Save transactions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+  }, [transactions]);
+
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
+  };
 
   // Calculate totals
   const totalIncome = transactions
@@ -56,12 +70,7 @@ const FinanceTracker: React.FC = () => {
             <TabsTrigger value="reports">Relatórios</TabsTrigger>
           </TabsList>
           
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-              <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Nova transação
-          </Button>
+          <AddTransactionDialog onAddTransaction={handleAddTransaction} />
         </div>
         
         <TabsContent value="overview" className="space-y-6">
@@ -106,9 +115,21 @@ const FinanceTracker: React.FC = () => {
               <CardDescription>Visão geral das suas receitas e despesas</CardDescription>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm border border-dashed rounded-md">
-                Gráfico de fluxo de caixa será exibido aqui
-              </div>
+              {hasAccess('sales') ? (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm border border-dashed rounded-md">
+                  Gráfico de fluxo de caixa será exibido aqui
+                </div>
+              ) : (
+                <div className="h-[200px] flex flex-col items-center justify-center gap-2 text-muted-foreground border border-dashed rounded-md p-4">
+                  <p>Acesso ao gráfico de fluxo de caixa disponível no Plano Iniciante ou superior.</p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    localStorage.setItem('settingsTab', 'subscription');
+                    window.location.href = '/settings';
+                  }}>
+                    Atualizar plano
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -120,37 +141,43 @@ const FinanceTracker: React.FC = () => {
               <CardDescription>Detalhes de suas receitas e despesas</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {transactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
-                        {transaction.type === 'income' ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3L20 11L17.6 13.4L13 8.8V21H11V8.8L6.4 13.4L4 11L12 3Z" fill="#10B981" />
-                          </svg>
-                        ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 21L4 13L6.4 10.6L11 15.2V3H13V15.2L17.6 10.6L20 13L12 21Z" fill="#EF4444" />
-                          </svg>
-                        )}
+              {transactions.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-muted-foreground">Nenhuma transação encontrada. Clique em "Nova transação" para começar.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
+                          {transaction.type === 'income' ? (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 3L20 11L17.6 13.4L13 8.8V21H11V8.8L6.4 13.4L4 11L12 3Z" fill="#10B981" />
+                            </svg>
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 21L4 13L6.4 10.6L11 15.2V3H13V15.2L17.6 10.6L20 13L12 21Z" fill="#EF4444" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{transaction.description}</p>
+                          <p className="text-xs text-muted-foreground">{transaction.category}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{transaction.description}</p>
-                        <p className="text-xs text-muted-foreground">{transaction.category}</p>
+                      <div className="text-right">
+                        <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(transaction.date).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -162,18 +189,42 @@ const FinanceTracker: React.FC = () => {
               <CardDescription>Análise detalhada das suas finanças</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground mb-1">Relatório de despesas por categoria</p>
-                    <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
-                  </div>
-                  <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground mb-1">Relatório de rentabilidade mensal</p>
-                    <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
+              {hasAccess('customReports') ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                      <p className="text-sm text-muted-foreground mb-1">Relatório de despesas por categoria</p>
+                      <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
+                    </div>
+                    <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                      <p className="text-sm text-muted-foreground mb-1">Relatório de rentabilidade mensal</p>
+                      <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
+                    </div>
+                    {currentPlan === 'premium' && (
+                      <>
+                        <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                          <p className="text-sm text-muted-foreground mb-1">Análise preditiva de tendências</p>
+                          <Button size="sm" variant="outline" className="mt-2">Executar análise</Button>
+                        </div>
+                        <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                          <p className="text-sm text-muted-foreground mb-1">Relatório de projeção financeira</p>
+                          <Button size="sm" variant="outline" className="mt-2">Gerar projeção</Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-muted-foreground mb-4">Relatórios personalizados estão disponíveis no Plano Empresarial ou Premium.</p>
+                  <Button variant="outline" onClick={() => {
+                    localStorage.setItem('settingsTab', 'subscription');
+                    window.location.href = '/settings';
+                  }}>
+                    Atualizar plano
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import AddGoalDialog from './goals/AddGoalDialog';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface Goal {
   id: string;
@@ -15,7 +17,7 @@ interface Goal {
 }
 
 // Sample data
-const goals: Goal[] = [
+const sampleGoals: Goal[] = [
   {
     id: '1',
     title: 'Aumentar vendas mensais',
@@ -46,6 +48,20 @@ const goals: Goal[] = [
 ];
 
 const GoalTracker: React.FC = () => {
+  const [goals, setGoals] = useState<Goal[]>(
+    JSON.parse(localStorage.getItem('goals') || JSON.stringify(sampleGoals))
+  );
+  const { hasAccess } = useSubscription();
+
+  // Save goals to localStorage whenever they change
+  React.useEffect(() => {
+    localStorage.setItem('goals', JSON.stringify(goals));
+  }, [goals]);
+
+  const handleAddGoal = (newGoal: Goal) => {
+    setGoals(prevGoals => [...prevGoals, newGoal]);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
@@ -76,81 +92,88 @@ const GoalTracker: React.FC = () => {
           <h2 className="text-2xl font-bold">Metas SMART</h2>
           <p className="text-muted-foreground">Acompanhe o progresso de suas metas estratégicas</p>
         </div>
-        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Nova meta
-        </Button>
+        <AddGoalDialog onAddGoal={handleAddGoal} />
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {goals.map((goal) => {
-          const progressPercent = formatProgress(goal.currentValue, goal.targetValue);
-          const daysRemaining = getDaysRemaining(goal.dueDate);
-          const statusColor = getStatusColor(progressPercent, daysRemaining);
-          
-          return (
-            <Card key={goal.id} className="glass overflow-hidden transition-all duration-300 hover:shadow-md">
-              <div className={`h-1 ${progressPercent > 75 ? 'bg-green-500' : progressPercent > 50 ? 'bg-yellow-500' : progressPercent > 25 ? 'bg-orange-500' : 'bg-red-500'}`} />
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{goal.title}</CardTitle>
-                    <CardDescription className="mt-1">{goal.description}</CardDescription>
+        {goals.length === 0 ? (
+          <Card className="glass p-6 text-center">
+            <p className="text-muted-foreground">Nenhuma meta encontrada. Clique em "Nova meta" para começar.</p>
+          </Card>
+        ) : (
+          goals.map((goal) => {
+            const progressPercent = formatProgress(goal.currentValue, goal.targetValue);
+            const daysRemaining = getDaysRemaining(goal.dueDate);
+            const statusColor = getStatusColor(progressPercent, daysRemaining);
+            
+            return (
+              <Card key={goal.id} className="glass overflow-hidden transition-all duration-300 hover:shadow-md">
+                <div className={`h-1 ${progressPercent > 75 ? 'bg-green-500' : progressPercent > 50 ? 'bg-yellow-500' : progressPercent > 25 ? 'bg-orange-500' : 'bg-red-500'}`} />
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{goal.title}</CardTitle>
+                      <CardDescription className="mt-1">{goal.description}</CardDescription>
+                    </div>
+                    <div className="bg-secondary text-secondary-foreground text-xs font-medium px-2.5 py-0.5 rounded">
+                      {goal.category}
+                    </div>
                   </div>
-                  <div className="bg-secondary text-secondary-foreground text-xs font-medium px-2.5 py-0.5 rounded">
-                    {goal.category}
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <div className="flex justify-between items-center text-sm mb-2">
+                    <span>Progresso</span>
+                    <span className="font-medium">{progressPercent}%</span>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="flex justify-between items-center text-sm mb-2">
-                  <span>Progresso</span>
-                  <span className="font-medium">{progressPercent}%</span>
-                </div>
-                <Progress value={progressPercent} className="h-2 mb-4" />
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Meta</p>
-                    <p className="font-medium">{
-                      goal.category === 'Finanças' && goal.targetValue < 100 
-                        ? `${goal.targetValue}%` 
-                        : goal.category === 'Vendas' 
-                          ? `R$ ${goal.targetValue.toLocaleString('pt-BR')}` 
-                          : goal.targetValue
-                    }</p>
+                  <Progress value={progressPercent} className="h-2 mb-4" />
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Meta</p>
+                      <p className="font-medium">{
+                        goal.category === 'Finanças' && goal.targetValue < 100 
+                          ? `${goal.targetValue}%` 
+                          : goal.category === 'Vendas' 
+                            ? `R$ ${goal.targetValue.toLocaleString('pt-BR')}` 
+                            : goal.targetValue
+                      }</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Atual</p>
+                      <p className="font-medium">{
+                        goal.category === 'Finanças' && goal.targetValue < 100 
+                          ? `${goal.currentValue}%` 
+                          : goal.category === 'Vendas' 
+                            ? `R$ ${goal.currentValue.toLocaleString('pt-BR')}` 
+                            : goal.currentValue
+                      }</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Atual</p>
-                    <p className="font-medium">{
-                      goal.category === 'Finanças' && goal.targetValue < 100 
-                        ? `${goal.currentValue}%` 
-                        : goal.category === 'Vendas' 
-                          ? `R$ ${goal.currentValue.toLocaleString('pt-BR')}` 
-                          : goal.currentValue
-                    }</p>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Prazo: </span>
+                    <span>{formatDate(goal.dueDate)}</span>
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between border-t pt-4">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Prazo: </span>
-                  <span>{formatDate(goal.dueDate)}</span>
-                </div>
-                <div className={`text-sm font-medium ${statusColor}`}>
-                  {daysRemaining > 0 
-                    ? `${daysRemaining} dias restantes` 
-                    : daysRemaining === 0 
-                      ? "Vence hoje" 
-                      : "Meta vencida"}
-                </div>
-              </CardFooter>
-            </Card>
-          );
-        })}
+                  <div className={`text-sm font-medium ${statusColor}`}>
+                    {daysRemaining > 0 
+                      ? `${daysRemaining} dias restantes` 
+                      : daysRemaining === 0 
+                        ? "Vence hoje" 
+                        : "Meta vencida"}
+                  </div>
+                </CardFooter>
+              </Card>
+            );
+          })
+        )}
       </div>
+      
+      {!hasAccess('customReports') && (
+        <div className="mt-6 p-4 bg-muted rounded-md text-sm">
+          <p className="text-muted-foreground">Atualize para o plano Empresarial ou Premium para acessar relatórios avançados de metas e análises preditivas.</p>
+        </div>
+      )}
     </div>
   );
 };
