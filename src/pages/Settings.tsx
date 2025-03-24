@@ -93,7 +93,7 @@ const Settings = () => {
         
         <div className="container px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">Configurações do Sistema</h1>
+            <h1 className="text-2xl font-bold mb-1 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Configurações do Sistema</h1>
             <p className="text-sm text-muted-foreground flex items-center gap-2">
               Gerencie as configurações para {companyName}
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -104,15 +104,15 @@ const Settings = () => {
             </p>
           </div>
           
-          <Card className="mb-6 overflow-hidden border-none shadow-sm">
+          <Card className="mb-6 overflow-hidden border-none shadow-lg bg-gradient-to-br from-background to-background/95">
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0">
+                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0 bg-muted/30">
                   {Object.entries(tabIcons).map(([key, icon]) => (
                     <TabsTrigger 
                       key={key} 
                       value={key}
-                      className="rounded-none data-[state=active]:bg-background border-b-2 border-transparent data-[state=active]:border-primary py-3"
+                      className="rounded-none data-[state=active]:bg-background border-b-2 border-transparent data-[state=active]:border-primary py-3 transition-all"
                     >
                       <div className="flex items-center gap-2">
                         {icon}
