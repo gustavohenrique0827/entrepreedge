@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { Home, BarChart2, Target, BookOpen } from 'lucide-react';
+import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Palette, Sliders } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubscriptionPlans from '@/components/settings/SubscriptionPlans';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
@@ -10,9 +10,12 @@ import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { Card, CardContent } from "@/components/ui/card";
 
 const Settings = () => {
   const { toast } = useToast();
+  const { currentPlan } = useSubscription();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   
@@ -73,6 +76,14 @@ const Settings = () => {
     },
   ];
 
+  const tabIcons = {
+    subscription: <SettingsIcon size={16} />,
+    appearance: <Palette size={16} />,
+    notifications: <Bell size={16} />,
+    security: <Shield size={16} />,
+    preferences: <Sliders size={16} />
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -83,40 +94,61 @@ const Settings = () => {
         <div className="container px-4 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1">Configurações do Sistema</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
               Gerencie as configurações para {companyName}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                Plano {currentPlan === 'free' ? 'Gratuito' : 
+                        currentPlan === 'starter' ? 'Iniciante' :
+                        currentPlan === 'business' ? 'Empresarial' : 'Premium'}
+              </span>
             </p>
           </div>
           
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-6 w-full grid grid-cols-2 md:grid-cols-5 rounded-md">
-              <TabsTrigger value="subscription">Assinatura</TabsTrigger>
-              <TabsTrigger value="appearance">Aparência</TabsTrigger>
-              <TabsTrigger value="notifications">Notificações</TabsTrigger>
-              <TabsTrigger value="security">Segurança</TabsTrigger>
-              <TabsTrigger value="preferences">Preferências</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="subscription">
-              <SubscriptionPlans />
-            </TabsContent>
-            
-            <TabsContent value="appearance">
-              <AppearanceSettings />
-            </TabsContent>
-            
-            <TabsContent value="notifications">
-              <NotificationSettings />
-            </TabsContent>
-            
-            <TabsContent value="security">
-              <SecuritySettings />
-            </TabsContent>
-            
-            <TabsContent value="preferences">
-              <PreferencesSettings />
-            </TabsContent>
-          </Tabs>
+          <Card className="mb-6 overflow-hidden border-none shadow-sm">
+            <CardContent className="p-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0">
+                  {Object.entries(tabIcons).map(([key, icon]) => (
+                    <TabsTrigger 
+                      key={key} 
+                      value={key}
+                      className="rounded-none data-[state=active]:bg-background border-b-2 border-transparent data-[state=active]:border-primary py-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        {icon}
+                        <span>
+                          {key === 'subscription' ? 'Assinatura' :
+                           key === 'appearance' ? 'Aparência' :
+                           key === 'notifications' ? 'Notificações' :
+                           key === 'security' ? 'Segurança' : 'Preferências'}
+                        </span>
+                      </div>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </CardContent>
+          </Card>
+          
+          <TabsContent value="subscription" className="mt-0">
+            <SubscriptionPlans />
+          </TabsContent>
+          
+          <TabsContent value="appearance" className="mt-0">
+            <AppearanceSettings />
+          </TabsContent>
+          
+          <TabsContent value="notifications" className="mt-0">
+            <NotificationSettings />
+          </TabsContent>
+          
+          <TabsContent value="security" className="mt-0">
+            <SecuritySettings />
+          </TabsContent>
+          
+          <TabsContent value="preferences" className="mt-0">
+            <PreferencesSettings />
+          </TabsContent>
         </div>
       </div>
     </div>

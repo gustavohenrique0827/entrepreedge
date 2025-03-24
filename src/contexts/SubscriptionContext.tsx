@@ -12,13 +12,21 @@ interface SubscriptionFeaturesType {
     crm: boolean;
     hr: boolean;
     projects: boolean;
-    goals: boolean; // Adding goals module
+    goals: boolean;
+    analytics: boolean;
+    marketing: boolean;
   };
   maxUsers: number;
   customReports: boolean;
   advancedIntegrations: boolean;
   supportEmail: boolean;
-  prioritySupport: boolean; // Adding priority support feature
+  prioritySupport: boolean;
+  dataExport: boolean;
+  apiAccess: boolean;
+  whiteLabel: boolean;
+  customization: boolean;
+  backupFrequency: 'none' | 'weekly' | 'daily' | 'hourly';
+  storageGB: number;
 }
 
 interface SubscriptionContextType {
@@ -27,6 +35,7 @@ interface SubscriptionContextType {
   hasAccess: (feature: string) => boolean;
   planFeatures: Record<PlanType, SubscriptionFeaturesType>;
   refreshContext: () => void;
+  getPlanModuleCount: (plan: PlanType) => number;
 }
 
 const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
@@ -38,13 +47,21 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       crm: false,
       hr: false,
       projects: false,
-      goals: false
+      goals: false,
+      analytics: false,
+      marketing: false
     },
     maxUsers: 1,
     customReports: false,
     advancedIntegrations: false,
     supportEmail: false,
-    prioritySupport: false
+    prioritySupport: false,
+    dataExport: false,
+    apiAccess: false,
+    whiteLabel: false,
+    customization: false,
+    backupFrequency: 'none',
+    storageGB: 1
   },
   starter: {
     modules: {
@@ -54,13 +71,21 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       crm: false,
       hr: false,
       projects: false,
-      goals: true  // Enabling goals module for starter plan
+      goals: true,
+      analytics: true,
+      marketing: false
     },
     maxUsers: 3,
     customReports: false,
     advancedIntegrations: false,
-    supportEmail: true, // Enabling email support for starter plan
-    prioritySupport: false
+    supportEmail: true,
+    prioritySupport: false,
+    dataExport: true,
+    apiAccess: false,
+    whiteLabel: false,
+    customization: false,
+    backupFrequency: 'weekly',
+    storageGB: 5
   },
   business: {
     modules: {
@@ -69,14 +94,22 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       inventory: true,
       crm: true,
       hr: false,
-      projects: false,
-      goals: true
+      projects: true,
+      goals: true,
+      analytics: true,
+      marketing: true
     },
     maxUsers: 15,
     customReports: true,
-    advancedIntegrations: false,
+    advancedIntegrations: true,
     supportEmail: true,
-    prioritySupport: true // Enabling priority support for business plan
+    prioritySupport: true,
+    dataExport: true,
+    apiAccess: true,
+    whiteLabel: false,
+    customization: true,
+    backupFrequency: 'daily',
+    storageGB: 50
   },
   premium: {
     modules: {
@@ -86,13 +119,21 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       crm: true,
       hr: true,
       projects: true,
-      goals: true
+      goals: true,
+      analytics: true,
+      marketing: true
     },
     maxUsers: 999, // Unlimited
     customReports: true,
     advancedIntegrations: true,
     supportEmail: true,
-    prioritySupport: true
+    prioritySupport: true,
+    dataExport: true,
+    apiAccess: true,
+    whiteLabel: true,
+    customization: true,
+    backupFrequency: 'hourly',
+    storageGB: 500
   }
 };
 
@@ -125,6 +166,12 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     });
   };
 
+  // Count number of available modules for a given plan
+  const getPlanModuleCount = (plan: PlanType): number => {
+    const modulesList = planFeatures[plan].modules;
+    return Object.values(modulesList).filter(Boolean).length;
+  };
+
   // Check if user has access to a feature based on their current plan
   const hasAccess = (feature: string): boolean => {
     const features = planFeatures[currentPlan].modules;
@@ -144,6 +191,10 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return features.projects;
       case 'goals':
         return features.goals;
+      case 'analytics':
+        return features.analytics;
+      case 'marketing':
+        return features.marketing;
       case 'customReports':
         return planFeatures[currentPlan].customReports;
       case 'advancedIntegrations':
@@ -152,6 +203,14 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return planFeatures[currentPlan].supportEmail;
       case 'prioritySupport':
         return planFeatures[currentPlan].prioritySupport;
+      case 'dataExport':
+        return planFeatures[currentPlan].dataExport;
+      case 'apiAccess':
+        return planFeatures[currentPlan].apiAccess;
+      case 'whiteLabel':
+        return planFeatures[currentPlan].whiteLabel;
+      case 'customization':
+        return planFeatures[currentPlan].customization;
       default:
         return false;
     }
@@ -171,7 +230,8 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         setCurrentPlan: updatePlan, 
         hasAccess, 
         planFeatures,
-        refreshContext
+        refreshContext,
+        getPlanModuleCount
       }}
     >
       {children}
