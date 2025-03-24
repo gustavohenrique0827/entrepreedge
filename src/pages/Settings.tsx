@@ -126,29 +126,29 @@ const Settings = () => {
                     </TabsTrigger>
                   ))}
                 </TabsList>
+                
+                <TabsContent value="subscription" className="mt-0">
+                  <SubscriptionPlans />
+                </TabsContent>
+                
+                <TabsContent value="appearance" className="mt-0">
+                  <AppearanceSettings />
+                </TabsContent>
+                
+                <TabsContent value="notifications" className="mt-0">
+                  <NotificationSettings />
+                </TabsContent>
+                
+                <TabsContent value="security" className="mt-0">
+                  <SecuritySettings />
+                </TabsContent>
+                
+                <TabsContent value="preferences" className="mt-0">
+                  <PreferencesSettings />
+                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
-          
-          <TabsContent value="subscription" className="mt-0">
-            <SubscriptionPlans />
-          </TabsContent>
-          
-          <TabsContent value="appearance" className="mt-0">
-            <AppearanceSettings />
-          </TabsContent>
-          
-          <TabsContent value="notifications" className="mt-0">
-            <NotificationSettings />
-          </TabsContent>
-          
-          <TabsContent value="security" className="mt-0">
-            <SecuritySettings />
-          </TabsContent>
-          
-          <TabsContent value="preferences" className="mt-0">
-            <PreferencesSettings />
-          </TabsContent>
         </div>
       </div>
     </div>
