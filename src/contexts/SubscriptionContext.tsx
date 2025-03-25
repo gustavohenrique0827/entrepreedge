@@ -15,11 +15,6 @@ interface SubscriptionFeaturesType {
     goals: boolean;
     analytics: boolean;
     marketing: boolean;
-    // Novos módulos específicos
-    advancedGoals: boolean; // Metas avançadas (plano business)
-    aiPredictions: boolean; // Previsões com IA (plano premium)
-    okrIntegration: boolean; // Integração com OKRs (plano premium)
-    consultancy: boolean; // Consultoria especializada (plano premium)
   };
   maxUsers: number;
   customReports: boolean;
@@ -54,11 +49,7 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       projects: false,
       goals: false,
       analytics: false,
-      marketing: false,
-      advancedGoals: false,
-      aiPredictions: false,
-      okrIntegration: false,
-      consultancy: false
+      marketing: false
     },
     maxUsers: 1,
     customReports: false,
@@ -82,11 +73,7 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       projects: false,
       goals: true,
       analytics: true,
-      marketing: false,
-      advancedGoals: false,
-      aiPredictions: false,
-      okrIntegration: false,
-      consultancy: false
+      marketing: false
     },
     maxUsers: 3,
     customReports: false,
@@ -110,11 +97,7 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       projects: true,
       goals: true,
       analytics: true,
-      marketing: true,
-      advancedGoals: true,
-      aiPredictions: false,
-      okrIntegration: false,
-      consultancy: false
+      marketing: true
     },
     maxUsers: 15,
     customReports: true,
@@ -138,11 +121,7 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       projects: true,
       goals: true,
       analytics: true,
-      marketing: true,
-      advancedGoals: true,
-      aiPredictions: true,
-      okrIntegration: true,
-      consultancy: true
+      marketing: true
     },
     maxUsers: 999, // Unlimited
     customReports: true,
@@ -184,7 +163,6 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         plan === 'business' ? 'Plano Empresarial' :
         plan === 'premium' ? 'Plano Premium' : 'Plano Gratuito'
       }`,
-      variant: "success"
     });
   };
 
@@ -199,7 +177,6 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     const features = planFeatures[currentPlan].modules;
     
     switch (feature) {
-      // Módulos básicos
       case 'financial':
         return features.financial;
       case 'sales':
@@ -218,18 +195,6 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return features.analytics;
       case 'marketing':
         return features.marketing;
-      
-      // Módulos avançados específicos por plano
-      case 'advancedGoals':
-        return features.advancedGoals;
-      case 'aiPredictions':
-        return features.aiPredictions;
-      case 'okrIntegration':
-        return features.okrIntegration;
-      case 'consultancy':
-        return features.consultancy;
-      
-      // Recursos gerais
       case 'customReports':
         return planFeatures[currentPlan].customReports;
       case 'advancedIntegrations':
