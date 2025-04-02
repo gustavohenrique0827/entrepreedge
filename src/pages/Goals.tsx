@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Target, ShieldAlert, ArrowUpRight } from 'lucide-react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge"; // Add Badge import
 
 const Goals = () => {
   const { hasAccess, currentPlan } = useSubscription();
@@ -68,6 +69,12 @@ const Goals = () => {
                     <CardDescription className="text-xs">Acompanhe o progresso das suas metas de negócio</CardDescription>
                   </CardHeader>
                   <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex space-x-2">
+                        <Badge variant="secondary">Em andamento: 3</Badge>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Concluídas: 2</Badge>
+                      </div>
+                    </div>
                     <GoalTracker />
                   </CardContent>
                 </Card>
@@ -81,17 +88,19 @@ const Goals = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Metas concluídas</span>
-                        <span className="text-sm font-bold text-green-500">2</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Metas em andamento</span>
-                        <span className="text-sm font-bold text-amber-500">3</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Metas atrasadas</span>
-                        <span className="text-sm font-bold text-red-500">1</span>
+                      <div className="flex flex-col gap-2 mb-3">
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 justify-between">
+                          <span>Metas concluídas</span>
+                          <span className="font-bold">2</span>
+                        </Badge>
+                        <Badge variant="secondary" className="justify-between">
+                          <span>Metas em andamento</span>
+                          <span className="font-bold">3</span>
+                        </Badge>
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 justify-between">
+                          <span>Metas atrasadas</span>
+                          <span className="font-bold">1</span>
+                        </Badge>
                       </div>
                       
                       <div className="pt-4 mt-4 border-t">

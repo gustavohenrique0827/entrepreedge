@@ -163,6 +163,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         plan === 'business' ? 'Plano Empresarial' :
         plan === 'premium' ? 'Plano Premium' : 'Plano Gratuito'
       }`,
+      variant: "default", // Changed from "success" to "default"
     });
   };
 
