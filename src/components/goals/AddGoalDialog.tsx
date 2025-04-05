@@ -8,6 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Goal } from '@/pages/Goals';
+import { CalendarIcon, Target, Plus } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from 'date-fns/locale';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 interface AddGoalDialogProps {
   onAddGoal: (goal: Goal) => void;
@@ -19,8 +25,14 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [targetValue, setTargetValue] = React.useState('');
-  const [dueDate, setDueDate] = React.useState('');
+  const [dueDate, setDueDate] = React.useState<Date | undefined>(undefined);
   const [category, setCategory] = React.useState('Vendas');
+  const [priority, setPriority] = React.useState('Média');
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return format(date, 'yyyy-MM-dd');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +54,11 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
       description,
       targetValue: Number(targetValue),
       currentValue: 0,
-      dueDate,
+      dueDate: formatDate(dueDate),
       category,
       status: "em andamento",
+      priority,
+      createdAt: new Date().toISOString().split('T')[0],
     };
     
     // Pass the new goal to the parent component
@@ -54,8 +68,9 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
     setTitle('');
     setDescription('');
     setTargetValue('');
-    setDueDate('');
+    setDueDate(undefined);
     setCategory('Vendas');
+    setPriority('Média');
     setOpen(false);
     
     toast({
@@ -67,16 +82,17 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
+          <Plus size={16} />
           Nova meta
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Adicionar nova meta</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Target size={18} className="text-primary" />
+            Adicionar nova meta
+          </DialogTitle>
           <DialogDescription>
             Crie uma nova meta SMART para a sua empresa.
           </DialogDescription>
@@ -89,6 +105,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Aumentar vendas mensais"
+              className="focus-visible:ring-primary"
             />
           </div>
           
@@ -99,6 +116,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva a meta com detalhes"
+              className="focus-visible:ring-primary"
             />
           </div>
           
@@ -111,13 +129,58 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
                 placeholder="Ex: 15000"
+                className="focus-visible:ring-primary"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="priority">Prioridade</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="focus-visible:ring-primary">
+                  <SelectValue placeholder="Selecione uma prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Baixa">Baixa</SelectItem>
+                  <SelectItem value="Média">Média</SelectItem>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Urgente">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Data limite *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal focus-visible:ring-primary",
+                      !dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, 'dd/MM/yyyy', { locale: ptBR }) : "Selecione uma data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="category">Categoria *</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="focus-visible:ring-primary">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -126,26 +189,19 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
                   <SelectItem value="Marketing">Marketing</SelectItem>
                   <SelectItem value="RH">RH</SelectItem>
                   <SelectItem value="Operações">Operações</SelectItem>
+                  <SelectItem value="Educação">Educação</SelectItem>
+                  <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                  <SelectItem value="Inovação">Inovação</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Data limite *</Label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="mr-2">
               Cancelar
             </Button>
-            <Button type="submit">Adicionar meta</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90">Adicionar meta</Button>
           </DialogFooter>
         </form>
       </DialogContent>
