@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -216,12 +217,15 @@ const LearnSection: React.FC = () => {
         <div className="mb-6 p-4 bg-muted/20 rounded-lg border animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <Input
-                placeholder="Buscar cursos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar cursos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9"
+                />
+              </div>
             </div>
             
             <div>

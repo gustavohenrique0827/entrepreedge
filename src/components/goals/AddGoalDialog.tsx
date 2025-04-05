@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Goal } from '@/pages/Goals';
 
 interface AddGoalDialogProps {
-  onAddGoal: (goal: any) => void;
+  onAddGoal: (goal: Goal) => void;
 }
 
 const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
@@ -35,7 +36,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
     }
     
     // Create new goal object
-    const newGoal = {
+    const newGoal: Goal = {
       id: Date.now().toString(),
       title,
       description,
@@ -43,6 +44,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
       currentValue: 0,
       dueDate,
       category,
+      status: "em andamento",
     };
     
     // Pass the new goal to the parent component

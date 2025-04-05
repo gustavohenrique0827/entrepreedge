@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -22,6 +21,7 @@ import {
   Award
 } from 'lucide-react';
 
+// Define the Goal type to match the one in GoalTracker.tsx
 export interface Goal {
   id: string;
   title: string;
@@ -30,7 +30,7 @@ export interface Goal {
   currentValue: number;
   dueDate: string;
   category: string;
-  status?: 'concluída' | 'em andamento' | 'atrasada';
+  status?: "concluída" | "em andamento" | "atrasada"; // Restrict to these specific values
   createdAt?: string;
 }
 
@@ -41,7 +41,7 @@ const Goals = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [activeTab, setActiveTab] = useState('active');
   
-  // Sample goals data
+  // Sample goals data - ensure it matches our Goal type
   const sampleGoals: Goal[] = [
     {
       id: '1',
@@ -137,6 +137,7 @@ const Goals = () => {
     setGoals(prevGoals => [...prevGoals, newGoal]);
   };
 
+  // This function handles the goal changes from GoalTracker component
   const handleGoalsChange = (updatedGoals: Goal[]) => {
     setGoals(updatedGoals);
   };

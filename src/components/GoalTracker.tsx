@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -36,17 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-interface Goal {
-  id: string;
-  title: string;
-  description: string;
-  targetValue: number;
-  currentValue: number;
-  dueDate: string;
-  category: string;
-  status?: string;
-}
+import { Goal } from '@/pages/Goals';
 
 interface GoalTrackerProps {
   goals?: Goal[];
@@ -60,7 +49,6 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
   const [deleteConfirmGoal, setDeleteConfirmGoal] = useState<string | null>(null);
   const [progressUpdate, setProgressUpdate] = useState<{ id: string; value: number } | null>(null);
 
-  // Sample data if no goals are provided through props
   const sampleGoals: Goal[] = [
     {
       id: '1',
@@ -69,7 +57,8 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       targetValue: 15000,
       currentValue: 8750,
       dueDate: '2023-09-30',
-      category: 'Vendas'
+      category: 'Vendas',
+      status: "em andamento"
     },
     {
       id: '2',
@@ -78,7 +67,8 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       targetValue: 15,
       currentValue: 7,
       dueDate: '2023-08-31',
-      category: 'Finanças'
+      category: 'Finanças',
+      status: "em andamento"
     },
     {
       id: '3',
@@ -87,13 +77,13 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       targetValue: 20,
       currentValue: 8,
       dueDate: '2023-10-15',
-      category: 'Marketing'
+      category: 'Marketing',
+      status: "em andamento"
     },
   ];
 
   const [goals, setGoals] = useState<Goal[]>(propGoals || sampleGoals);
 
-  // Update internal state if props change
   React.useEffect(() => {
     if (propGoals) {
       setGoals(propGoals);
@@ -136,14 +126,13 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
     
     const updatedGoals = goals.map(goal => {
       if (goal.id === progressUpdate.id) {
-        // Calculate if this goal is now complete
         const newValue = progressUpdate.value;
         const isComplete = newValue >= goal.targetValue;
         
         return {
           ...goal,
           currentValue: newValue,
-          status: isComplete ? 'concluída' : goal.status
+          status: isComplete ? 'concluída' as const : goal.status
         };
       }
       return goal;
@@ -405,7 +394,6 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
         );
       })}
 
-      {/* Edit goal dialog */}
       <Dialog open={!!editingGoal} onOpenChange={(open) => !open && setEditingGoal(null)}>
         <DialogContent>
           <DialogHeader>
@@ -489,7 +477,6 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
         </DialogContent>
       </Dialog>
       
-      {/* Update progress dialog */}
       <Dialog open={!!progressUpdate} onOpenChange={(open) => !open && setProgressUpdate(null)}>
         <DialogContent>
           <DialogHeader>
@@ -531,7 +518,6 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
         </DialogContent>
       </Dialog>
       
-      {/* Delete confirmation dialog */}
       <Dialog open={!!deleteConfirmGoal} onOpenChange={(open) => !open && setDeleteConfirmGoal(null)}>
         <DialogContent>
           <DialogHeader>
