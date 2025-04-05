@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -58,7 +59,9 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       currentValue: 8750,
       dueDate: '2023-09-30',
       category: 'Vendas',
-      status: "em andamento"
+      status: "em andamento",
+      priority: "Alta",
+      createdAt: "2023-06-01"
     },
     {
       id: '2',
@@ -68,7 +71,9 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       currentValue: 7,
       dueDate: '2023-08-31',
       category: 'Finanças',
-      status: "em andamento"
+      status: "em andamento",
+      priority: "Média",
+      createdAt: "2023-06-02"
     },
     {
       id: '3',
@@ -78,7 +83,9 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goals: propGoals, onGoalsChan
       currentValue: 8,
       dueDate: '2023-10-15',
       category: 'Marketing',
-      status: "em andamento"
+      status: "em andamento",
+      priority: "Baixa",
+      createdAt: "2023-06-03"
     },
   ];
 

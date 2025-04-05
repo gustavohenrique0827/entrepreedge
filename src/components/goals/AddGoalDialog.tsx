@@ -19,6 +19,20 @@ interface AddGoalDialogProps {
   onAddGoal: (goal: Goal) => void;
 }
 
+// Create a local Goal type that matches the one in Goals.tsx
+interface GoalType {
+  id: string;
+  title: string;
+  description: string;
+  targetValue: number;
+  currentValue: number;
+  dueDate: string;
+  category: string;
+  status: "em andamento" | "concluída" | "atrasada";
+  priority: string;
+  createdAt: string;
+}
+
 const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
@@ -48,7 +62,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
     }
     
     // Create new goal object
-    const newGoal: Goal = {
+    const newGoal: GoalType = {
       id: Date.now().toString(),
       title,
       description,
@@ -62,7 +76,7 @@ const AddGoalDialog: React.FC<AddGoalDialogProps> = ({ onAddGoal }) => {
     };
     
     // Pass the new goal to the parent component
-    onAddGoal(newGoal);
+    onAddGoal(newGoal as Goal);
     
     // Reset form and close dialog
     setTitle('');
