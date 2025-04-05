@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,27 +81,22 @@ const LearnSection: React.FC = () => {
   const { toast } = useToast();
   const { hasAccess, currentPlan } = useSubscription();
   
-  // Get business type from localStorage
   const businessType = localStorage.getItem('businessType') || '';
   const interestedTopics = JSON.parse(localStorage.getItem('interestedTopics') || '[]');
   
-  // Extract unique categories from courses
   const allCategories = Array.from(
     new Set(courses.flatMap(course => course.categories))
   );
   
-  // Filter courses based on business type, interested topics, subscription plan, and active tab
   useEffect(() => {
     let filtered = [...courses];
     
-    // Apply subscription plan filtering
     if (currentPlan === 'free') {
       filtered = filtered.filter(course => course.level === 'Iniciante' || course.categories.includes('Financeiro'));
     } else if (currentPlan === 'starter') {
       filtered = filtered.filter(course => !course.categories.includes('Avançado') || course.categories.includes('Financeiro'));
     }
     
-    // Apply search query filtering
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(course => 
@@ -112,19 +106,16 @@ const LearnSection: React.FC = () => {
       );
     }
     
-    // Apply category filtering
     if (selectedCategory) {
       filtered = filtered.filter(course => 
         course.categories.includes(selectedCategory)
       );
     }
     
-    // Apply level filtering
     if (selectedLevel) {
       filtered = filtered.filter(course => course.level === selectedLevel);
     }
     
-    // Apply tab filtering
     if (activeTab === 'in-progress') {
       filtered = filtered.filter(course => course.completed > 0);
     } else if (activeTab === 'new') {
@@ -156,7 +147,6 @@ const LearnSection: React.FC = () => {
     }
   };
 
-  // Check if a course is locked based on subscription plan
   const isCourseLocked = (course: Course) => {
     if (currentPlan === 'premium') return false;
     
@@ -231,7 +221,6 @@ const LearnSection: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full"
-                prefix={<Search size={14} className="mr-2" />}
               />
             </div>
             

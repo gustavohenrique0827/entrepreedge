@@ -5,6 +5,12 @@ import Sidebar from '@/components/Sidebar';
 import GoalTracker from '@/components/GoalTracker';
 import AddGoalDialog from '@/components/goals/AddGoalDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { 
   Target, 
   ShieldAlert, 
@@ -15,14 +21,8 @@ import {
   Filter,
   Award
 } from 'lucide-react';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { Button } from '@/components/ui/button';
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface Goal {
+export interface Goal {
   id: string;
   title: string;
   description: string;
@@ -135,6 +135,10 @@ const Goals = () => {
 
   const handleAddGoal = (newGoal: Goal) => {
     setGoals(prevGoals => [...prevGoals, newGoal]);
+  };
+
+  const handleGoalsChange = (updatedGoals: Goal[]) => {
+    setGoals(updatedGoals);
   };
 
   const filteredGoals = goals.filter(goal => {
@@ -376,7 +380,7 @@ const Goals = () => {
                           <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Atrasadas: {statusCounts.atrasada}</Badge>
                         </div>
                       </div>
-                      <GoalTracker goals={filteredGoals} onGoalsChange={setGoals} />
+                      <GoalTracker goals={filteredGoals} onGoalsChange={handleGoalsChange} />
                       
                       {filteredGoals.length === 0 && (
                         <div className="text-center py-8">
