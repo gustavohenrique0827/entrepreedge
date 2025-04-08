@@ -32,6 +32,7 @@ interface SubscriptionFeaturesType {
 interface SubscriptionContextType {
   currentPlan: PlanType;
   setCurrentPlan: (plan: PlanType) => void;
+  changePlan: (plan: PlanType) => void;
   hasAccess: (feature: string) => boolean;
   planFeatures: Record<PlanType, SubscriptionFeaturesType>;
   refreshContext: () => void;
@@ -253,7 +254,8 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     <SubscriptionContext.Provider 
       value={{ 
         currentPlan, 
-        setCurrentPlan: updatePlan, 
+        setCurrentPlan: updatePlan,
+        changePlan: updatePlan,
         hasAccess, 
         planFeatures,
         refreshContext,

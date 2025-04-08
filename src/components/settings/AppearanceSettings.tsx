@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, ColorPicker } from 'lucide-react';
+import { AlertCircle, Palette } from 'lucide-react';
 
 const AppearanceSettings = () => {
   const { toast } = useToast();
@@ -167,7 +167,7 @@ const AppearanceSettings = () => {
           <div className="flex justify-between items-center">
             <Label>Cores do Sistema</Label>
             <Button onClick={applySegmentColors} variant="outline" size="sm">
-              <ColorPicker className="mr-2 h-4 w-4" />
+              <Palette className="mr-2 h-4 w-4" />
               Aplicar cores recomendadas
             </Button>
           </div>
