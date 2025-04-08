@@ -594,19 +594,52 @@ const Dashboard = () => {
                       <Area 
                         type="monotone" 
                         dataKey="receita" 
-                        name="Receita" 
-                        strokeDasharray={d => d.previsao ? "5 5" : "0"}
+                        name="Receita (Atual)" 
                         stroke={customTheme.primaryColor} 
                         fillOpacity={1} 
-                        fill="url(#colorReceita)" 
+                        fill="url(#colorReceita)"
+                        connectNulls
+                        data={[...financialData]}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="receita" 
+                        name="Receita (Projeção)" 
+                        stroke={customTheme.primaryColor}
+                        strokeDasharray="5 5" 
+                        fillOpacity={0.3} 
+                        fill="url(#colorReceita)"
+                        connectNulls
+                        data={[
+                          { month: 'Dez', receita: 1890 },
+                          { month: 'Jan (Proj)', receita: 5000 },
+                          { month: 'Fev (Proj)', receita: 5200 },
+                          { month: 'Mar (Proj)', receita: 5500 },
+                        ]}
                       />
                       <Area 
                         type="monotone" 
                         dataKey="despesas" 
-                        name="Despesas" 
-                        strokeDasharray={d => d.previsao ? "5 5" : "0"}
+                        name="Despesas (Atual)" 
                         stroke={customTheme.secondaryColor} 
-                        fillOpacity={0.3} 
+                        fillOpacity={0.3}
+                        connectNulls
+                        data={[...financialData]}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="despesas" 
+                        name="Despesas (Projeção)" 
+                        stroke={customTheme.secondaryColor}
+                        strokeDasharray="5 5" 
+                        fillOpacity={0.1}
+                        connectNulls
+                        data={[
+                          { month: 'Dez', despesas: 4800 },
+                          { month: 'Jan (Proj)', despesas: 2600 },
+                          { month: 'Fev (Proj)', despesas: 2700 },
+                          { month: 'Mar (Proj)', despesas: 2900 },
+                        ]}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
