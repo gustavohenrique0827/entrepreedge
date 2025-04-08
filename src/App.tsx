@@ -20,7 +20,12 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Benchmarking from "./pages/Benchmarking";
+import Simulator from "./pages/Simulator";
+import Inspiration from "./pages/Inspiration";
+import ESGIndicators from "./pages/ESGIndicators";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+import { SegmentProvider } from "./contexts/SegmentContext";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +59,12 @@ const initializeSettings = () => {
   } else if (currency === 'EUR') {
     window.currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
   }
+  
+  // Apply theme colors
+  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
+  const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
+  document.documentElement.style.setProperty('--primary-color', primaryColor);
+  document.documentElement.style.setProperty('--secondary-color', secondaryColor);
 };
 
 // Initialize settings right away
@@ -78,78 +89,102 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SubscriptionProvider>
-        <HelmetProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/auth" element={
-                  isAuthenticated ? <Navigate to="/" replace /> : <Auth />
-                } />
-                
-                {/* Protected routes */}
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/finances" element={
-                  <ProtectedRoute>
-                    <Finances />
-                  </ProtectedRoute>
-                } />
-                <Route path="/goals" element={
-                  <ProtectedRoute>
-                    <Goals />
-                  </ProtectedRoute>
-                } />
-                <Route path="/learn" element={
-                  <ProtectedRoute>
-                    <Learn />
-                  </ProtectedRoute>
-                } />
-                <Route path="/course/:courseId" element={
-                  <ProtectedRoute>
-                    <CourseDetail />
-                  </ProtectedRoute>
-                } />
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } />
-                <Route path="/help" element={
-                  <ProtectedRoute>
-                    <Help />
-                  </ProtectedRoute>
-                } />
-                <Route path="/onboarding" element={
-                  isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
-                } />
-                <Route path="/contact" element={
-                  <ProtectedRoute>
-                    <Contact />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Catch-all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </HelmetProvider>
+        <SegmentProvider>
+          <HelmetProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/auth" element={
+                    isAuthenticated ? <Navigate to="/" replace /> : <Auth />
+                  } />
+                  
+                  {/* Protected routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/finances" element={
+                    <ProtectedRoute>
+                      <Finances />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/goals" element={
+                    <ProtectedRoute>
+                      <Goals />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/learn" element={
+                    <ProtectedRoute>
+                      <Learn />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/course/:courseId" element={
+                    <ProtectedRoute>
+                      <CourseDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/help" element={
+                    <ProtectedRoute>
+                      <Help />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/onboarding" element={
+                    isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
+                  } />
+                  <Route path="/contact" element={
+                    <ProtectedRoute>
+                      <Contact />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* New routes for additional features */}
+                  <Route path="/benchmarking" element={
+                    <ProtectedRoute>
+                      <Benchmarking />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/simulator" element={
+                    <ProtectedRoute>
+                      <Simulator />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/inspiration" element={
+                    <ProtectedRoute>
+                      <Inspiration />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/esg" element={
+                    <ProtectedRoute>
+                      <ESGIndicators />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </HelmetProvider>
+        </SegmentProvider>
       </SubscriptionProvider>
     </QueryClientProvider>
   );

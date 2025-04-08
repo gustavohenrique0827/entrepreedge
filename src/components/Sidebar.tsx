@@ -1,166 +1,188 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { 
-  Home, 
-  BarChart2, 
-  Target, 
-  BookOpen, 
-  Mail, 
-  Menu, 
-  X, 
-  Settings, 
-  User,
+import { cn } from "@/lib/utils";
+import {
+  BarChartBig,
+  BookOpen,
+  CalendarDays,
+  CircleUserRound,
+  Goal,
   HelpCircle,
-  LayoutDashboard
-} from 'lucide-react';
+  Home,
+  Leaf,
+  LineChart,
+  MessageCircle,
+  Settings,
+  Star,
+  Target,
+  Users,
+} from "lucide-react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useSegment } from "@/contexts/SegmentContext";
 
-interface SidebarProps {
-  className?: string;
-}
+type SidebarMainItem = {
+  title: string;
+  icon: JSX.Element;
+  href: string;
+  requiresFeature?: string;
+};
 
-const Sidebar = ({ className }: SidebarProps) => {
-  const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
+const Sidebar = () => {
   const location = useLocation();
+  const { hasAccess } = useSubscription();
+  const { segmentName } = useSegment();
+  
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
 
-  useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', collapsed.toString());
-  }, [collapsed]);
-
-  const menuItems = [
-    { 
-      name: 'Início', 
-      href: '/', 
-      icon: <Home className="h-5 w-5" />,
-      active: location.pathname === '/'
-    },
-    { 
-      name: 'Dashboard', 
-      href: '/dashboard', 
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      active: location.pathname === '/dashboard'
-    },
-    { 
-      name: 'Finanças', 
-      href: '/finances', 
-      icon: <BarChart2 className="h-5 w-5" />,
-      active: location.pathname === '/finances'
-    },
-    { 
-      name: 'Metas', 
-      href: '/goals', 
-      icon: <Target className="h-5 w-5" />,
-      active: location.pathname === '/goals'
-    },
-    { 
-      name: 'Aprendizado', 
-      href: '/learn', 
-      icon: <BookOpen className="h-5 w-5" />,
-      active: location.pathname === '/learn'
-    },
-    { 
-      name: 'Contato', 
-      href: '/contact', 
-      icon: <Mail className="h-5 w-5" />,
-      active: location.pathname === '/contact'
-    },
+  const sidebarMainItems: SidebarMainItem[] = [
+    { title: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
+    { title: "Finanças", icon: <BarChartBig size={18} />, href: "/finances", requiresFeature: "financial" },
+    { title: "Metas", icon: <Goal size={18} />, href: "/goals", requiresFeature: "goals" },
   ];
 
-  const bottomMenuItems = [
-    { 
-      name: 'Configurações', 
-      href: '/settings', 
-      icon: <Settings className="h-5 w-5" />,
-      active: location.pathname === '/settings'
-    },
-    { 
-      name: 'Perfil', 
-      href: '/profile', 
-      icon: <User className="h-5 w-5" />,
-      active: location.pathname === '/profile'
-    },
-    { 
-      name: 'Ajuda', 
-      href: '/help', 
-      icon: <HelpCircle className="h-5 w-5" />,
-      active: location.pathname === '/help'
-    },
+  const analyticsItems: SidebarMainItem[] = [
+    { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
+    { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
+    { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
   ];
+
+  const collaborationItems: SidebarMainItem[] = [
+    { title: "Aprendizado", icon: <BookOpen size={18} />, href: "/learn" },
+    { title: "Inspiração", icon: <Star size={18} />, href: "/inspiration" },
+    { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
+    { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
+  ];
+
+  const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
 
   return (
-    <aside
-      className={cn(
-        "fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border",
-        collapsed ? "w-[60px]" : "w-[240px]",
-        className
-      )}
-    >
-      <div className="h-full flex flex-col justify-between">
-        <div>
-          <div className={cn("flex items-center p-4", collapsed ? "justify-center" : "justify-between")}>
-            {!collapsed && (
-              <Link to="/" className="flex items-center">
-                <div className="bg-primary rounded-md p-1">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L17 7H14V13H10V7H7L12 2Z" fill="white" />
-                    <path d="M19 14H5V17H19V14Z" fill="white" />
-                    <path d="M17 18H7V22H17V18Z" fill="white" />
-                  </svg>
-                </div>
-                <span className="ml-2 text-lg font-semibold">EntrepreEdge</span>
-              </Link>
-            )}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setCollapsed(!collapsed)}
-              className="text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              {collapsed ? <Menu /> : <X />}
-            </Button>
-          </div>
-
-          <div className="px-3 py-4">
-            <nav className="space-y-1">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    item.active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                    collapsed && "justify-center"
-                  )}
-                >
-                  {item.icon}
-                  {!collapsed && <span className="ml-3">{item.name}</span>}
-                </Link>
-              ))}
-            </nav>
+    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
+      <div className="flex flex-col h-full">
+        <div className="p-6">
+          <Link to="/" className="flex items-center gap-2 no-underline">
+            <div className="bg-primary rounded-lg w-8 h-8 flex items-center justify-center text-white font-bold">
+              {companyName.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-medium text-sidebar-foreground truncate">
+              {companyName}
+            </span>
+          </Link>
+          <div className="text-xs text-sidebar-foreground/70 mt-1 ml-10">
+            {segmentName}
           </div>
         </div>
 
-        <div className="px-3 py-4 border-t border-sidebar-border">
-          <nav className="space-y-1">
-            {bottomMenuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors",
-                  item.active && "bg-sidebar-accent text-sidebar-accent-foreground",
-                  collapsed && "justify-center"
-                )}
-              >
-                {item.icon}
-                {!collapsed && <span className="ml-3">{item.name}</span>}
-              </Link>
+        <nav className="flex-1 overflow-y-auto pb-6">
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Principal
+            </div>
+            {sidebarMainItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )
             ))}
-          </nav>
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Analytics
+            </div>
+            {analyticsItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )
+            ))}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Colaboração
+            </div>
+            {collaborationItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )
+            ))}
+          </div>
+        </nav>
+
+        <div className="border-t border-sidebar-border p-3">
+          <Link
+            to="/settings"
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+              isActive("/settings")
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80"
+            )}
+          >
+            <Settings size={18} />
+            Configurações
+          </Link>
+          <Link
+            to="/help"
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+              isActive("/help")
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80"
+            )}
+          >
+            <HelpCircle size={18} />
+            Ajuda
+          </Link>
+          <Link
+            to="/profile"
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+              isActive("/profile")
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80"
+            )}
+          >
+            <CircleUserRound size={18} />
+            Perfil
+          </Link>
         </div>
       </div>
     </aside>

@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -96,6 +96,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Font types based on segment */
+  .font-sans {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+
+  .font-handwritten {
+    font-family: 'Dancing Script', cursive;
+  }
+
   /* Font size utilities */
   html[data-font-size="small"] .text-content {
     font-size: 0.875rem;
@@ -107,6 +120,41 @@
 
   html[data-font-size="large"] .text-content {
     font-size: 1.125rem;
+  }
+
+  /* Custom theme colors */
+  :root {
+    --primary-color: #8B5CF6;
+    --secondary-color: #D946EF;
+  }
+
+  /* Update tailwind colors from CSS variables */
+  .bg-primary {
+    background-color: var(--primary-color);
+  }
+
+  .text-primary {
+    color: var(--primary-color);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary-color);
+  }
+
+  .text-secondary {
+    color: var(--secondary-color);
+  }
+
+  .hover\:bg-primary:hover {
+    background-color: var(--primary-color);
+  }
+
+  .hover\:text-primary:hover {
+    color: var(--primary-color);
+  }
+
+  .border-primary {
+    border-color: var(--primary-color);
   }
 
   /* Custom classes */
