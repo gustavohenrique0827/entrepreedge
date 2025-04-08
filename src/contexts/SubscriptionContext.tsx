@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,6 +36,7 @@ interface SubscriptionContextType {
   planFeatures: Record<PlanType, SubscriptionFeaturesType>;
   refreshContext: () => void;
   getPlanModuleCount: (plan: PlanType) => number;
+  activateModule: (module: string) => boolean;
 }
 
 const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
@@ -162,7 +164,7 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         plan === 'business' ? 'Plano Empresarial' :
         plan === 'premium' ? 'Plano Premium' : 'Plano Gratuito'
       }`,
-      variant: "default", // Changed from "success" to "default"
+      variant: "default",
     });
   };
 
@@ -216,6 +218,30 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
+  // For demo purposes - temporarily activate a module for testing
+  const activateModule = (module: string): boolean => {
+    try {
+      // For demo - only allow financial to be activated in free plan
+      if (currentPlan === 'free' && module === 'financial') {
+        toast({
+          title: "Módulo ativado",
+          description: "Módulo financeiro ativado com sucesso no plano gratuito.",
+        });
+        return true;
+      }
+
+      toast({
+        title: "Acesso restrito",
+        description: `O módulo ${module} requer um plano premium. Por favor, faça um upgrade.`,
+        variant: "destructive",
+      });
+      return false;
+    } catch (error) {
+      console.error("Error activating module:", error);
+      return false;
+    }
+  };
+
   const refreshContext = () => {
     const savedPlan = localStorage.getItem('currentPlan') as PlanType;
     if (savedPlan && planFeatures[savedPlan]) {
@@ -231,7 +257,8 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         hasAccess, 
         planFeatures,
         refreshContext,
-        getPlanModuleCount
+        getPlanModuleCount,
+        activateModule
       }}
     >
       {children}
