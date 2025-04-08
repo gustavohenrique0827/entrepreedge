@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -26,7 +25,6 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useToast } from "@/hooks/use-toast";
 import api from '@/services/dbService';
 
-// Sample data for charts
 const financialData = [
   { month: 'Jan', receita: 4000, despesas: 2400 },
   { month: 'Fev', receita: 3000, despesas: 1398 },
@@ -75,13 +73,11 @@ const Dashboard = () => {
   const { currentPlan, hasAccess } = useSubscription();
   const { toast } = useToast();
   
-  // Get company data from localStorage
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
   const annualRevenue = localStorage.getItem('annualRevenue') || '0';
   const targetRevenue = localStorage.getItem('targetRevenue') || '0';
   
-  // Calculate financial metrics
   const currentRevenueValue = parseInt(annualRevenue) || 0;
   const targetRevenueValue = parseInt(targetRevenue) || 0;
   const monthlyRevenue = Math.round(currentRevenueValue / 12);
@@ -89,12 +85,9 @@ const Dashboard = () => {
     ? Math.round(((targetRevenueValue - currentRevenueValue) / currentRevenueValue) * 100) 
     : 0;
 
-  // Load custom theme settings from user settings
   useEffect(() => {
     const fetchUserSettings = async () => {
       try {
-        // This would be replaced with an actual API call in production
-        // const settings = await api.user.getSettings();
         const settings = {
           theme_primary_color: localStorage.getItem('themePrimaryColor') || '#3b82f6',
           theme_secondary_color: localStorage.getItem('themeSecondaryColor') || '#10b981',
@@ -107,7 +100,6 @@ const Dashboard = () => {
           logoUrl: settings.logo_url
         });
         
-        // Apply theme colors to CSS variables
         document.documentElement.style.setProperty('--primary', settings.theme_primary_color);
         document.documentElement.style.setProperty('--secondary', settings.theme_secondary_color);
       } catch (error) {
@@ -118,7 +110,6 @@ const Dashboard = () => {
     fetchUserSettings();
   }, []);
 
-  // Define navigation items for Navbar
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
@@ -604,7 +595,7 @@ const Dashboard = () => {
                         type="monotone" 
                         dataKey="receita" 
                         name="Receita" 
-                        strokeDasharray={(d) => d.previsao ? "5 5" : "0"} 
+                        strokeDasharray={d => d.previsao ? "5 5" : "0"}
                         stroke={customTheme.primaryColor} 
                         fillOpacity={1} 
                         fill="url(#colorReceita)" 
@@ -613,7 +604,7 @@ const Dashboard = () => {
                         type="monotone" 
                         dataKey="despesas" 
                         name="Despesas" 
-                        strokeDasharray={(d) => d.previsao ? "5 5" : "0"} 
+                        strokeDasharray={d => d.previsao ? "5 5" : "0"}
                         stroke={customTheme.secondaryColor} 
                         fillOpacity={0.3} 
                       />
