@@ -14,7 +14,9 @@ import {
   MapPin,
   Globe,
   Calendar,
-  Edit
+  Edit,
+  Settings,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,29 +25,45 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import AppearanceSettings from '@/components/settings/AppearanceSettings';
+import NotificationSettings from '@/components/settings/NotificationSettings';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { currentPlan } = useSubscription();
   const [activeTab, setActiveTab] = useState('company');
   const [isEditing, setIsEditing] = useState(false);
   
   const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
   const businessType = localStorage.getItem('businessType') || 'Comércio varejista';
   const userEmail = localStorage.getItem('userEmail') || 'usuario@exemplo.com';
+  const logoUrl = localStorage.getItem('logoUrl') || '';
+  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
+  const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   
   const [formData, setFormData] = useState({
     companyName: companyName,
     businessType: businessType,
     email: userEmail,
-    phone: '(11) 98765-4321',
-    address: 'Rua das Empresas, 123',
-    city: 'São Paulo',
-    state: 'SP',
-    website: 'www.minhaempresa.com.br',
-    foundedYear: '2020',
-    employees: '5-10',
-    description: 'Empresa especializada em soluções para empreendedores e pequenos negócios.'
+    phone: localStorage.getItem('phone') || '(11) 98765-4321',
+    address: localStorage.getItem('address') || 'Rua das Empresas, 123',
+    city: localStorage.getItem('city') || 'São Paulo',
+    state: localStorage.getItem('state') || 'SP',
+    website: localStorage.getItem('website') || 'www.minhaempresa.com.br',
+    foundedYear: localStorage.getItem('foundedYear') || '2020',
+    employees: localStorage.getItem('employees') || '5-10',
+    description: localStorage.getItem('description') || 'Empresa especializada em soluções para empreendedores e pequenos negócios.'
   });
+  
+  // Apply theme colors when component loads
+  useEffect(() => {
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+  }, [primaryColor, secondaryColor]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,15 +74,31 @@ const Profile = () => {
   };
   
   const handleSave = () => {
+    // Save all form data to localStorage
     localStorage.setItem('companyName', formData.companyName);
     localStorage.setItem('businessType', formData.businessType);
     localStorage.setItem('userEmail', formData.email);
+    localStorage.setItem('phone', formData.phone);
+    localStorage.setItem('address', formData.address);
+    localStorage.setItem('city', formData.city);
+    localStorage.setItem('state', formData.state);
+    localStorage.setItem('website', formData.website);
+    localStorage.setItem('foundedYear', formData.foundedYear);
+    localStorage.setItem('employees', formData.employees);
+    localStorage.setItem('description', formData.description);
     
     setIsEditing(false);
     toast({
       title: "Perfil atualizado",
       description: "As informações da empresa foram atualizadas com sucesso.",
     });
+    
+    // Update document title
+    document.title = `${formData.companyName} - Painel de Controle`;
+  };
+  
+  const handlePlanManagement = () => {
+    navigate('/settings?tab=subscription');
   };
   
   const navItems = [
@@ -105,8 +139,8 @@ const Profile = () => {
             </p>
           </div>
           
-          <Tabs defaultValue="company" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="glass mb-6">
+          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="glass mb-6 grid grid-cols-2 sm:grid-cols-4 md:flex md:flex-wrap">
               <TabsTrigger value="company">Perfil da Empresa</TabsTrigger>
               <TabsTrigger value="user">Usuário</TabsTrigger>
               <TabsTrigger value="preferences">Preferências</TabsTrigger>
@@ -320,15 +354,23 @@ const Profile = () => {
                     </CardHeader>
                     <CardContent className="flex flex-col items-center text-center">
                       <Avatar className="h-24 w-24 mb-4">
-                        <AvatarImage src="" alt={companyName} />
-                        <AvatarFallback className="text-2xl bg-primary/20">
-                          {companyName.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
+                        {logoUrl ? (
+                          <AvatarImage src={logoUrl} alt={companyName} />
+                        ) : (
+                          <AvatarFallback className="text-2xl bg-primary/20">
+                            {companyName.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <h3 className="font-bold text-xl mb-1">{companyName}</h3>
                       <p className="text-muted-foreground text-sm mb-4">{businessType}</p>
-                      <Button variant="outline" size="sm" className="mt-2">
-                        Alterar logo
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => navigate('/settings?tab=preferences')}
+                      >
+                        Alterar logo e cores
                       </Button>
                     </CardContent>
                   </Card>
@@ -344,7 +386,11 @@ const Profile = () => {
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="font-medium">Plano:</span>
-                          <span className="font-bold text-primary">Empresarial</span>
+                          <span className="font-bold text-primary">
+                            {currentPlan === 'free' ? 'Gratuito' : 
+                             currentPlan === 'starter' ? 'Iniciante' :
+                             currentPlan === 'business' ? 'Empresarial' : 'Premium'}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="font-medium">Status:</span>
@@ -354,7 +400,12 @@ const Profile = () => {
                           <span className="font-medium">Próximo pagamento:</span>
                           <span>15/06/2023</span>
                         </div>
-                        <Button variant="outline" size="sm" className="w-full mt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-4"
+                          onClick={handlePlanManagement}
+                        >
                           Gerenciar plano
                         </Button>
                       </div>
@@ -413,7 +464,11 @@ const Profile = () => {
                       <div className="space-y-4">
                         <div>
                           <h3 className="font-medium mb-2">Segurança</h3>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate('/settings?tab=security')}
+                          >
                             Alterar senha
                           </Button>
                         </div>
@@ -437,31 +492,11 @@ const Profile = () => {
             </TabsContent>
             
             <TabsContent value="preferences">
-              <Card className="glass">
-                <CardHeader>
-                  <CardTitle>Preferências do Sistema</CardTitle>
-                  <CardDescription>
-                    Personalize a interface e funcionalidades do sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Preferências do Sistema em desenvolvimento</p>
-                </CardContent>
-              </Card>
+              <AppearanceSettings />
             </TabsContent>
             
             <TabsContent value="notifications">
-              <Card className="glass">
-                <CardHeader>
-                  <CardTitle>Notificações</CardTitle>
-                  <CardDescription>
-                    Configure como e quando deseja receber notificações
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Configurações de Notificações em desenvolvimento</p>
-                </CardContent>
-              </Card>
+              <NotificationSettings />
             </TabsContent>
           </Tabs>
         </div>

@@ -18,6 +18,8 @@ const Settings = () => {
   const { currentPlan } = useSubscription();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
+  const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   
   // Save active tab to localStorage whenever it changes
   useEffect(() => {
@@ -49,9 +51,13 @@ const Settings = () => {
       document.documentElement.classList.add('text-lg');
     }
     
+    // Apply theme colors
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
     // Update document title
     document.title = `${companyName} - Configurações`;
-  }, [companyName]);
+  }, [companyName, primaryColor, secondaryColor]);
   
   const navItems = [
     {
