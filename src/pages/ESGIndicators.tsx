@@ -2,14 +2,45 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Leaf, Recycle, Users, Building2, GlobeSolid, Award, Lightbulb, BarChart, LineChart, Target } from 'lucide-react';
+import { 
+  BarChart, 
+  Leaf, 
+  Recycle, 
+  Users, 
+  Building2, 
+  Award, 
+  Lightbulb, 
+  Target, 
+  LineChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  Shield,
+  BadgeCheck,
+  Scale,
+  Tree as TreeDeciduous,
+  Droplet as Droplets
+} from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
+import { Separator } from "@/components/ui/separator";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  Line, 
+  BarChart as RechartsBarChart,
+  Bar
+} from 'recharts';
 
 const ESGIndicators = () => {
   const { currentSegment, segmentName } = useSegment();
@@ -422,7 +453,7 @@ const ESGIndicators = () => {
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base flex items-center">
-                          <UserRound className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                           Diversidade e Inclusão
                         </CardTitle>
                       </CardHeader>
