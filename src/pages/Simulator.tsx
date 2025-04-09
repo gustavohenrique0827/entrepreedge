@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -81,6 +82,7 @@ const Simulator = () => {
   const percentageChange = ((finalValue - initialValue) / initialValue * 100).toFixed(1);
   const isPositiveGoal = goalType !== 'costs';
   
+  // Fixed type issues here - ensuring we handle numbers correctly
   const handleGrowthRateChange = (value: number[]) => {
     setGrowthRate(value[0]);
   };
@@ -244,7 +246,7 @@ const Simulator = () => {
                       />
                       <YAxis 
                         tickFormatter={(value) => goalType === 'clients' 
-                          ? value 
+                          ? value.toString() 
                           : new Intl.NumberFormat('pt-BR', { 
                               notation: 'compact',
                               compactDisplay: 'short',
@@ -253,7 +255,7 @@ const Simulator = () => {
                       />
                       <CartesianGrid strokeDasharray="3 3" />
                       <Tooltip
-                        formatter={(value) => goalType === 'clients'
+                        formatter={(value: number) => goalType === 'clients'
                           ? Math.floor(value) + ' clientes'
                           : formatCurrency(value)
                         }

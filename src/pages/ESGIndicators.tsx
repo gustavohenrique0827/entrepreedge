@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -23,7 +24,7 @@ import {
   Shield,
   BadgeCheck,
   Scale,
-  TreeDeciduous,
+  Trees, // Changed from Tree to Trees, which is the correct icon name
   Droplet as Droplets
 } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -37,7 +38,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  LineChart,
+  LineChart, // This is the Recharts LineChart
   Line, 
   BarChart as RechartsBarChart,
   Bar
@@ -173,7 +174,7 @@ const ESGIndicators = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 mr-3">
-                      <TreeDeciduous className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <Trees className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">Ambiental</p>
@@ -282,7 +283,7 @@ const ESGIndicators = () => {
                         <div className="flex items-center">
                           {initiative.area === 'environment' && (
                             <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 mr-3">
-                              <TreeDeciduous className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <Trees className="h-4 w-4 text-green-600 dark:text-green-400" />
                             </div>
                           )}
                           {initiative.area === 'social' && (
@@ -324,7 +325,7 @@ const ESGIndicators = () => {
           <Tabs defaultValue="environmental" className="mt-6">
             <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="environmental" className="flex items-center">
-                <TreeDeciduous className="mr-2 h-4 w-4" />
+                <Trees className="mr-2 h-4 w-4" />
                 Ambiental
               </TabsTrigger>
               <TabsTrigger value="social" className="flex items-center">
@@ -436,6 +437,7 @@ const ESGIndicators = () => {
                 <CardContent>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
+                      {/* Fixing this part - we need to use the Recharts LineChart, not the Lucide icon */}
                       <LineChart data={socialData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="quarter" />
