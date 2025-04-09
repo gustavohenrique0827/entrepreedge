@@ -34,7 +34,7 @@ const Benchmarking = () => {
     {
       name: 'Benchmarking',
       href: '/benchmarking',
-      icon: <BarChartIcon size={18} />
+      icon: <BarChart size={18} />
     },
     {
       name: 'Simulador',
