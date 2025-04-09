@@ -1,23 +1,16 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import PageHeader from '@/components/PageHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { BarChart, BookOpen, Star, ArrowUpRight, Award, BookMarked, Heart, Share2, MessageSquare } from 'lucide-react';
+import { Lightbulb, Search, Tag, ThumbsUp, MessageSquare, BarChart, LineChart, Target } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
-import { useToast } from '@/hooks/use-toast';
 
 const Inspiration = () => {
   const { currentSegment, segmentName } = useSegment();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState(currentSegment === 'generic' ? 'all' : currentSegment);
-  
+
   const navItems = [
     {
       name: 'Dashboard',
@@ -25,328 +18,132 @@ const Inspiration = () => {
       icon: <BarChart size={18} />
     },
     {
-      name: 'Inspiração',
-      href: '/inspiration',
-      icon: <BookOpen size={18} />
-    },
-  ];
-
-  // Sample success stories data
-  const successStories = [
-    {
-      id: 1,
-      title: 'Transformação digital completa em 6 meses',
-      company: 'Agro Tech Solutions',
-      segment: 'agro',
-      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&h=350&fit=crop',
-      logo: 'https://via.placeholder.com/150',
-      excerpt: 'Como uma empresa agrícola tradicional transformou seus processos com tecnologia e aumentou em 45% sua produtividade.',
-      featured: true,
-      tags: ['transformação digital', 'produtividade', 'automação'],
-      metrics: {
-        growthPercent: 45,
-        timeline: '6 meses',
-        roi: '320%'
-      },
-      author: {
-        name: 'João Silva',
-        role: 'CEO',
-        avatar: 'https://i.pravatar.cc/150?img=1'
-      }
+      name: 'Benchmarking',
+      href: '/benchmarking',
+      icon: <LineChart size={18} />
     },
     {
-      id: 2,
-      title: 'Expansão para 5 novos mercados com estratégia omnichannel',
-      company: 'MegaStore e-Commerce',
-      segment: 'ecommerce',
-      image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=500&h=350&fit=crop',
-      logo: 'https://via.placeholder.com/150',
-      excerpt: 'Estratégia de expansão para novos mercados utilizando integração de canais e análise de dados de clientes.',
-      featured: true,
-      tags: ['expansão', 'omnichannel', 'análise de dados'],
-      metrics: {
-        growthPercent: 78,
-        timeline: '12 meses',
-        roi: '215%'
-      },
-      author: {
-        name: 'Maria Oliveira',
-        role: 'COO',
-        avatar: 'https://i.pravatar.cc/150?img=5'
-      }
-    },
-    {
-      id: 3,
-      title: 'Redução de custos operacionais em 30% com IA',
-      company: 'Clínica Saúde Total',
-      segment: 'health',
-      image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&h=350&fit=crop',
-      logo: 'https://via.placeholder.com/150',
-      excerpt: 'Implementação de soluções de inteligência artificial para otimização de agenda e redução de custos administrativos.',
-      featured: false,
-      tags: ['IA', 'redução de custos', 'saúde'],
-      metrics: {
-        growthPercent: 30,
-        timeline: '8 meses',
-        roi: '180%'
-      },
-      author: {
-        name: 'Dr. Carlos Santos',
-        role: 'Diretor Médico',
-        avatar: 'https://i.pravatar.cc/150?img=3'
-      }
-    },
-    {
-      id: 4,
-      title: 'Aumento de 65% nas conversões com marketing personalizado',
-      company: 'Fashion Forward',
-      segment: 'fashion',
-      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&h=350&fit=crop',
-      logo: 'https://via.placeholder.com/150',
-      excerpt: 'Estratégia de marketing personalizado baseada em comportamento do cliente e tendências sazonais.',
-      featured: false,
-      tags: ['marketing', 'personalização', 'conversão'],
-      metrics: {
-        growthPercent: 65,
-        timeline: '4 meses',
-        roi: '250%'
-      },
-      author: {
-        name: 'Ana Cardoso',
-        role: 'CMO',
-        avatar: 'https://i.pravatar.cc/150?img=9'
-      }
-    },
-    {
-      id: 5,
-      title: 'Implementação de ESG completa com resultados positivos',
-      company: 'ServiTech Solutions',
-      segment: 'services',
-      image: 'https://images.unsplash.com/photo-1491156855053-9cdff72c7f85?w=500&h=350&fit=crop',
-      logo: 'https://via.placeholder.com/150',
-      excerpt: 'Como a implementação de práticas ESG melhorou a reputação da empresa e gerou economia de recursos.',
-      featured: true,
-      tags: ['ESG', 'sustentabilidade', 'reputação'],
-      metrics: {
-        growthPercent: 28,
-        timeline: '18 meses',
-        roi: '150%'
-      },
-      author: {
-        name: 'Roberto Mendes',
-        role: 'Diretor de Sustentabilidade',
-        avatar: 'https://i.pravatar.cc/150?img=8'
-      }
+      name: 'Simulador',
+      href: '/simulator',
+      icon: <Target size={18} />
     }
   ];
 
-  // Filter stories based on active tab
-  const filteredStories = activeTab === 'all' 
-    ? successStories 
-    : successStories.filter(story => story.segment === activeTab);
-
-  // Featured stories for the top carousel
-  const featuredStories = successStories.filter(story => story.featured);
-
-  const handleSaveStory = (id: number) => {
-    toast({
-      title: "Case salvo",
-      description: "O case de sucesso foi salvo em sua biblioteca",
-    });
+  const inspirationalContent = {
+    marketing: [
+      {
+        title: "Campanha de Marketing Inovadora",
+        description: "Uma campanha que utilizou realidade aumentada para engajar clientes.",
+        tags: ["inovação", "marketing digital", "realidade aumentada"],
+        likes: 120,
+        comments: 30,
+      },
+      {
+        title: "Estratégia de Conteúdo Criativa",
+        description: "Como criar conteúdo que realmente ressoa com seu público-alvo.",
+        tags: ["conteúdo", "SEO", "engajamento"],
+        likes: 95,
+        comments: 15,
+      },
+    ],
+    productDevelopment: [
+      {
+        title: "Design Thinking em Ação",
+        description: "Um caso de sucesso de como o design thinking transformou um produto.",
+        tags: ["design thinking", "inovação de produto", "UX"],
+        likes: 150,
+        comments: 45,
+      },
+      {
+        title: "Metodologias Ágeis para Produtos",
+        description: "Aprenda a usar metodologias ágeis para acelerar o desenvolvimento de produtos.",
+        tags: ["metodologias ágeis", "scrum", "lean"],
+        likes: 110,
+        comments: 22,
+      },
+    ],
+    leadership: [
+      {
+        title: "Liderança Inspiradora",
+        description: "Histórias de líderes que inspiraram suas equipes a alcançar grandes feitos.",
+        tags: ["liderança", "motivação", "gestão de equipes"],
+        likes: 180,
+        comments: 60,
+      },
+      {
+        title: "Construindo uma Cultura de Inovação",
+        description: "Dicas para criar um ambiente de trabalho que fomente a inovação.",
+        tags: ["cultura organizacional", "inovação", "RH"],
+        likes: 130,
+        comments: 35,
+      },
+    ],
   };
 
-  const handleShareStory = (id: number) => {
-    toast({
-      title: "Link copiado",
-      description: "O link para o case de sucesso foi copiado para a área de transferência",
-    });
-  };
+  const [activeTab, setActiveTab] = useState("marketing");
+  const content = inspirationalContent[activeTab];
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
-      
+
       <div className="flex-1 ml-[240px] transition-all duration-300">
         <Navbar items={navItems} />
-        
+
         <div className="container px-4 py-6">
           <PageHeader
-            title="Inspiração e Cases de Sucesso"
-            description={`Histórias de sucesso e inspiração para empresas do segmento de ${segmentName}`}
-            icon={<BookMarked size={24} />}
+            title="Inspirações e Ideias Inovadoras"
+            description={`Descubra ideias para impulsionar sua empresa no segmento de ${segmentName}`}
+            icon={<Lightbulb size={24} />}
           />
 
-          <div className="pb-6">
-            <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
-              <CardHeader>
-                <CardTitle className="flex items-center text-xl">
-                  <Star className="mr-2 h-5 w-5 text-yellow-500" /> 
-                  Cases em Destaque
-                </CardTitle>
-                <CardDescription>
-                  Histórias inspiradoras selecionadas para o seu segmento de atuação
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {featuredStories.map((story) => (
-                    <Card key={story.id} className="flex flex-col h-full overflow-hidden">
-                      <div className="relative h-40">
-                        <img 
-                          src={story.image} 
-                          alt={story.title} 
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center p-4">
-                          <Badge className="absolute top-2 right-2 bg-primary">Destaque</Badge>
-                          <h3 className="text-white text-lg font-semibold text-center">{story.title}</h3>
-                        </div>
+          <Tabs defaultValue="marketing" className="mt-4">
+            <TabsList>
+              <TabsTrigger value="marketing" onClick={() => setActiveTab("marketing")}>
+                Marketing e Vendas
+              </TabsTrigger>
+              <TabsTrigger value="productDevelopment" onClick={() => setActiveTab("productDevelopment")}>
+                Desenvolvimento de Produtos
+              </TabsTrigger>
+              <TabsTrigger value="leadership" onClick={() => setActiveTab("leadership")}>
+                Liderança e Gestão
+              </TabsTrigger>
+            </TabsList>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {content?.map((item, index) => (
+                <TabsContent value={activeTab} key={index}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{item.title}</CardTitle>
+                      <CardDescription>{item.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center space-x-2">
+                        {item.tags.map((tag, i) => (
+                          <Tag key={i} className="h-4 w-4 text-muted-foreground" />
+                        ))}
                       </div>
-                      <CardContent className="py-4 flex-grow">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <Avatar className="h-6 w-6 mr-2">
-                              <AvatarImage src={story.author.avatar} />
-                              <AvatarFallback>{story.author.name[0]}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{story.author.name}</span>
-                          </div>
-                          <Badge variant="outline">{story.segment === 'agro' ? 'Agronegócio' : 
-                                                   story.segment === 'ecommerce' ? 'E-Commerce' : 
-                                                   story.segment === 'health' ? 'Saúde' :
-                                                   story.segment === 'fashion' ? 'Moda' :
-                                                   story.segment === 'services' ? 'Serviços' : 'Outro'}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{story.excerpt}</p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {story.tags.map((tag, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                          ))}
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 mt-4">
-                          <div className="text-center p-2 bg-muted rounded-md">
-                            <div className="text-lg font-semibold text-green-600">+{story.metrics.growthPercent}%</div>
-                            <div className="text-xs text-muted-foreground">Crescimento</div>
-                          </div>
-                          <div className="text-center p-2 bg-muted rounded-md">
-                            <div className="text-lg font-semibold">{story.metrics.timeline}</div>
-                            <div className="text-xs text-muted-foreground">Período</div>
-                          </div>
-                          <div className="text-center p-2 bg-muted rounded-md">
-                            <div className="text-lg font-semibold text-primary">{story.metrics.roi}</div>
-                            <div className="text-xs text-muted-foreground">ROI</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="pt-0">
-                        <Button variant="outline" className="w-full">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Ler Case Completo
+                    </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <Button variant="ghost" size="sm">
+                          <ThumbsUp className="mr-2 h-4 w-4" />
+                          {item.likes}
                         </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Tabs defaultValue={activeTab} className="mt-6" onValueChange={setActiveTab}>
-            <div className="flex justify-between items-center mb-4">
-              <TabsList>
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="agro">Agronegócio</TabsTrigger>
-                <TabsTrigger value="ecommerce">E-Commerce</TabsTrigger>
-                <TabsTrigger value="health">Saúde</TabsTrigger>
-                <TabsTrigger value="fashion">Moda</TabsTrigger>
-                <TabsTrigger value="services">Serviços</TabsTrigger>
-              </TabsList>
-              
-              <Button variant="outline" size="sm">
-                <BookMarked className="mr-2 h-4 w-4" />
-                Minha Biblioteca
-              </Button>
-            </div>
-
-            <TabsContent value={activeTab} className="mt-0 space-y-4">
-              {filteredStories.map((story) => (
-                <Card key={story.id} className="overflow-hidden">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative h-48 md:h-auto">
-                      <img 
-                        src={story.image} 
-                        alt={story.title} 
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="md:col-span-2 p-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <Badge className="mb-2" variant="secondary">
-                            {story.segment === 'agro' ? 'Agronegócio' : 
-                             story.segment === 'ecommerce' ? 'E-Commerce' : 
-                             story.segment === 'health' ? 'Saúde' :
-                             story.segment === 'fashion' ? 'Moda' :
-                             story.segment === 'services' ? 'Serviços' : 'Outro'}
-                          </Badge>
-                          <h3 className="text-xl font-semibold">{story.title}</h3>
-                        </div>
-                        {story.featured && (
-                          <Award className="text-yellow-500" size={20} />
-                        )}
+                        <Button variant="ghost" size="sm">
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          {item.comments}
+                        </Button>
                       </div>
-                      <p className="text-muted-foreground mb-4">{story.excerpt}</p>
-                      
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        <div className="text-center p-2 bg-muted rounded-md">
-                          <div className="text-lg font-semibold text-green-600">+{story.metrics.growthPercent}%</div>
-                          <div className="text-xs text-muted-foreground">Crescimento</div>
-                        </div>
-                        <div className="text-center p-2 bg-muted rounded-md">
-                          <div className="text-lg font-semibold">{story.metrics.timeline}</div>
-                          <div className="text-xs text-muted-foreground">Período</div>
-                        </div>
-                        <div className="text-center p-2 bg-muted rounded-md">
-                          <div className="text-lg font-semibold text-primary">{story.metrics.roi}</div>
-                          <div className="text-xs text-muted-foreground">ROI</div>
-                        </div>
-                      </div>
-                      
-                      <Separator className="my-4" />
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Avatar className="h-8 w-8 mr-2">
-                            <AvatarImage src={story.author.avatar} />
-                            <AvatarFallback>{story.author.name[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="text-sm font-medium">{story.author.name}</div>
-                            <div className="text-xs text-muted-foreground">{story.author.role}, {story.company}</div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex space-x-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleSaveStory(story.id)}>
-                            <Heart className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleShareStory(story.id)}>
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" className="ml-2">
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            Ler Completo
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+                      <Button variant="outline" size="sm">
+                        Ver Mais
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
               ))}
-            </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>

@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import PageHeader from '@/components/PageHeader';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Target, Calculator, TrendingUp, LineChart, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ const Simulator = () => {
   const [growthRate, setGrowthRate] = useState(10);
   const [initialValue, setInitialValue] = useState(100000);
   const [investmentPercent, setInvestmentPercent] = useState(5);
-  
+
   const navItems = [
     {
       name: 'Dashboard',
@@ -42,7 +41,6 @@ const Simulator = () => {
     }
   ];
   
-  // Generate simulation data based on parameters
   const generateSimulationData = () => {
     const months = parseInt(timeframe);
     const data = [];
@@ -51,7 +49,6 @@ const Simulator = () => {
     const monthlyInvestment = initialValue * (investmentPercent / 100);
     
     for (let i = 0; i <= months; i++) {
-      // Different calculation based on goal type
       if (goalType === 'revenue') {
         data.push({
           month: i,
@@ -67,7 +64,6 @@ const Simulator = () => {
         });
         currentValue = currentValue * (1 + monthlyGrowthRate * 0.8);
       } else if (goalType === 'costs') {
-        // For costs, we want to decrease, not increase
         data.push({
           month: i,
           value: currentValue,
@@ -85,7 +81,14 @@ const Simulator = () => {
   const percentageChange = ((finalValue - initialValue) / initialValue * 100).toFixed(1);
   const isPositiveGoal = goalType !== 'costs';
   
-  // Calculate expected outcomes
+  const handleGrowthRateChange = (value: number[]) => {
+    setGrowthRate(value[0]);
+  };
+  
+  const handleInvestmentPercentChange = (value: number[]) => {
+    setInvestmentPercent(value[0]);
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -103,8 +106,7 @@ const Simulator = () => {
         <div className="container px-4 py-6">
           <PageHeader
             title="Simulador de Metas e Crescimento"
-            description={`Projete cenários de crescimento para sua empresa no segmento de ${segmentName}`}
-            icon={<Target size={24} />}
+            subtitle={`Projete cenários de crescimento para sua empresa no segmento de ${segmentName}`}
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -153,7 +155,7 @@ const Simulator = () => {
                       value={[growthRate]} 
                       max={30} 
                       step={0.5}
-                      onValueChange={(value) => setGrowthRate(value[0])} 
+                      onValueChange={handleGrowthRateChange} 
                     />
                     <span className="w-12 text-center">{growthRate}%</span>
                   </div>
@@ -190,7 +192,7 @@ const Simulator = () => {
                         value={[investmentPercent]} 
                         max={20} 
                         step={0.5}
-                        onValueChange={(value) => setInvestmentPercent(value[0])} 
+                        onValueChange={handleInvestmentPercentChange} 
                       />
                       <span className="w-12 text-center">{investmentPercent}%</span>
                     </div>
