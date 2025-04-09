@@ -89,7 +89,7 @@ const Simulator = () => {
     setInvestmentPercent(value[0]);
   };
 
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',

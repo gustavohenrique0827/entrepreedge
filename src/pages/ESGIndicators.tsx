@@ -17,13 +17,13 @@ import {
   Award, 
   Lightbulb, 
   Target, 
-  LineChart,
+  LineChart as LineChartIcon,
   ArrowUpRight,
   ArrowDownRight,
   Shield,
   BadgeCheck,
   Scale,
-  Tree as TreeDeciduous,
+  TreeDeciduous,
   Droplet as Droplets
 } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -37,6 +37,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
+  LineChart,
   Line, 
   BarChart as RechartsBarChart,
   Bar
