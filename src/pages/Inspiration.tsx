@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -5,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Search, Tag, ThumbsUp, MessageSquare, BarChart, LineChart, Target } from 'lucide-react';
+import { Lightbulb, Search, Tag, ThumbsUp, MessageSquare, BarChart, LineChart, Target, ArrowRight } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
 
 const Inspiration = () => {

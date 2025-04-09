@@ -1,11 +1,19 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, BarChartIcon, ArrowUpRight, ArrowDownRight, Users, Target, Building, Globe, TrendingUp } from 'lucide-react';
+import { 
+  BarChart, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Users, 
+  Target, 
+  Building, 
+  Globe, 
+  TrendingUp 
+} from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,7 +43,6 @@ const Benchmarking = () => {
     }
   ];
 
-  // Benchmarking data specific to segment
   const benchmarkData = {
     performance: [
       { metric: 'ROI', value: 18.5, average: 15.2, isAbove: true },
@@ -78,7 +85,7 @@ const Benchmarking = () => {
           <PageHeader
             title="Benchmarking por Segmento"
             description={`Compare o desempenho da sua empresa com outras do segmento: ${segmentName}`}
-            icon={<BarChartIcon size={24} />}
+            icon={<BarChart size={24} />}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
