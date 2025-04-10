@@ -84,88 +84,91 @@ const EmployeeManagement = () => {
     }
   };
 
+  // Create the action button for the header
+  const actionButton = (
+    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Novo Colaborador
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Adicionar Novo Colaborador</DialogTitle>
+          <DialogDescription>
+            Preencha os dados do novo colaborador abaixo.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Nome</Label>
+            <Input
+              id="name"
+              value={newEmployee.name}
+              onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="position" className="text-right">Cargo</Label>
+            <Input
+              id="position"
+              value={newEmployee.position}
+              onChange={(e) => setNewEmployee({...newEmployee, position: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="department" className="text-right">Departamento</Label>
+            <Input
+              id="department"
+              value={newEmployee.department}
+              onChange={(e) => setNewEmployee({...newEmployee, department: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="status" className="text-right">Status</Label>
+            <Select 
+              value={newEmployee.status}
+              onValueChange={(value) => setNewEmployee({...newEmployee, status: value})}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Selecione um status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Ativo">Ativo</SelectItem>
+                <SelectItem value="Afastado">Afastado</SelectItem>
+                <SelectItem value="Férias">Férias</SelectItem>
+                <SelectItem value="Desligado">Desligado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="hireDate" className="text-right">Data de Admissão</Label>
+            <Input
+              id="hireDate"
+              type="date"
+              value={newEmployee.hireDate}
+              onChange={(e) => setNewEmployee({...newEmployee, hireDate: e.target.value})}
+              className="col-span-3"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit" onClick={handleAddEmployee}>Adicionar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <PageContainer>
       <PageHeader
         title="Gestão de Colaboradores"
         description="Gerencie os funcionários da sua empresa"
-        actions={
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Novo Colaborador
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Novo Colaborador</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados do novo colaborador abaixo.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Nome</Label>
-                  <Input
-                    id="name"
-                    value={newEmployee.name}
-                    onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="position" className="text-right">Cargo</Label>
-                  <Input
-                    id="position"
-                    value={newEmployee.position}
-                    onChange={(e) => setNewEmployee({...newEmployee, position: e.target.value})}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="department" className="text-right">Departamento</Label>
-                  <Input
-                    id="department"
-                    value={newEmployee.department}
-                    onChange={(e) => setNewEmployee({...newEmployee, department: e.target.value})}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="text-right">Status</Label>
-                  <Select 
-                    value={newEmployee.status}
-                    onValueChange={(value) => setNewEmployee({...newEmployee, status: value})}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Selecione um status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Ativo">Ativo</SelectItem>
-                      <SelectItem value="Afastado">Afastado</SelectItem>
-                      <SelectItem value="Férias">Férias</SelectItem>
-                      <SelectItem value="Desligado">Desligado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="hireDate" className="text-right">Data de Admissão</Label>
-                  <Input
-                    id="hireDate"
-                    type="date"
-                    value={newEmployee.hireDate}
-                    onChange={(e) => setNewEmployee({...newEmployee, hireDate: e.target.value})}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" onClick={handleAddEmployee}>Adicionar</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
+        actionButton={actionButton}
       />
 
       <div className="space-y-4">
