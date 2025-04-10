@@ -15,6 +15,7 @@ interface SubscriptionFeaturesType {
     goals: boolean;
     analytics: boolean;
     marketing: boolean;
+    accounting: boolean; // Nova feature para área contábil
   };
   maxUsers: number;
   customReports: boolean;
@@ -51,7 +52,8 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       projects: false,
       goals: false,
       analytics: false,
-      marketing: false
+      marketing: false,
+      accounting: false
     },
     maxUsers: 1,
     customReports: false,
@@ -71,13 +73,14 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       sales: true,
       inventory: false,
       crm: false,
-      hr: false,
+      hr: false, // Departamento Pessoal não disponível no plano inicial
       projects: false,
       goals: true,
       analytics: true,
-      marketing: false
+      marketing: false,
+      accounting: false // Área contábil não disponível no plano inicial
     },
-    maxUsers: 3,
+    maxUsers: 3, // Limite de 3 usuários no plano inicial
     customReports: false,
     advancedIntegrations: false,
     supportEmail: true,
@@ -95,13 +98,14 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       sales: true,
       inventory: true,
       crm: true,
-      hr: false,
+      hr: true, // Departamento Pessoal disponível no plano empresarial
       projects: true,
       goals: true,
       analytics: true,
-      marketing: true
+      marketing: true,
+      accounting: true // Área contábil disponível no plano empresarial
     },
-    maxUsers: 15,
+    maxUsers: 7, // Limite de 7 usuários no plano empresarial
     customReports: true,
     advancedIntegrations: true,
     supportEmail: true,
@@ -119,13 +123,14 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
       sales: true,
       inventory: true,
       crm: true,
-      hr: true,
+      hr: true, // Departamento Pessoal disponível no plano premium
       projects: true,
       goals: true,
       analytics: true,
-      marketing: true
+      marketing: true,
+      accounting: true // Área contábil disponível no plano premium
     },
-    maxUsers: 999, // Unlimited
+    maxUsers: 999, // Usuários ilimitados no plano premium
     customReports: true,
     advancedIntegrations: true,
     supportEmail: true,
@@ -198,6 +203,8 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
         return features.analytics;
       case 'marketing':
         return features.marketing;
+      case 'accounting':
+        return features.accounting;
       case 'customReports':
         return planFeatures[currentPlan].customReports;
       case 'advancedIntegrations':
@@ -222,13 +229,23 @@ export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ childr
   // For demo purposes - temporarily activate a module for testing
   const activateModule = (module: string): boolean => {
     try {
-      // For demo - only allow financial to be activated in free plan
+      // Para o plano gratuito, apenas o módulo financeiro está disponível
       if (currentPlan === 'free' && module === 'financial') {
         toast({
           title: "Módulo ativado",
           description: "Módulo financeiro ativado com sucesso no plano gratuito.",
         });
         return true;
+      }
+
+      // Verificar se o módulo é um dos que estão disponíveis apenas em planos superiores
+      if ((module === 'hr' || module === 'accounting') && currentPlan === 'starter') {
+        toast({
+          title: "Acesso restrito",
+          description: `O módulo ${module === 'hr' ? 'Departamento Pessoal' : 'Contábil'} requer plano Empresarial ou Premium. Por favor, faça um upgrade.`,
+          variant: "destructive",
+        });
+        return false;
       }
 
       toast({

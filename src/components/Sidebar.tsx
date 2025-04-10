@@ -7,6 +7,7 @@ import {
   BookOpen,
   CalendarDays,
   CircleUserRound,
+  FileText,
   Goal,
   HelpCircle,
   Home,
@@ -47,6 +48,7 @@ const Sidebar = () => {
     { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
     { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
     { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
+    { title: "Dep. Pessoal", icon: <Users size={18} />, href: "/personnel", requiresFeature: "hr" },
   ];
 
   const collaborationItems: SidebarMainItem[] = [
@@ -54,6 +56,13 @@ const Sidebar = () => {
     { title: "Inspiração", icon: <Star size={18} />, href: "/inspiration" },
     { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
     { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
+  ];
+  
+  // Nova seção para área contábil
+  const accountingItems: SidebarMainItem[] = [
+    { title: "Documentos", icon: <FileText size={18} />, href: "/accounting/documents", requiresFeature: "accounting" },
+    { title: "Tributos", icon: <FileText size={18} />, href: "/accounting/taxes", requiresFeature: "accounting" },
+    { title: "Relatórios", icon: <FileText size={18} />, href: "/accounting/reports", requiresFeature: "accounting" },
   ];
 
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
@@ -121,6 +130,30 @@ const Sidebar = () => {
               )
             ))}
           </div>
+
+          {/* Área Contábil - Nova seção */}
+          {hasAccess('accounting') && (
+            <div className="px-3 py-2">
+              <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+                Área Contábil
+              </div>
+              {accountingItems.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="px-3 py-2">
             <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">

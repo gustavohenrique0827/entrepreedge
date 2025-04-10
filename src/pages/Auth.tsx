@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setCurrentSegment } = useSegment();
   const [activeTab, setActiveTab] = useState('login');
   
   // Login form state
@@ -22,6 +26,7 @@ const Auth = () => {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [segment, setSegment] = useState<BusinessSegmentType | ''>('');
   
   // Create test user on component mount if it doesn't exist
   useEffect(() => {
@@ -69,6 +74,10 @@ const Auth = () => {
       localStorage.setItem('companyName', localStorage.getItem('testCompanyName') || '');
       localStorage.setItem('companyCnpj', localStorage.getItem('testCompanyCnpj') || '');
       localStorage.setItem('onboardingCompleted', 'true'); // Skip onboarding for test user
+      
+      // Carregar o segmento armazenado ou definir um padrão
+      const savedSegment = localStorage.getItem('segment') as BusinessSegmentType || 'generic';
+      setCurrentSegment(savedSegment);
       
       toast({
         title: "Login bem-sucedido",
@@ -121,10 +130,10 @@ const Auth = () => {
     e.preventDefault();
     
     // Validate register form
-    if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword) {
+    if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword || !segment) {
       toast({
         title: "Erro de validação",
-        description: "Por favor, preencha todos os campos.",
+        description: "Por favor, preencha todos os campos, incluindo o segmento da empresa.",
         variant: "destructive"
       });
       return;
@@ -155,6 +164,10 @@ const Auth = () => {
     localStorage.setItem('userEmail', registerEmail);
     localStorage.setItem('companyName', companyName);
     localStorage.setItem('companyCnpj', companyCnpj);
+    localStorage.setItem('segment', segment);
+    
+    // Aplicar o segmento escolhido
+    setCurrentSegment(segment as BusinessSegmentType);
     
     toast({
       title: "Cadastro realizado com sucesso",
@@ -168,6 +181,19 @@ const Auth = () => {
     setLoginEmail(localStorage.getItem('testEmail') || 'teste@empresa.com');
     setLoginPassword(localStorage.getItem('testPassword') || 'senha123');
   };
+
+  const segments: {id: BusinessSegmentType, name: string}[] = [
+    { id: 'generic', name: 'Genérico' },
+    { id: 'agro', name: 'Agronegócio' },
+    { id: 'ecommerce', name: 'E-Commerce' },
+    { id: 'health', name: 'Saúde' },
+    { id: 'fashion', name: 'Moda' },
+    { id: 'services', name: 'Serviços' },
+    { id: 'tech', name: 'Tecnologia' },
+    { id: 'legal', name: 'Jurídico' },
+    { id: 'education', name: 'Educação' },
+    { id: 'manufacturing', name: 'Indústria' }
+  ];
   
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -259,6 +285,24 @@ const Auth = () => {
                         onChange={handleCnpjChange}
                         maxLength={18}
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="segment">Segmento da Empresa <span className="text-destructive">*</span></Label>
+                      <Select value={segment} onValueChange={(value: BusinessSegmentType) => setSegment(value)}>
+                        <SelectTrigger id="segment">
+                          <SelectValue placeholder="Selecione o segmento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {segments.map((segment) => (
+                            <SelectItem key={segment.id} value={segment.id}>
+                              {segment.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        O visual e os recursos do sistema serão personalizados de acordo com o segmento escolhido.
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="register-email">Email</Label>

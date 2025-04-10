@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Palette, Sliders, Leaf } from 'lucide-react';
+import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Palette, Sliders } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubscriptionPlans from '@/components/settings/SubscriptionPlans';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
-import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -84,11 +83,6 @@ const Settings = () => {
       icon: <BarChart2 size={18} />
     },
     {
-      name: 'ESG',
-      href: '/esg',
-      icon: <Leaf size={18} />
-    },
-    {
       name: 'Aprendizado',
       href: '/learn',
       icon: <BookOpen size={18} />
@@ -98,7 +92,6 @@ const Settings = () => {
   const tabIcons = {
     subscription: <SettingsIcon size={16} />,
     appearance: <Palette size={16} />,
-    visualization: <Leaf size={16} />,
     notifications: <Bell size={16} />,
     security: <Shield size={16} />,
     preferences: <Sliders size={16} />
@@ -127,7 +120,7 @@ const Settings = () => {
           <Card className="mb-6 overflow-hidden border-none shadow-sm">
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-2 md:grid-cols-6 rounded-none h-auto p-0">
+                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0">
                   {Object.entries(tabIcons).map(([key, icon]) => (
                     <TabsTrigger 
                       key={key} 
@@ -139,7 +132,6 @@ const Settings = () => {
                         <span>
                           {key === 'subscription' ? 'Assinatura' :
                            key === 'appearance' ? 'Aparência' :
-                           key === 'visualization' ? 'Segmento' :
                            key === 'notifications' ? 'Notificações' :
                            key === 'security' ? 'Segurança' : 'Preferências'}
                         </span>
@@ -154,10 +146,6 @@ const Settings = () => {
                 
                 <TabsContent value="appearance" className="mt-0">
                   <AppearanceSettings />
-                </TabsContent>
-                
-                <TabsContent value="visualization" className="mt-0">
-                  <VisualizationSettings />
                 </TabsContent>
                 
                 <TabsContent value="notifications" className="mt-0">
