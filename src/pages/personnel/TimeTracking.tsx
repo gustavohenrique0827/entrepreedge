@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import PageContainer from '@/components/PageContainer';
-import PageHeader from '@/components/PageHeader';
+import { PageContainer } from '@/components/PageContainer';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
