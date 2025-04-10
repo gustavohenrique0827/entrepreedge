@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +18,14 @@ import {
   Star,
   Target,
   Users,
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  FileSpreadsheet,
+  UserPlus,
+  UserCheck,
+  GraduationCap
 } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useSegment } from "@/contexts/SegmentContext";
@@ -29,13 +37,35 @@ type SidebarMainItem = {
   requiresFeature?: string;
 };
 
+type SidebarSubItem = {
+  title: string;
+  href: string;
+  icon?: JSX.Element;
+};
+
+type SidebarCollapsibleItem = {
+  title: string;
+  icon: JSX.Element;
+  items: SidebarSubItem[];
+  requiresFeature?: string;
+  open?: boolean;
+};
+
 const Sidebar = () => {
   const location = useLocation();
   const { hasAccess } = useSubscription();
   const { segmentName } = useSegment();
   
+  // State for collapsible sections
+  const [personnelOpen, setPersonnelOpen] = useState(false);
+  const [accountingOpen, setAccountingOpen] = useState(false);
+  
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const isInPath = (path: string) => {
+    return location.pathname.startsWith(path);
   };
 
   const sidebarMainItems: SidebarMainItem[] = [
@@ -48,7 +78,6 @@ const Sidebar = () => {
     { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
     { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
     { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
-    { title: "Dep. Pessoal", icon: <Users size={18} />, href: "/personnel", requiresFeature: "hr" },
   ];
 
   const collaborationItems: SidebarMainItem[] = [
@@ -58,11 +87,20 @@ const Sidebar = () => {
     { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
   ];
   
-  // Nova seção para área contábil
-  const accountingItems: SidebarMainItem[] = [
-    { title: "Documentos", icon: <FileText size={18} />, href: "/accounting/documents", requiresFeature: "accounting" },
-    { title: "Tributos", icon: <FileText size={18} />, href: "/accounting/taxes", requiresFeature: "accounting" },
-    { title: "Relatórios", icon: <FileText size={18} />, href: "/accounting/reports", requiresFeature: "accounting" },
+  // Personnel module items
+  const personnelItems: SidebarSubItem[] = [
+    { title: "Colaboradores", href: "/personnel/employees", icon: <Users size={16} /> },
+    { title: "Ponto Eletrônico", href: "/personnel/time-tracking", icon: <Clock size={16} /> },
+    { title: "Holerites", href: "/personnel/payslips", icon: <FileSpreadsheet size={16} /> },
+    { title: "Admissões", href: "/personnel/hiring", icon: <UserPlus size={16} /> },
+    { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
+  ];
+  
+  // Accounting module items
+  const accountingItems: SidebarSubItem[] = [
+    { title: "Documentos", href: "/accounting/documents", icon: <FileText size={16} /> },
+    { title: "Tributos", href: "/accounting/taxes", icon: <FileText size={16} /> },
+    { title: "Relatórios", href: "/accounting/reports", icon: <FileText size={16} /> },
   ];
 
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
@@ -131,27 +169,91 @@ const Sidebar = () => {
             ))}
           </div>
 
-          {/* Área Contábil - Nova seção */}
+          {/* Departamento Pessoal section - only show if user has access */}
+          {hasAccess('hr') && (
+            <div className="px-3 py-2">
+              <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+                Departamento Pessoal
+              </div>
+              <div
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                  isInPath("/personnel")
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/80"
+                )}
+                onClick={() => setPersonnelOpen(!personnelOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase size={18} />
+                  <span>Departamento Pessoal</span>
+                </div>
+                {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </div>
+              
+              {personnelOpen && (
+                <div className="ml-9 space-y-1 mt-1">
+                  {personnelItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      className={cn(
+                        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                        isActive(item.href)
+                          ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70"
+                      )}
+                    >
+                      {item.icon}
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Área Contábil section - only show if user has access */}
           {hasAccess('accounting') && (
             <div className="px-3 py-2">
               <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
                 Área Contábil
               </div>
-              {accountingItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              ))}
+              <div
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                  isInPath("/accounting")
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/80"
+                )}
+                onClick={() => setAccountingOpen(!accountingOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText size={18} />
+                  <span>Área Contábil</span>
+                </div>
+                {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </div>
+              
+              {accountingOpen && (
+                <div className="ml-9 space-y-1 mt-1">
+                  {accountingItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      className={cn(
+                        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                        isActive(item.href)
+                          ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70"
+                      )}
+                    >
+                      {item.icon}
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

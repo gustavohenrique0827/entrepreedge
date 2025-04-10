@@ -26,6 +26,9 @@ import Inspiration from "./pages/Inspiration";
 import ESGIndicators from "./pages/ESGIndicators";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SegmentProvider } from "./contexts/SegmentContext";
+// Import Personnel pages
+import EmployeeManagement from "./pages/personnel/EmployeeManagement";
+import TimeTracking from "./pages/personnel/TimeTracking";
 
 const queryClient = new QueryClient();
 
@@ -156,7 +159,7 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
-                  {/* New routes for additional features */}
+                  {/* Analytics and other feature routes */}
                   <Route path="/benchmarking" element={
                     <ProtectedRoute>
                       <Benchmarking />
@@ -175,6 +178,23 @@ const App = () => {
                   <Route path="/esg" element={
                     <ProtectedRoute>
                       <ESGIndicators />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Personnel module routes */}
+                  <Route path="/personnel" element={
+                    <ProtectedRoute>
+                      <EmployeeManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/employees" element={
+                    <ProtectedRoute>
+                      <EmployeeManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/time-tracking" element={
+                    <ProtectedRoute>
+                      <TimeTracking />
                     </ProtectedRoute>
                   } />
                   
