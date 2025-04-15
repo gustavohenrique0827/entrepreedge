@@ -25,7 +25,14 @@ import {
   FileSpreadsheet,
   UserPlus,
   UserCheck,
-  GraduationCap
+  GraduationCap,
+  Receipt,
+  Building2,
+  FilePieChart,
+  FileBarChart,
+  LayoutDashboard,
+  ClipboardCheck,
+  Tag
 } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useSegment } from "@/contexts/SegmentContext";
@@ -96,11 +103,16 @@ const Sidebar = () => {
     { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
   ];
   
-  // Accounting module items
+  // Accounting module items - Updated with more options
   const accountingItems: SidebarSubItem[] = [
-    { title: "Documentos", href: "/accounting/documents", icon: <FileText size={16} /> },
-    { title: "Tributos", href: "/accounting/taxes", icon: <FileText size={16} /> },
-    { title: "Relatórios", href: "/accounting/reports", icon: <FileText size={16} /> },
+    { title: "Visão Geral", href: "/accounting/overview", icon: <LayoutDashboard size={16} /> },
+    { title: "Lançamentos Contábeis", href: "/accounting/entries", icon: <FileText size={16} /> },
+    { title: "Fiscal", href: "/accounting/fiscal", icon: <ClipboardCheck size={16} /> },
+    { title: "Tributos", href: "/accounting/taxes", icon: <Building2 size={16} /> },
+    { title: "Notas Fiscais", href: "/accounting/invoices", icon: <Receipt size={16} /> },
+    { title: "Relatórios", href: "/accounting/reports", icon: <FilePieChart size={16} /> },
+    { title: "MEI", href: "/accounting/mei", icon: <Tag size={16} /> },
+    { title: "DRE", href: "/accounting/financial-statements", icon: <FileBarChart size={16} /> },
   ];
 
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';

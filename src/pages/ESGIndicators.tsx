@@ -5,49 +5,221 @@ import Sidebar from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
-  BarChart, 
   Leaf, 
-  Recycle, 
   Users, 
-  Building2, 
-  Award, 
-  Lightbulb, 
-  Target, 
-  LineChart as LineChartIcon,
+  ClipboardCheck, 
+  Plus, 
+  LineChart, 
+  BarChart, 
+  Target,
+  Search,
   ArrowUpRight,
   ArrowDownRight,
-  Shield,
-  BadgeCheck,
-  Scale,
-  Trees, // Changed from Tree to Trees, which is the correct icon name
-  Droplet as Droplets
-} from 'lucide-react';
-import { useSegment } from '@/contexts/SegmentContext';
-import { Separator } from "@/components/ui/separator";
+  Trash2,
+  Edit,
+  Info,
+  ChevronDown
+} from "lucide-react";
 import { 
-  ResponsiveContainer, 
   AreaChart, 
   Area, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
-  LineChart, // This is the Recharts LineChart
-  Line, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
   BarChart as RechartsBarChart,
-  Bar
+  Bar,
+  Legend
 } from 'recharts';
+import { useToast } from "@/hooks/use-toast";
+import { useSegment } from "@/contexts/SegmentContext";
+
+type ESGIndicator = {
+  id: number;
+  name: string;
+  category: 'environmental' | 'social' | 'governance';
+  value: number;
+  unit: string;
+  target: number;
+  description: string;
+  history: { date: string; value: number }[];
+  trend: 'up' | 'down' | 'stable';
+  isGood: boolean; // Whether an increase is good (true) or bad (false)
+};
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const ESGIndicators = () => {
-  const { currentSegment, segmentName } = useSegment();
-  const [reportType, setReportType] = useState('summary');
-  const [timeframe, setTimeframe] = useState('year');
+  const { toast } = useToast();
+  const { segmentName } = useSegment();
+  const [activeTab, setActiveTab] = useState('environmental');
+  const [isAddIndicatorOpen, setIsAddIndicatorOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // New indicator state
+  const [newIndicator, setNewIndicator] = useState<Omit<ESGIndicator, 'id' | 'history' | 'trend'>>({
+    name: '',
+    category: 'environmental',
+    value: 0,
+    unit: '%',
+    target: 0,
+    description: '',
+    isGood: true
+  });
+  
+  // Sample ESG indicators
+  const [indicators, setIndicators] = useState<ESGIndicator[]>([
+    {
+      id: 1,
+      name: 'Emissões de CO₂',
+      category: 'environmental',
+      value: 45,
+      unit: 'toneladas',
+      target: 30,
+      description: 'Total de emissões de CO₂ da empresa',
+      history: [
+        { date: '2024-01', value: 60 },
+        { date: '2024-02', value: 55 },
+        { date: '2024-03', value: 50 },
+        { date: '2024-04', value: 45 }
+      ],
+      trend: 'down',
+      isGood: false
+    },
+    {
+      id: 2,
+      name: 'Consumo de Água',
+      category: 'environmental',
+      value: 12500,
+      unit: 'litros',
+      target: 10000,
+      description: 'Consumo mensal de água',
+      history: [
+        { date: '2024-01', value: 14000 },
+        { date: '2024-02', value: 13500 },
+        { date: '2024-03', value: 13000 },
+        { date: '2024-04', value: 12500 }
+      ],
+      trend: 'down',
+      isGood: false
+    },
+    {
+      id: 3,
+      name: 'Uso de Energia Renovável',
+      category: 'environmental',
+      value: 35,
+      unit: '%',
+      target: 50,
+      description: 'Percentual de energia renovável utilizada',
+      history: [
+        { date: '2024-01', value: 20 },
+        { date: '2024-02', value: 25 },
+        { date: '2024-03', value: 30 },
+        { date: '2024-04', value: 35 }
+      ],
+      trend: 'up',
+      isGood: true
+    },
+    {
+      id: 4,
+      name: 'Diversidade de Gênero',
+      category: 'social',
+      value: 42,
+      unit: '%',
+      target: 50,
+      description: 'Percentual de mulheres na empresa',
+      history: [
+        { date: '2024-01', value: 35 },
+        { date: '2024-02', value: 38 },
+        { date: '2024-03', value: 40 },
+        { date: '2024-04', value: 42 }
+      ],
+      trend: 'up',
+      isGood: true
+    },
+    {
+      id: 5,
+      name: 'Investimento em Treinamento',
+      category: 'social',
+      value: 1200,
+      unit: 'R$/funcionário',
+      target: 1500,
+      description: 'Investimento anual em treinamento por funcionário',
+      history: [
+        { date: '2024-01', value: 800 },
+        { date: '2024-02', value: 900 },
+        { date: '2024-03', value: 1000 },
+        { date: '2024-04', value: 1200 }
+      ],
+      trend: 'up',
+      isGood: true
+    },
+    {
+      id: 6,
+      name: 'Taxa de Rotatividade',
+      category: 'social',
+      value: 12,
+      unit: '%',
+      target: 8,
+      description: 'Taxa anual de rotatividade de funcionários',
+      history: [
+        { date: '2024-01', value: 18 },
+        { date: '2024-02', value: 16 },
+        { date: '2024-03', value: 14 },
+        { date: '2024-04', value: 12 }
+      ],
+      trend: 'down',
+      isGood: false
+    },
+    {
+      id: 7,
+      name: 'Independência do Conselho',
+      category: 'governance',
+      value: 60,
+      unit: '%',
+      target: 75,
+      description: 'Percentual de membros independentes no conselho',
+      history: [
+        { date: '2024-01', value: 50 },
+        { date: '2024-02', value: 50 },
+        { date: '2024-03', value: 55 },
+        { date: '2024-04', value: 60 }
+      ],
+      trend: 'up',
+      isGood: true
+    },
+    {
+      id: 8,
+      name: 'Transparência de Relatórios',
+      category: 'governance',
+      value: 80,
+      unit: '%',
+      target: 100,
+      description: 'Índice de transparência em relatórios corporativos',
+      history: [
+        { date: '2024-01', value: 65 },
+        { date: '2024-02', value: 70 },
+        { date: '2024-03', value: 75 },
+        { date: '2024-04', value: 80 }
+      ],
+      trend: 'up',
+      isGood: true
+    }
+  ]);
   
   const navItems = [
     {
@@ -56,104 +228,141 @@ const ESGIndicators = () => {
       icon: <BarChart size={18} />
     },
     {
-      name: 'Indicadores ESG',
-      href: '/esg',
-      icon: <Leaf size={18} />
-    },
-  ];
-
-  // ESG score data
-  const esgScores = {
-    environment: 78,
-    social: 65,
-    governance: 82,
-    total: 75
-  };
-
-  // Environmental data
-  const environmentalData = [
-    { month: 'Jan', energyUsage: 320, wasteProduction: 250, waterConsumption: 180, carbonEmissions: 150 },
-    { month: 'Fev', energyUsage: 310, wasteProduction: 240, waterConsumption: 170, carbonEmissions: 145 },
-    { month: 'Mar', energyUsage: 300, wasteProduction: 230, waterConsumption: 165, carbonEmissions: 140 },
-    { month: 'Abr', energyUsage: 290, wasteProduction: 220, waterConsumption: 160, carbonEmissions: 135 },
-    { month: 'Mai', energyUsage: 280, wasteProduction: 210, waterConsumption: 155, carbonEmissions: 130 },
-    { month: 'Jun', energyUsage: 270, wasteProduction: 200, waterConsumption: 150, carbonEmissions: 125 },
-    { month: 'Jul', energyUsage: 260, wasteProduction: 190, waterConsumption: 145, carbonEmissions: 120 },
-    { month: 'Ago', energyUsage: 250, wasteProduction: 180, waterConsumption: 140, carbonEmissions: 115 },
-    { month: 'Set', energyUsage: 245, wasteProduction: 175, waterConsumption: 135, carbonEmissions: 110 },
-    { month: 'Out', energyUsage: 240, wasteProduction: 170, waterConsumption: 130, carbonEmissions: 105 },
-    { month: 'Nov', energyUsage: 235, wasteProduction: 165, waterConsumption: 125, carbonEmissions: 100 },
-    { month: 'Dez', energyUsage: 230, wasteProduction: 160, waterConsumption: 120, carbonEmissions: 95 },
-  ];
-
-  // Social data
-  const socialData = [
-    { quarter: 'Q1', employeeSatisfaction: 75, communityEngagement: 25, diversityScore: 65, trainingHours: 120 },
-    { quarter: 'Q2', employeeSatisfaction: 78, communityEngagement: 35, diversityScore: 68, trainingHours: 150 },
-    { quarter: 'Q3', employeeSatisfaction: 80, communityEngagement: 40, diversityScore: 72, trainingHours: 180 },
-    { quarter: 'Q4', employeeSatisfaction: 84, communityEngagement: 50, diversityScore: 76, trainingHours: 200 },
-  ];
-
-  // Governance data
-  const governanceData = [
-    { category: 'Estrutura de Governança', score: 85, benchmark: 70 },
-    { category: 'Ética e Compliance', score: 90, benchmark: 75 },
-    { category: 'Transparência', score: 75, benchmark: 65 },
-    { category: 'Gestão de Riscos', score: 80, benchmark: 68 },
-    { category: 'Direitos dos Acionistas', score: 78, benchmark: 72 },
-  ];
-
-  // ESG initiatives
-  const esgInitiatives = [
-    {
-      title: 'Redução de Emissões de Carbono',
-      area: 'environment',
-      progress: 65,
-      target: 'Reduzir 30% até 2025',
-      status: 'Em andamento'
+      name: 'Benchmarking',
+      href: '/benchmarking',
+      icon: <LineChart size={18} />
     },
     {
-      title: 'Diversidade e Inclusão',
-      area: 'social',
-      progress: 80,
-      target: '40% de diversidade na liderança',
-      status: 'Em andamento'
-    },
-    {
-      title: 'Código de Ética Revisado',
-      area: 'governance',
-      progress: 100,
-      target: 'Implementação completa',
-      status: 'Concluído'
-    },
-    {
-      title: 'Economia Circular',
-      area: 'environment',
-      progress: 40,
-      target: '90% de reaproveitamento',
-      status: 'Iniciado'
-    },
-    {
-      title: 'Engajamento Comunitário',
-      area: 'social',
-      progress: 60,
-      target: '5 programas sociais anuais',
-      status: 'Em andamento'
+      name: 'Simulador',
+      href: '/simulator',
+      icon: <Target size={18} />
     }
   ];
-
-  // Calculate improvements year over year
-  const improvementYoY = {
-    environment: 12.5,
-    social: 8.3,
-    governance: 5.7,
-    total: 9.2
+  
+  // Filter indicators based on active tab and search term
+  const filteredIndicators = indicators.filter(indicator => 
+    indicator.category === activeTab && 
+    (searchTerm === '' || 
+     indicator.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
+  // Calculate summary statistics
+  const totalIndicators = indicators.length;
+  const indicatorsByCategory = {
+    environmental: indicators.filter(i => i.category === 'environmental').length,
+    social: indicators.filter(i => i.category === 'social').length,
+    governance: indicators.filter(i => i.category === 'governance').length
   };
-
-  const handleGenerateReport = () => {
-    // Toast logic remains unchanged
+  
+  const onTargetIndicators = indicators.filter(i => i.value >= i.target).length;
+  const onTargetPercentage = totalIndicators > 0 
+    ? Math.round((onTargetIndicators / totalIndicators) * 100) 
+    : 0;
+  
+  const positiveIndicators = indicators.filter(i => 
+    (i.trend === 'up' && i.isGood) || (i.trend === 'down' && !i.isGood)
+  ).length;
+  
+  const positivePercentage = totalIndicators > 0 
+    ? Math.round((positiveIndicators / totalIndicators) * 100) 
+    : 0;
+  
+  // Prepare data for category distribution chart
+  const categoryData = [
+    { name: 'Ambiental', value: indicatorsByCategory.environmental },
+    { name: 'Social', value: indicatorsByCategory.social },
+    { name: 'Governança', value: indicatorsByCategory.governance }
+  ];
+  
+  // Prepare data for performance chart
+  const performanceData = [
+    { name: 'Dentro da Meta', value: onTargetIndicators },
+    { name: 'Fora da Meta', value: totalIndicators - onTargetIndicators }
+  ];
+  
+  // Prepare data for trend chart
+  const trendData = [
+    { 
+      name: 'Positivo', 
+      value: positiveIndicators 
+    },
+    { 
+      name: 'Negativo', 
+      value: totalIndicators - positiveIndicators 
+    }
+  ];
+  
+  // Handle adding a new indicator
+  const handleAddIndicator = () => {
+    if (!newIndicator.name || newIndicator.value === undefined || newIndicator.target === undefined) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const id = indicators.length > 0 ? Math.max(...indicators.map(i => i.id)) + 1 : 1;
+    
+    // Generate some historical data
+    const history = [];
+    let baseValue = newIndicator.value * 0.8; // Start at 80% of current value
+    const isIncreasing = Math.random() > 0.5;
+    
+    for (let i = 0; i < 4; i++) {
+      const month = `2024-0${i + 1}`;
+      history.push({ date: month, value: Math.round(baseValue) });
+      
+      // Adjust value for next month (randomly increasing or decreasing)
+      if (isIncreasing) {
+        baseValue *= 1.05; // Increase by 5%
+      } else {
+        baseValue *= 0.95; // Decrease by 5%
+      }
+    }
+    
+    // Determine trend
+    const trend = history[3].value > history[0].value ? 'up' : 'down';
+    
+    const indicatorToAdd: ESGIndicator = {
+      id,
+      ...newIndicator,
+      history,
+      trend
+    };
+    
+    setIndicators([...indicators, indicatorToAdd]);
+    
+    // Reset form
+    setNewIndicator({
+      name: '',
+      category: 'environmental',
+      value: 0,
+      unit: '%',
+      target: 0,
+      description: '',
+      isGood: true
+    });
+    
+    setIsAddIndicatorOpen(false);
+    
+    toast({
+      title: "Indicador adicionado",
+      description: `${indicatorToAdd.name} foi adicionado com sucesso.`
+    });
   };
-
+  
+  // Handle deleting an indicator
+  const handleDeleteIndicator = (id: number) => {
+    setIndicators(indicators.filter(indicator => indicator.id !== id));
+    
+    toast({
+      title: "Indicador removido",
+      description: "O indicador foi removido com sucesso."
+    });
+  };
+  
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -164,460 +373,433 @@ const ESGIndicators = () => {
         <div className="container px-4 py-6">
           <PageHeader
             title="Indicadores ESG"
-            description={`Monitore e gerencie indicadores de sustentabilidade, responsabilidade social e governança para ${segmentName}`}
-            icon={<Leaf size={24} />}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 mr-3">
-                      <Trees className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Ambiental</p>
-                      <p className="text-2xl font-bold">{esgScores.environment}</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-center text-sm ${improvementYoY.environment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {improvementYoY.environment >= 0 ? 
-                      <ArrowUpRight className="h-4 w-4 mr-1" /> : 
-                      <ArrowDownRight className="h-4 w-4 mr-1" />}
-                    {Math.abs(improvementYoY.environment)}%
-                  </div>
-                </div>
-                <Progress value={esgScores.environment} className="h-2 mt-2" />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20 mr-3">
-                      <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Social</p>
-                      <p className="text-2xl font-bold">{esgScores.social}</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-center text-sm ${improvementYoY.social >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {improvementYoY.social >= 0 ? 
-                      <ArrowUpRight className="h-4 w-4 mr-1" /> : 
-                      <ArrowDownRight className="h-4 w-4 mr-1" />}
-                    {Math.abs(improvementYoY.social)}%
-                  </div>
-                </div>
-                <Progress value={esgScores.social} className="h-2 mt-2" />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20 mr-3">
-                      <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Governança</p>
-                      <p className="text-2xl font-bold">{esgScores.governance}</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-center text-sm ${improvementYoY.governance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {improvementYoY.governance >= 0 ? 
-                      <ArrowUpRight className="h-4 w-4 mr-1" /> : 
-                      <ArrowDownRight className="h-4 w-4 mr-1" />}
-                    {Math.abs(improvementYoY.governance)}%
-                  </div>
-                </div>
-                <Progress value={esgScores.governance} className="h-2 mt-2" />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/20 mr-3">
-                      <BadgeCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Score Total</p>
-                      <p className="text-2xl font-bold">{esgScores.total}</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-center text-sm ${improvementYoY.total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {improvementYoY.total >= 0 ? 
-                      <ArrowUpRight className="h-4 w-4 mr-1" /> : 
-                      <ArrowDownRight className="h-4 w-4 mr-1" />}
-                    {Math.abs(improvementYoY.total)}%
-                  </div>
-                </div>
-                <Progress value={esgScores.total} className="h-2 mt-2" />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="mb-6">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <CardTitle>Iniciativas ESG</CardTitle>
-                    <CardDescription>Acompanhamento das principais iniciativas de sustentabilidade</CardDescription>
-                  </div>
-                  <Button onClick={handleGenerateReport}>
-                    Gerar Relatório ESG
+            description={`Monitore e gerencie indicadores de sustentabilidade, responsabilidade social e governança no segmento de ${segmentName}`}
+            actionButton={
+              <Dialog open={isAddIndicatorOpen} onOpenChange={setIsAddIndicatorOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Novo Indicador
                   </Button>
-                </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Novo Indicador</DialogTitle>
+                    <DialogDescription>
+                      Adicione um novo indicador ESG ao seu painel de monitoramento.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-name" className="text-right">
+                        Nome
+                      </Label>
+                      <Input
+                        id="indicator-name"
+                        value={newIndicator.name}
+                        onChange={(e) => setNewIndicator({...newIndicator, name: e.target.value})}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-category" className="text-right">
+                        Categoria
+                      </Label>
+                      <Select 
+                        value={newIndicator.category} 
+                        onValueChange={(value: 'environmental' | 'social' | 'governance') => 
+                          setNewIndicator({...newIndicator, category: value})
+                        }
+                      >
+                        <SelectTrigger id="indicator-category" className="col-span-3">
+                          <SelectValue placeholder="Selecione a categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="environmental">Ambiental</SelectItem>
+                          <SelectItem value="social">Social</SelectItem>
+                          <SelectItem value="governance">Governança</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-value" className="text-right">
+                        Valor Atual
+                      </Label>
+                      <Input
+                        id="indicator-value"
+                        type="number"
+                        value={newIndicator.value}
+                        onChange={(e) => setNewIndicator({...newIndicator, value: Number(e.target.value)})}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-unit" className="text-right">
+                        Unidade
+                      </Label>
+                      <Input
+                        id="indicator-unit"
+                        value={newIndicator.unit}
+                        onChange={(e) => setNewIndicator({...newIndicator, unit: e.target.value})}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-target" className="text-right">
+                        Meta
+                      </Label>
+                      <Input
+                        id="indicator-target"
+                        type="number"
+                        value={newIndicator.target}
+                        onChange={(e) => setNewIndicator({...newIndicator, target: Number(e.target.value)})}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-isgood" className="text-right">
+                        Interpretação
+                      </Label>
+                      <Select 
+                        value={newIndicator.isGood ? "true" : "false"} 
+                        onValueChange={(value) => 
+                          setNewIndicator({...newIndicator, isGood: value === "true"})
+                        }
+                      >
+                        <SelectTrigger id="indicator-isgood" className="col-span-3">
+                          <SelectValue placeholder="Selecione a interpretação" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Aumento é positivo</SelectItem>
+                          <SelectItem value="false">Aumento é negativo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="indicator-description" className="text-right">
+                        Descrição
+                      </Label>
+                      <Textarea
+                        id="indicator-description"
+                        value={newIndicator.description}
+                        onChange={(e) => setNewIndicator({...newIndicator, description: e.target.value})}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" onClick={handleAddIndicator}>Adicionar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            }
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Visão Geral</CardTitle>
+                <CardDescription>Resumo dos indicadores ESG</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {esgInitiatives.map((initiative, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                        <div className="flex items-center">
-                          {initiative.area === 'environment' && (
-                            <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/20 mr-3">
-                              <Trees className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                          )}
-                          {initiative.area === 'social' && (
-                            <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20 mr-3">
-                              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                          )}
-                          {initiative.area === 'governance' && (
-                            <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20 mr-3">
-                              <Shield className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                          )}
-                          <h3 className="font-medium">{initiative.title}</h3>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground whitespace-nowrap">{initiative.target}</span>
-                          <span 
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              initiative.status === 'Concluído' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 
-                              initiative.status === 'Em andamento' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400' :
-                              'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                            }`}
-                          >
-                            {initiative.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Progress value={initiative.progress} className="h-2 flex-1" />
-                        <span className="text-sm font-medium w-10 text-right">{initiative.progress}%</span>
-                      </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">{totalIndicators}</div>
+                  <div className="text-sm text-muted-foreground">Indicadores Total</div>
+                </div>
+                <Separator className="my-4" />
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <Leaf className="h-4 w-4 mr-2 text-green-500" />
+                      <span className="text-sm">Ambiental</span>
                     </div>
-                  ))}
+                    <span>{indicatorsByCategory.environmental}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm">Social</span>
+                    </div>
+                    <span>{indicatorsByCategory.social}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <ClipboardCheck className="h-4 w-4 mr-2 text-purple-500" />
+                      <span className="text-sm">Governança</span>
+                    </div>
+                    <span>{indicatorsByCategory.governance}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Desempenho</CardTitle>
+                <CardDescription>Indicadores dentro da meta</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">{onTargetPercentage}%</div>
+                  <div className="text-sm text-muted-foreground">Dentro da Meta</div>
+                </div>
+                <Progress value={onTargetPercentage} className="h-2 mt-4" />
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="text-center p-2 bg-muted rounded-md">
+                    <div className="text-lg font-medium">{onTargetIndicators}</div>
+                    <div className="text-xs text-muted-foreground">Alcançados</div>
+                  </div>
+                  <div className="text-center p-2 bg-muted rounded-md">
+                    <div className="text-lg font-medium">{totalIndicators - onTargetIndicators}</div>
+                    <div className="text-xs text-muted-foreground">Pendentes</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Tendências</CardTitle>
+                <CardDescription>Evolução dos indicadores</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">{positivePercentage}%</div>
+                  <div className="text-sm text-muted-foreground">Tendência Positiva</div>
+                </div>
+                <Progress value={positivePercentage} className="h-2 mt-4" />
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="text-center p-2 bg-muted rounded-md">
+                    <div className="text-lg font-medium flex items-center justify-center">
+                      <ArrowUpRight className="h-4 w-4 mr-1 text-green-500" /> 
+                      {positiveIndicators}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Melhorando</div>
+                  </div>
+                  <div className="text-center p-2 bg-muted rounded-md">
+                    <div className="text-lg font-medium flex items-center justify-center">
+                      <ArrowDownRight className="h-4 w-4 mr-1 text-red-500" /> 
+                      {totalIndicators - positiveIndicators}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Piorando</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          <Tabs defaultValue="environmental" className="mt-6">
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="environmental" className="flex items-center">
-                <Trees className="mr-2 h-4 w-4" />
-                Ambiental
-              </TabsTrigger>
-              <TabsTrigger value="social" className="flex items-center">
-                <Users className="mr-2 h-4 w-4" />
-                Social
-              </TabsTrigger>
-              <TabsTrigger value="governance" className="flex items-center">
-                <Shield className="mr-2 h-4 w-4" />
-                Governança
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="environmental" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Indicadores Ambientais</CardTitle>
-                  <CardDescription>
-                    Evolução dos principais indicadores ambientais nos últimos 12 meses
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={environmentalData}>
-                        <defs>
-                          <linearGradient id="colorEnergy" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorWaste" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorWater" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorCarbon" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <Tooltip />
-                        <Legend />
-                        <Area type="monotone" dataKey="energyUsage" stroke="#f59e0b" fillOpacity={1} fill="url(#colorEnergy)" name="Consumo de Energia" />
-                        <Area type="monotone" dataKey="wasteProduction" stroke="#ef4444" fillOpacity={1} fill="url(#colorWaste)" name="Produção de Resíduos" />
-                        <Area type="monotone" dataKey="waterConsumption" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" name="Consumo de Água" />
-                        <Area type="monotone" dataKey="carbonEmissions" stroke="#10b981" fillOpacity={1} fill="url(#colorCarbon)" name="Emissões de Carbono" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribuição por Categoria</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center">
+                {totalIndicators > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    Nenhum indicador cadastrado
                   </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                    <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                      <CardContent className="p-4 flex flex-col items-center">
-                        <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-800/50 mb-2">
-                          <Droplets className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold">-28%</h3>
-                        <p className="text-sm text-center text-amber-800 dark:text-amber-300">Consumo de Energia</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-                      <CardContent className="p-4 flex flex-col items-center">
-                        <div className="p-2 rounded-full bg-red-100 dark:bg-red-800/50 mb-2">
-                          <Recycle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold">-36%</h3>
-                        <p className="text-sm text-center text-red-800 dark:text-red-300">Produção de Resíduos</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                      <CardContent className="p-4 flex flex-col items-center">
-                        <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-800/50 mb-2">
-                          <Droplets className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold">-33%</h3>
-                        <p className="text-sm text-center text-blue-800 dark:text-blue-300">Consumo de Água</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                      <CardContent className="p-4 flex flex-col items-center">
-                        <div className="p-2 rounded-full bg-green-100 dark:bg-green-800/50 mb-2">
-                          <Leaf className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold">-37%</h3>
-                        <p className="text-sm text-center text-green-800 dark:text-green-300">Emissões de Carbono</p>
-                      </CardContent>
-                    </Card>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Evolução dos Indicadores</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center">
+                {totalIndicators > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={[
+                        { name: 'Ambiental', meta: indicatorsByCategory.environmental > 0 ? 100 : 0, alcançado: onTargetIndicators > 0 ? (indicators.filter(i => i.category === 'environmental' && i.value >= i.target).length / indicatorsByCategory.environmental) * 100 : 0 },
+                        { name: 'Social', meta: indicatorsByCategory.social > 0 ? 100 : 0, alcançado: onTargetIndicators > 0 ? (indicators.filter(i => i.category === 'social' && i.value >= i.target).length / indicatorsByCategory.social) * 100 : 0 },
+                        { name: 'Governança', meta: indicatorsByCategory.governance > 0 ? 100 : 0, alcançado: onTargetIndicators > 0 ? (indicators.filter(i => i.category === 'governance' && i.value >= i.target).length / indicatorsByCategory.governance) * 100 : 0 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis label={{ value: '%', position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="meta" fill="#8884d8" name="Meta" />
+                      <Bar dataKey="alcançado" fill="#82ca9d" name="Alcançado" />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    Nenhum indicador cadastrado
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="social" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Indicadores Sociais</CardTitle>
-                  <CardDescription>
-                    Evolução dos principais indicadores sociais nos últimos 4 trimestres
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      {/* Fixing this part - we need to use the Recharts LineChart, not the Lucide icon */}
-                      <LineChart data={socialData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="quarter" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="employeeSatisfaction" stroke="#8884d8" name="Satisfação dos Funcionários" />
-                        <Line type="monotone" dataKey="communityEngagement" stroke="#82ca9d" name="Engajamento Comunitário" />
-                        <Line type="monotone" dataKey="diversityScore" stroke="#ff7300" name="Índice de Diversidade" />
-                        <Line type="monotone" dataKey="trainingHours" stroke="#0088fe" name="Horas de Treinamento" />
-                      </LineChart>
-                    </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Acompanhamento de Indicadores</CardTitle>
+              <CardDescription>Gerencie seus indicadores ESG por categoria</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="environmental" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="environmental" className="flex gap-2 items-center">
+                    <Leaf size={16} />
+                    <span>Ambiental</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="social" className="flex gap-2 items-center">
+                    <Users size={16} />
+                    <span>Social</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="governance" className="flex gap-2 items-center">
+                    <ClipboardCheck size={16} />
+                    <span>Governança</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <div className="flex items-center mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar indicadores..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8"
+                    />
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center">
-                          <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                          Diversidade e Inclusão
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Gênero</span>
-                              <span className="font-medium">47% mulheres</span>
-                            </div>
-                            <Progress value={47} className="h-2" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Raça/Etnia</span>
-                              <span className="font-medium">38% diversidade</span>
-                            </div>
-                            <Progress value={38} className="h-2" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>PcD</span>
-                              <span className="font-medium">5% inclusão</span>
-                            </div>
-                            <Progress value={5} className="h-2" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Liderança Diversa</span>
-                              <span className="font-medium">29% diversidade</span>
-                            </div>
-                            <Progress value={29} className="h-2" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center">
-                          <BadgeCheck className="h-4 w-4 mr-2 text-muted-foreground" />
-                          Impacto na Comunidade
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                            <span>Pessoas impactadas</span>
-                            <span className="font-medium">1.240</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                            <span>Projetos sociais</span>
-                            <span className="font-medium">7</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                            <span>Horas voluntariado</span>
-                            <span className="font-medium">862</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                            <span>Doações (R$)</span>
-                            <span className="font-medium">R$ 87.500</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="governance" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Indicadores de Governança</CardTitle>
-                  <CardDescription>
-                    Comparação entre os indicadores de governança e o benchmark do setor
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsBarChart data={governanceData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="category" type="category" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="score" name="Sua Empresa" fill="#8884d8" />
-                        <Bar dataKey="benchmark" name="Benchmark do Setor" fill="#82ca9d" />
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  
-                  <Separator className="my-6" />
-                  
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Estrutura de Governança</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 border rounded-md">
-                        <div className="flex items-center">
-                          <Scale className="h-5 w-5 mr-3 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">Compliance Fiscal</div>
-                            <div className="text-sm text-muted-foreground">
-                              100% das obrigações fiscais atendidas
-                            </div>
-                          </div>
-                        </div>
-                        <Badge className="bg-green-600">Completo</Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 border rounded-md">
-                        <div className="flex items-center">
-                          <Shield className="h-5 w-5 mr-3 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">Gerenciamento de Riscos</div>
-                            <div className="text-sm text-muted-foreground">
-                              Sistema implementado e operante
-                            </div>
-                          </div>
-                        </div>
-                        <Badge className="bg-green-600">Completo</Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 border rounded-md">
-                        <div className="flex items-center">
-                          <BadgeCheck className="h-5 w-5 mr-3 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">Código de Ética e Conduta</div>
-                            <div className="text-sm text-muted-foreground">
-                              Atualizado e comunicado aos stakeholders
-                            </div>
-                          </div>
-                        </div>
-                        <Badge className="bg-green-600">Completo</Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 border rounded-md">
-                        <div className="flex items-center">
-                          <Users className="h-5 w-5 mr-3 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">Diversidade no Conselho</div>
-                            <div className="text-sm text-muted-foreground">
-                              30% de diversidade - meta de 40%
-                            </div>
-                          </div>
-                        </div>
-                        <Badge className="bg-amber-600">Em Progresso</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full">
-                    Exportar Relatório de Governança
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </div>
+                
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Indicador</TableHead>
+                        <TableHead>Valor Atual</TableHead>
+                        <TableHead>Meta</TableHead>
+                        <TableHead>Progresso</TableHead>
+                        <TableHead>Tendência</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredIndicators.length > 0 ? (
+                        filteredIndicators.map((indicator) => {
+                          const progress = Math.min(100, Math.round((indicator.value / indicator.target) * 100));
+                          
+                          // Determine if current trend is good or bad
+                          const isTrendGood = 
+                            (indicator.trend === 'up' && indicator.isGood) || 
+                            (indicator.trend === 'down' && !indicator.isGood);
+                          
+                          return (
+                            <TableRow key={indicator.id}>
+                              <TableCell>
+                                <div className="font-medium">{indicator.name}</div>
+                                <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                  {indicator.description}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {indicator.value} {indicator.unit}
+                              </TableCell>
+                              <TableCell>
+                                {indicator.target} {indicator.unit}
+                              </TableCell>
+                              <TableCell>
+                                <div className="w-full">
+                                  <Progress 
+                                    value={progress} 
+                                    className="h-2" 
+                                  />
+                                  <div className="text-xs mt-1">
+                                    {progress}%
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className={`flex items-center ${
+                                  isTrendGood ? 'text-green-500' : 'text-red-500'
+                                }`}>
+                                  {indicator.trend === 'up' ? 
+                                    <ArrowUpRight className="mr-1 h-4 w-4" /> : 
+                                    <ArrowDownRight className="mr-1 h-4 w-4" />
+                                  }
+                                  {isTrendGood ? 'Positiva' : 'Negativa'}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="icon">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleDeleteIndicator(indicator.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-24 text-center">
+                            {searchTerm ? (
+                              <div>
+                                <p className="text-muted-foreground">Nenhum resultado para "{searchTerm}"</p>
+                                <Button 
+                                  variant="link" 
+                                  onClick={() => setSearchTerm('')}
+                                  className="mt-2"
+                                >
+                                  Limpar busca
+                                </Button>
+                              </div>
+                            ) : (
+                              <div>
+                                <p className="text-muted-foreground">Nenhum indicador encontrado</p>
+                                <Button 
+                                  variant="link" 
+                                  onClick={() => setIsAddIndicatorOpen(true)}
+                                  className="mt-2"
+                                >
+                                  Adicionar novo indicador
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar as CalendarIcon, Clock, Plus, Filter, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
 
 // Mock data for time entries
 const mockTimeEntries = [
@@ -154,94 +156,108 @@ const TimeTracking = () => {
     </Dialog>
   );
 
+  const navItems = [
+    { name: 'Colaboradores', href: '/personnel/employees', icon: <Clock size={18} /> },
+    { name: 'Ponto Eletrônico', href: '/personnel/time-tracking', icon: <Clock size={18} /> },
+    { name: 'Holerites', href: '/personnel/payslips', icon: <Clock size={18} /> }
+  ];
+
   return (
-    <PageContainer>
-      <PageHeader
-        title="Controle de Ponto"
-        description="Gerencie os registros de ponto dos colaboradores"
-        actionButton={actionButton}
-      />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
+      
+      <div className="flex-1 ml-[240px] transition-all duration-300">
+        <Navbar items={navItems} />
+        
+        <div className="container px-4 py-6">
+          <PageHeader
+            title="Controle de Ponto"
+            description="Gerencie os registros de ponto dos colaboradores"
+            actionButton={actionButton}
+          />
 
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Registros de Ponto</CardTitle>
-            <CardDescription>
-              Histórico de entradas e saídas dos colaboradores.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por colaborador, data ou status..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-              <Button variant="outline" className="sm:w-auto w-full">
-                <Filter className="mr-2 h-4 w-4" />
-                Filtros
-              </Button>
-            </div>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Registros de Ponto</CardTitle>
+                <CardDescription>
+                  Histórico de entradas e saídas dos colaboradores.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por colaborador, data ou status..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                  <Button variant="outline" className="sm:w-auto w-full">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filtros
+                  </Button>
+                </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Entrada</TableHead>
-                    <TableHead>Saída</TableHead>
-                    <TableHead>Total de Horas</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTimeEntries.length > 0 ? (
-                    filteredTimeEntries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="font-medium">{entry.employeeName}</TableCell>
-                        <TableCell>{entry.date}</TableCell>
-                        <TableCell>{entry.checkIn}</TableCell>
-                        <TableCell>{entry.checkOut || '-'}</TableCell>
-                        <TableCell>{entry.totalHours || '-'}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            entry.status === 'Aprovado' ? 'bg-green-100 text-green-800' :
-                            entry.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {entry.status}
-                          </span>
-                        </TableCell>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Colaborador</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Entrada</TableHead>
+                        <TableHead>Saída</TableHead>
+                        <TableHead>Total de Horas</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center">
-                        Nenhum resultado encontrado.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <div className="text-sm text-muted-foreground">
-              Mostrando {filteredTimeEntries.length} de {timeEntries.length} registros
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled>Anterior</Button>
-              <Button variant="outline" size="sm" disabled>Próxima</Button>
-            </div>
-          </CardFooter>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTimeEntries.length > 0 ? (
+                        filteredTimeEntries.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell className="font-medium">{entry.employeeName}</TableCell>
+                            <TableCell>{entry.date}</TableCell>
+                            <TableCell>{entry.checkIn}</TableCell>
+                            <TableCell>{entry.checkOut || '-'}</TableCell>
+                            <TableCell>{entry.totalHours || '-'}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                entry.status === 'Aprovado' ? 'bg-green-100 text-green-800' :
+                                entry.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {entry.status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-24 text-center">
+                            Nenhum resultado encontrado.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {filteredTimeEntries.length} de {timeEntries.length} registros
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" disabled>Anterior</Button>
+                  <Button variant="outline" size="sm" disabled>Próxima</Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
       </div>
-    </PageContainer>
+    </div>
   );
 };
 
