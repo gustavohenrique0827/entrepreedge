@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
@@ -58,10 +59,10 @@ const Calendar = () => {
   }, []);
   
   const navItems: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: <Home size={18} /> },
-    { name: 'Finanças', href: '/finances', icon: <BarChart2 size={18} /> },
-    { name: 'Metas', href: '/goals', icon: <Target size={18} /> },
-    { name: 'Aprendizado', href: '/learn', icon: <BookOpen size={18} /> },
+    { name: 'Dashboard', href: '/dashboard', icon: <CalendarIcon size={18} /> },
+    { name: 'Finanças', href: '/finances', icon: <CalendarIcon size={18} /> },
+    { name: 'Metas', href: '/goals', icon: <CalendarIcon size={18} /> },
+    { name: 'Aprendizado', href: '/learn', icon: <CalendarIcon size={18} /> },
   ];
   
   const handleDateSelect = (date: Date | undefined) => {

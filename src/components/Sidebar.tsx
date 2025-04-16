@@ -22,9 +22,11 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { useSubscription } from "@/contexts/SubscriptionContext"
 
 export const Sidebar = (props) => {
   const location = useLocation();
+  const { currentPlan } = useSubscription();
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
   const logoUrl = localStorage.getItem('logoUrl') || '';
@@ -139,7 +141,10 @@ export const Sidebar = (props) => {
               <span className="font-medium">Plano Atual</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Plano Gratuito</span>
+              <span>{currentPlan === 'free' ? 'Plano Gratuito' : 
+                     currentPlan === 'starter' ? 'Plano Iniciante' : 
+                     currentPlan === 'business' ? 'Plano Empresarial' : 
+                     'Plano Premium'}</span>
               <Link to="/settings?tab=subscription">
                 <Button variant="link" size="sm" className="h-auto p-0 text-primary text-xs">
                   Upgrade

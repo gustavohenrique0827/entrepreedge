@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 type PlanType = 'free' | 'starter' | 'business' | 'premium';
 
@@ -147,7 +147,6 @@ const planFeatures: Record<PlanType, SubscriptionFeaturesType> = {
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export const SubscriptionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { toast } = useToast();
   const [currentPlan, setCurrentPlan] = useState<PlanType>('free');
 
   useEffect(() => {
