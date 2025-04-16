@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -39,7 +38,6 @@ const Calendar = () => {
   const [viewMode, setViewMode] = useState<'month' | 'list'>('month');
   const [searchFilter, setSearchFilter] = useState('');
   
-  // Load events from localStorage if available
   const loadSavedEvents = (): EventType[] => {
     try {
       const savedEvents = localStorage.getItem('calendarEvents');
@@ -92,7 +90,6 @@ const Calendar = () => {
     type: 'event'
   });
 
-  // Save events to localStorage whenever they change
   useEffect(() => {
     try {
       const eventsToSave = events.map(event => ({
@@ -168,17 +165,14 @@ const Calendar = () => {
     }
   };
 
-  // Get events for the selected date
   const selectedDateEvents = events.filter(event => 
     date && event.date.getDate() === date.getDate() && 
     event.date.getMonth() === date.getMonth() && 
     event.date.getFullYear() === date.getFullYear()
   );
 
-  // Get dates that have events for highlighting in the calendar
   const eventDates = events.map(event => event.date);
   
-  // Filter events by search term for list view
   const filteredEvents = events.filter(event => {
     if (!searchFilter) return true;
     
@@ -306,9 +300,11 @@ const Calendar = () => {
                     highlighted: "bg-primary/20"
                   }}
                   styles={{
-                    day_today: {
-                      color: primaryColor,
-                      fontWeight: 'bold'
+                    day: {
+                      today: {
+                        color: primaryColor,
+                        fontWeight: 'bold'
+                      }
                     }
                   }}
                 />

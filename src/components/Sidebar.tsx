@@ -1,7 +1,8 @@
+
 import * as React from "react"
 import { SidebarProvider, Sidebar as SidebarComponent, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader } from "@/components/ui/sidebar"
 
-const Sidebar = (props) => (
+export const Sidebar = (props) => (
   <SidebarProvider>
     <SidebarComponent {...props}>
       {/* Default sidebar layout */}
@@ -20,5 +21,5 @@ const Sidebar = (props) => (
   </SidebarProvider>
 )
 
-export { Sidebar }
+// Also export as default for compatibility
 export default Sidebar
