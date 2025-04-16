@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -18,7 +17,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Event categories with colors
 const EVENT_CATEGORIES = [
   { id: 'internal', name: 'Interno', color: '#8B5CF6' },
   { id: 'client', name: 'Cliente', color: '#10B981' },
@@ -27,7 +25,6 @@ const EVENT_CATEGORIES = [
   { id: 'deadline', name: 'Prazo', color: '#EF4444' },
 ];
 
-// Mock event data
 const INITIAL_EVENTS = [
   {
     id: 1,
@@ -105,7 +102,6 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { toast } = useToast();
   
-  // Function to get the start and end of the week
   const getWeekDays = (date) => {
     const start = startOfWeek(date, { weekStartsOn: 0 });
     const end = endOfWeek(date, { weekStartsOn: 0 });
@@ -123,7 +119,6 @@ const CalendarPage = () => {
   
   const weekDays = getWeekDays(currentDate);
   
-  // Filter events for the current week
   const getEventsForDay = (day) => {
     return events.filter(event => {
       const eventDate = parseISO(event.startTime);
@@ -131,26 +126,22 @@ const CalendarPage = () => {
     });
   };
   
-  // Get event category color
-  const getCategoryColor = (categoryId) => {
+  const getCategoryColor = (categoryId: string) => {
     const category = EVENT_CATEGORIES.find(cat => cat.id === categoryId);
     return category ? category.color : '#6c757d';
   };
   
-  // Get time from ISO string
-  const getTimeFromISO = (isoString) => {
+  const getTimeFromISO = (isoString: string) => {
     return format(parseISO(isoString), 'HH:mm');
   };
   
-  // Format duration for display
-  const formatDuration = (startTime, endTime) => {
+  const formatDuration = (startTime: string, endTime: string) => {
     const start = parseISO(startTime);
     const end = parseISO(endTime);
     
     return `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`;
   };
   
-  // Handlers for navigation
   const handlePrevious = () => {
     if (view === 'week') {
       setCurrentDate(subWeeks(currentDate, 1));
@@ -171,8 +162,7 @@ const CalendarPage = () => {
     setCurrentDate(new Date());
   };
   
-  // Format day header
-  const formatDayHeader = (day) => {
+  const formatDayHeader = (day: Date) => {
     if (view === 'week') {
       return format(day, 'EEEE, dd', { locale: ptBR });
     } else if (view === 'day') {
@@ -180,19 +170,15 @@ const CalendarPage = () => {
     }
   };
   
-  // Handle event click
-  const handleEventClick = (event) => {
+  const handleEventClick = (event: any) => {
     setSelectedEvent(event);
   };
   
-  // Handle closing event details
   const handleCloseEventDetails = () => {
     setSelectedEvent(null);
   };
   
-  // Create new event
   const handleCreateEvent = () => {
-    // Validate required fields
     if (!newEvent.title || !newEvent.startTime || !newEvent.endTime) {
       toast({
         title: "Erro ao criar evento",
@@ -202,7 +188,6 @@ const CalendarPage = () => {
       return;
     }
     
-    // Add new event to the list
     const participantsArray = newEvent.participants ? newEvent.participants.split(',').map(p => p.trim()) : [];
     
     const createdEvent = {
@@ -230,8 +215,7 @@ const CalendarPage = () => {
     });
   };
   
-  // Delete event
-  const handleDeleteEvent = (id) => {
+  const handleDeleteEvent = (id: number) => {
     setEvents(events.filter(event => event.id !== id));
     setSelectedEvent(null);
     
@@ -241,14 +225,12 @@ const CalendarPage = () => {
     });
   };
   
-  // Handle input change in new event form
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewEvent({ ...newEvent, [name]: value });
   };
   
-  // Render day column in week view
-  const renderDayColumn = (day) => {
+  const renderDayColumn = (day: Date) => {
     const dayEvents = getEventsForDay(day);
     const isCurrentDay = isToday(day);
     const isPastDay = isBefore(day, new Date()) && !isToday(day);
@@ -654,110 +636,107 @@ const CalendarPage = () => {
             </Card>
           </div>
           
-          {/* Event Details Dialog */}
           <Dialog open={selectedEvent !== null} onOpenChange={handleCloseEventDetails}>
-            <DialogContent className="sm:max-w-[550px]">
-              {selectedEvent && (
-                <>
-                  <DialogHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: getCategoryColor(selectedEvent.category) }}
-                        ></div>
-                        <DialogTitle>{selectedEvent.title}</DialogTitle>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="cursor-pointer">
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Editar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="cursor-pointer text-red-600" 
-                            onClick={() => handleDeleteEvent(selectedEvent.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Excluir</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+            {selectedEvent && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: getCategoryColor(selectedEvent.category) }}
+                      ></div>
+                      <DialogTitle>{selectedEvent.title}</DialogTitle>
                     </div>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <div>
-                        {format(parseISO(selectedEvent.startTime), 'EEEE, dd MMMM yyyy', { locale: ptBR })}
-                        <br />
-                        {formatDuration(selectedEvent.startTime, selectedEvent.endTime)}
-                      </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem className="cursor-pointer">
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Editar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="cursor-pointer text-red-600" 
+                          onClick={() => handleDeleteEvent(selectedEvent.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Excluir</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <div>
+                      {format(parseISO(selectedEvent.startTime), 'EEEE, dd MMMM yyyy', { locale: ptBR })}
+                      <br />
+                      {formatDuration(selectedEvent.startTime, selectedEvent.endTime)}
                     </div>
-                    
-                    {selectedEvent.location && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{selectedEvent.location}</span>
-                      </div>
-                    )}
-                    
-                    {selectedEvent.description && (
-                      <div className="border-t pt-4 mt-4">
-                        <h3 className="text-sm font-medium mb-2">Descrição</h3>
-                        <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
-                      </div>
-                    )}
-                    
-                    {selectedEvent.participants && selectedEvent.participants.length > 0 && (
-                      <div className="border-t pt-4 mt-4">
-                        <h3 className="text-sm font-medium mb-2">Participantes</h3>
-                        <div className="space-y-1">
-                          {selectedEvent.participants.map((participant, idx) => (
-                            <div key={idx} className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                                {participant.charAt(0)}
-                              </div>
-                              <span className="text-sm">{participant}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {selectedEvent.reminder && selectedEvent.reminder !== 'none' && (
-                      <div className="border-t pt-4 mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Bell className="h-4 w-4" />
-                          <span className="text-sm">
-                            {selectedEvent.reminder === '10min' ? '10 minutos antes' : 
-                             selectedEvent.reminder === '30min' ? '30 minutos antes' :
-                             selectedEvent.reminder === '1h' ? '1 hora antes' : '1 dia antes'}
-                          </span>
-                        </div>
-                        <Button variant="outline" size="sm">Editar Lembrete</Button>
-                      </div>
-                    )}
                   </div>
                   
-                  <DialogFooter>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" onClick={handleCloseEventDetails}>Fechar</Button>
-                      <Button variant="outline">
-                        <Bookmark className="mr-2 h-4 w-4" />
-                        Salvar
-                      </Button>
+                  {selectedEvent.location && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>{selectedEvent.location}</span>
                     </div>
-                  </DialogFooter>
-                </>
-              )}
-            </DialogContent>
+                  )}
+                  
+                  {selectedEvent.description && (
+                    <div className="border-t pt-4 mt-4">
+                      <h3 className="text-sm font-medium mb-2">Descrição</h3>
+                      <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
+                    </div>
+                  )}
+                  
+                  {selectedEvent.participants && selectedEvent.participants.length > 0 && (
+                    <div className="border-t pt-4 mt-4">
+                      <h3 className="text-sm font-medium mb-2">Participantes</h3>
+                      <div className="space-y-1">
+                        {selectedEvent.participants.map((participant, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
+                              {participant.charAt(0)}
+                            </div>
+                            <span className="text-sm">{participant}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedEvent.reminder && selectedEvent.reminder !== 'none' && (
+                    <div className="border-t pt-4 mt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        <span className="text-sm">
+                          {selectedEvent.reminder === '10min' ? '10 minutos antes' : 
+                           selectedEvent.reminder === '30min' ? '30 minutos antes' :
+                           selectedEvent.reminder === '1h' ? '1 hora antes' : '1 dia antes'}
+                        </span>
+                      </div>
+                      <Button variant="outline" size="sm">Editar Lembrete</Button>
+                    </div>
+                  )}
+                </div>
+                
+                <DialogFooter>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleCloseEventDetails}>Fechar</Button>
+                    <Button variant="outline">
+                      <Bookmark className="mr-2 h-4 w-4" />
+                      Salvar
+                    </Button>
+                  </div>
+                </DialogFooter>
+              </>
+            )}
           </Dialog>
         </div>
       </div>
