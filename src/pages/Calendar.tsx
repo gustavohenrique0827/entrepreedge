@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
-import Sidebar from '@/components/Sidebar';
+import { Sidebar } from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -298,14 +298,6 @@ const Calendar = () => {
                   }}
                   modifiersClassNames={{
                     highlighted: "bg-primary/20"
-                  }}
-                  styles={{
-                    day: {
-                      today: {
-                        color: primaryColor,
-                        fontWeight: 700
-                      }
-                    }
                   }}
                 />
                 
