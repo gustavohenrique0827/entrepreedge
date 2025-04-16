@@ -162,7 +162,7 @@ const CalendarPage = () => {
     setCurrentDate(new Date());
   };
   
-  const formatDayHeader = (day: Date) => {
+  const formatDayHeader = (day: Date): string => {
     if (view === 'week') {
       return format(day, 'EEEE, dd', { locale: ptBR });
     } else if (view === 'day') {
