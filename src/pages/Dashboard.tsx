@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Sidebar } from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
-import Sidebar from '@/components/Sidebar';
 import FinanceTracker from '@/components/FinanceTracker';
 import GoalTracker from '@/components/GoalTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
