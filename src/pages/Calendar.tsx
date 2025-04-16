@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useSegment } from '@/contexts/SegmentContext';
 
 type EventType = {
   id: number;
@@ -29,36 +30,59 @@ type EventType = {
 
 const Calendar = () => {
   const { toast } = useToast();
+  const { getVisualPreferences } = useSegment();
+  const preferences = getVisualPreferences();
+  const primaryColor = preferences.primaryColor;
+  
   const [date, setDate] = useState<Date>(new Date());
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'month' | 'list'>('month');
-  const [events, setEvents] = useState<EventType[]>([
-    {
-      id: 1,
-      title: 'Reunião com equipe',
-      date: new Date(2025, 3, 20),
-      time: '14:30',
-      description: 'Discutir as metas do próximo trimestre',
-      type: 'event'
-    },
-    {
-      id: 2,
-      title: 'Pagamento de contas',
-      date: new Date(2025, 3, 25),
-      time: '',
-      description: 'Não esquecer de pagar as contas do mês',
-      type: 'reminder'
-    },
-    {
-      id: 3,
-      title: 'Enviar relatório mensal',
-      date: new Date(2025, 3, 30),
-      time: '18:00',
-      description: 'Enviar relatório de desempenho para os gestores',
-      type: 'task',
-      completed: false
+  const [searchFilter, setSearchFilter] = useState('');
+  
+  // Load events from localStorage if available
+  const loadSavedEvents = (): EventType[] => {
+    try {
+      const savedEvents = localStorage.getItem('calendarEvents');
+      if (savedEvents) {
+        const parsedEvents = JSON.parse(savedEvents);
+        return parsedEvents.map((event: any) => ({
+          ...event,
+          date: new Date(event.date)
+        }));
+      }
+    } catch (e) {
+      console.error("Error loading saved events", e);
     }
-  ]);
+    return [
+      {
+        id: 1,
+        title: 'Reunião com equipe',
+        date: new Date(2025, 3, 20),
+        time: '14:30',
+        description: 'Discutir as metas do próximo trimestre',
+        type: 'event'
+      },
+      {
+        id: 2,
+        title: 'Pagamento de contas',
+        date: new Date(2025, 3, 25),
+        time: '',
+        description: 'Não esquecer de pagar as contas do mês',
+        type: 'reminder'
+      },
+      {
+        id: 3,
+        title: 'Enviar relatório mensal',
+        date: new Date(2025, 3, 30),
+        time: '18:00',
+        description: 'Enviar relatório de desempenho para os gestores',
+        type: 'task',
+        completed: false
+      }
+    ];
+  };
+  
+  const [events, setEvents] = useState<EventType[]>(loadSavedEvents());
   
   const [newEvent, setNewEvent] = useState<Omit<EventType, 'id'>>({
     title: '',
@@ -68,9 +92,22 @@ const Calendar = () => {
     type: 'event'
   });
 
+  // Save events to localStorage whenever they change
+  useEffect(() => {
+    try {
+      const eventsToSave = events.map(event => ({
+        ...event,
+        date: event.date.toISOString()
+      }));
+      localStorage.setItem('calendarEvents', JSON.stringify(eventsToSave));
+    } catch (e) {
+      console.error("Error saving events", e);
+    }
+  }, [events]);
+
   const navItems = [
     {
-      name: 'Calendar',
+      name: 'Agenda',
       href: '/calendar',
       icon: <CalendarDays size={18} />
     }
@@ -121,6 +158,14 @@ const Calendar = () => {
     setEvents(events.map(event => 
       event.id === id ? {...event, completed: !event.completed} : event
     ));
+    
+    const event = events.find(e => e.id === id);
+    if (event) {
+      toast({
+        title: event.completed ? "Tarefa reaberta" : "Tarefa concluída",
+        description: `${event.title} foi ${event.completed ? "marcada como pendente" : "concluída"}.`
+      });
+    }
   };
 
   // Get events for the selected date
@@ -132,6 +177,18 @@ const Calendar = () => {
 
   // Get dates that have events for highlighting in the calendar
   const eventDates = events.map(event => event.date);
+  
+  // Filter events by search term for list view
+  const filteredEvents = events.filter(event => {
+    if (!searchFilter) return true;
+    
+    const searchLower = searchFilter.toLowerCase();
+    return (
+      event.title.toLowerCase().includes(searchLower) ||
+      event.description.toLowerCase().includes(searchLower) ||
+      event.type.toLowerCase().includes(searchLower)
+    );
+  }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -247,6 +304,12 @@ const Calendar = () => {
                   }}
                   modifiersClassNames={{
                     highlighted: "bg-primary/20"
+                  }}
+                  styles={{
+                    day_today: {
+                      color: primaryColor,
+                      fontWeight: 'bold'
+                    }
                   }}
                 />
                 
@@ -374,18 +437,19 @@ const Calendar = () => {
                       <Input
                         placeholder="Buscar eventos..."
                         className="pl-8"
+                        value={searchFilter}
+                        onChange={(e) => setSearchFilter(e.target.value)}
                       />
                     </div>
                     
                     <div className="rounded-md border">
-                      {events.length === 0 ? (
+                      {filteredEvents.length === 0 ? (
                         <div className="text-center py-10">
                           <p className="text-muted-foreground">Nenhum evento encontrado</p>
                         </div>
                       ) : (
                         <div className="divide-y">
-                          {events
-                            .sort((a, b) => a.date.getTime() - b.date.getTime())
+                          {filteredEvents
                             .map(event => (
                               <div key={event.id} className="flex items-center p-4 hover:bg-muted/50">
                                 <div className={`w-3 h-3 rounded-full mr-4 ${

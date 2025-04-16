@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Palette } from 'lucide-react';
+import { AlertCircle, Check, Palette } from 'lucide-react';
+import { useSegment } from '@/contexts/SegmentContext';
 
 const AppearanceSettings = () => {
   const { toast } = useToast();
+  const { getVisualPreferences, applySegmentVisuals } = useSegment();
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [fontSize, setFontSize] = useState(localStorage.getItem('fontSize') || 'medium');
   const [notifications, setNotifications] = useState(localStorage.getItem('notifications') !== 'false');
-  const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#8B5CF6');
-  const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('secondaryColor') || '#D946EF');
-  const segment = localStorage.getItem('segment') || 'generic';
+  const [primaryColor, setPrimaryColor] = useState(getVisualPreferences().primaryColor);
+  const [secondaryColor, setSecondaryColor] = useState(getVisualPreferences().secondaryColor);
 
   // Apply dark mode when component mounts and when changed
   useEffect(() => {
@@ -26,6 +27,7 @@ const AppearanceSettings = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
 
   // Apply font size when component mounts and when changed
@@ -43,22 +45,30 @@ const AppearanceSettings = () => {
       document.documentElement.classList.add('text-lg');
       document.documentElement.classList.remove('text-sm', 'text-base');
     }
+    
+    localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
   // Apply colors when component mounts and when changed
   useEffect(() => {
+    applyColors();
+  }, [primaryColor, secondaryColor]);
+
+  const applyColors = () => {
     document.documentElement.style.setProperty('--primary-color', primaryColor);
     document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-  }, [primaryColor, secondaryColor]);
+    
+    // Save color preferences to localStorage for other components
+    localStorage.setItem('primaryColor', primaryColor);
+    localStorage.setItem('secondaryColor', secondaryColor);
+  };
 
   const handleDarkModeChange = (checked: boolean) => {
     setDarkMode(checked);
-    localStorage.setItem('darkMode', checked.toString());
   };
 
   const handleFontSizeChange = (value: string) => {
     setFontSize(value);
-    localStorage.setItem('fontSize', value);
   };
 
   const handleNotificationsChange = (checked: boolean) => {
@@ -68,67 +78,31 @@ const AppearanceSettings = () => {
 
   const handlePrimaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrimaryColor(e.target.value);
-    localStorage.setItem('primaryColor', e.target.value);
   };
 
   const handleSecondaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSecondaryColor(e.target.value);
-    localStorage.setItem('secondaryColor', e.target.value);
-  };
-
-  // Get segment-specific color recommendations
-  const getSegmentRecommendations = () => {
-    switch(segment) {
-      case 'financial':
-        return {
-          primary: '#0052CC',
-          secondary: '#36B37E'
-        };
-      case 'healthcare':
-        return {
-          primary: '#00A3C4',
-          secondary: '#00875A'
-        };
-      case 'education':
-        return {
-          primary: '#6554C0',
-          secondary: '#00B8D9'
-        };
-      case 'ecommerce':
-        return {
-          primary: '#FF5630',
-          secondary: '#6554C0'
-        };
-      case 'manufacturing':
-        return {
-          primary: '#505F79',
-          secondary: '#0052CC'
-        };
-      default:
-        return {
-          primary: '#8B5CF6',
-          secondary: '#D946EF'
-        };
-    }
   };
 
   const applySegmentColors = () => {
-    const recommendations = getSegmentRecommendations();
-    setPrimaryColor(recommendations.primary);
-    setSecondaryColor(recommendations.secondary);
-    localStorage.setItem('primaryColor', recommendations.primary);
-    localStorage.setItem('secondaryColor', recommendations.secondary);
+    const preferences = getVisualPreferences();
+    setPrimaryColor(preferences.primaryColor);
+    setSecondaryColor(preferences.secondaryColor);
     
     toast({
       title: "Cores do segmento aplicadas",
-      description: `Cores recomendadas para o segmento "${segment}" foram aplicadas.`,
+      description: "Cores recomendadas para o segmento foram aplicadas em todo o sistema.",
     });
   };
 
   const handleSaveAppearance = () => {
+    // Apply all settings
+    applyColors();
+    applySegmentVisuals();
+    
     toast({
       title: "Configurações salvas",
-      description: "Suas preferências de aparência foram atualizadas com sucesso.",
+      description: "Suas preferências de aparência foram atualizadas com sucesso em todo o sistema.",
     });
   };
 
@@ -240,7 +214,8 @@ const AppearanceSettings = () => {
         </div>
 
         <Button className="mt-4 w-full" onClick={handleSaveAppearance}>
-          Salvar Preferências
+          <Check className="mr-2 h-4 w-4" />
+          Salvar e Aplicar em Todo o Sistema
         </Button>
       </CardContent>
     </Card>
