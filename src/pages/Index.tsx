@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
 import FinanceTracker from '@/components/FinanceTracker';
 import GoalTracker from '@/components/GoalTracker';
 import LearnSection from '@/components/LearnSection';

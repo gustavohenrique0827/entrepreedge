@@ -1,134 +1,138 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
+import Sidebar from '@/components/Sidebar';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Clock, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarDays, Clock, Plus, Search, Calendar as CalendarIcon, AlertTriangle, CheckCircle, Trash2, Edit, MoreVertical } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-// Constants
-const eventColors = ['#4ade80', '#60a5fa', '#f472b6', '#facc15', '#a855f7'];
-
-// Interfaces
-interface Event {
-  id: string;
+type EventType = {
+  id: number;
   title: string;
   date: Date;
   time: string;
-  location: string;
   description: string;
-  color: string;
-}
-
-interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-// Helper function to format date
-const formatDate = (date: Date): string => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  type: 'event' | 'reminder' | 'task';
+  completed?: boolean;
 };
 
 const Calendar = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
-  const [newEvent, setNewEvent] = useState<Omit<Event, 'id'>>({
+  const { toast } = useToast();
+  const [date, setDate] = useState<Date>(new Date());
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'month' | 'list'>('month');
+  const [events, setEvents] = useState<EventType[]>([
+    {
+      id: 1,
+      title: 'Reunião com equipe',
+      date: new Date(2025, 3, 20),
+      time: '14:30',
+      description: 'Discutir as metas do próximo trimestre',
+      type: 'event'
+    },
+    {
+      id: 2,
+      title: 'Pagamento de contas',
+      date: new Date(2025, 3, 25),
+      time: '',
+      description: 'Não esquecer de pagar as contas do mês',
+      type: 'reminder'
+    },
+    {
+      id: 3,
+      title: 'Enviar relatório mensal',
+      date: new Date(2025, 3, 30),
+      time: '18:00',
+      description: 'Enviar relatório de desempenho para os gestores',
+      type: 'task',
+      completed: false
+    }
+  ]);
+  
+  const [newEvent, setNewEvent] = useState<Omit<EventType, 'id'>>({
     title: '',
     date: new Date(),
-    time: '09:00',
-    location: '',
+    time: '',
     description: '',
-    color: eventColors[0],
+    type: 'event'
   });
-  const [isEventDetailsModalOpen, setIsEventDetailsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  
-  useEffect(() => {
-    document.title = `Calendário - Sua Empresa`;
-  }, []);
-  
-  const navItems: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: <CalendarIcon size={18} /> },
-    { name: 'Finanças', href: '/finances', icon: <CalendarIcon size={18} /> },
-    { name: 'Metas', href: '/goals', icon: <CalendarIcon size={18} /> },
-    { name: 'Aprendizado', href: '/learn', icon: <CalendarIcon size={18} /> },
+
+  const navItems = [
+    {
+      name: 'Calendar',
+      href: '/calendar',
+      icon: <CalendarDays size={18} />
+    }
   ];
-  
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-  };
-  
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-  
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-  
+
   const handleAddEvent = () => {
-    setIsAddEventModalOpen(true);
-  };
-  
-  const handleCloseAddEventModal = () => {
-    setIsAddEventModalOpen(false);
+    if (!newEvent.title || !newEvent.date) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha o título e a data do evento.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const id = events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1;
+    const eventToAdd = {
+      id,
+      ...newEvent,
+      completed: newEvent.type === 'task' ? false : undefined
+    };
+
+    setEvents([...events, eventToAdd]);
     setNewEvent({
       title: '',
       date: new Date(),
-      time: '09:00',
-      location: '',
+      time: '',
       description: '',
-      color: eventColors[0],
+      type: 'event'
+    });
+    setIsAddEventOpen(false);
+
+    toast({
+      title: "Evento adicionado",
+      description: `${eventToAdd.title} foi adicionado com sucesso.`
     });
   };
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewEvent(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+
+  const handleDeleteEvent = (id: number) => {
+    setEvents(events.filter(event => event.id !== id));
+    toast({
+      title: "Evento removido",
+      description: "O evento foi removido com sucesso."
+    });
   };
-  
-  const handleColorChange = (color: string) => {
-    setNewEvent(prev => ({
-      ...prev,
-      color: color,
-    }));
+
+  const handleToggleTaskCompletion = (id: number) => {
+    setEvents(events.map(event => 
+      event.id === id ? {...event, completed: !event.completed} : event
+    ));
   };
-  
-  const handleSubmitEvent = () => {
-    const newEventWithId: Event = {
-      id: String(Date.now()),
-      ...newEvent,
-    };
-    setEvents(prev => [...prev, newEventWithId]);
-    handleCloseAddEventModal();
-  };
-  
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsEventDetailsModalOpen(true);
-  };
-  
-  const handleCloseEventDetailsModal = () => {
-    setIsEventDetailsModalOpen(false);
-    setSelectedEvent(null);
-  };
-  
-  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
-  
+
+  // Get events for the selected date
+  const selectedDateEvents = events.filter(event => 
+    date && event.date.getDate() === date.getDate() && 
+    event.date.getMonth() === date.getMonth() && 
+    event.date.getFullYear() === date.getFullYear()
+  );
+
+  // Get dates that have events for highlighting in the calendar
+  const eventDates = events.map(event => event.date);
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -137,244 +141,321 @@ const Calendar = () => {
         <Navbar items={navItems} />
         
         <div className="container px-4 py-6">
-          <PageHeader 
-            title="Calendário"
-            subtitle="Gerencie seus eventos e compromissos"
-            icon={<CalendarDays className="h-6 w-6 text-primary" />}
+          <PageHeader
+            title="Agenda e Lembretes"
+            description="Gerencie seus eventos, tarefas e lembretes em um só lugar"
             actionButton={
-              <Button onClick={handleAddEvent}>
-                <Plus className="mr-2 h-4 w-4" /> Novo Evento
-              </Button>
+              <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Novo Evento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Novo Item</DialogTitle>
+                    <DialogDescription>
+                      Crie um evento, lembrete ou tarefa em sua agenda.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Tabs defaultValue="event" onValueChange={(value) => setNewEvent({...newEvent, type: value as EventType['type']})}>
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="event">Evento</TabsTrigger>
+                        <TabsTrigger value="reminder">Lembrete</TabsTrigger>
+                        <TabsTrigger value="task">Tarefa</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="title" className="text-right">
+                        Título
+                      </Label>
+                      <Input
+                        id="title"
+                        value={newEvent.title}
+                        onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="date" className="text-right">
+                        Data
+                      </Label>
+                      <div className="col-span-3">
+                        <Input
+                          id="date"
+                          type="date"
+                          value={newEvent.date ? format(newEvent.date, 'yyyy-MM-dd') : ''}
+                          onChange={(e) => {
+                            const date = e.target.value ? new Date(e.target.value) : new Date();
+                            setNewEvent({...newEvent, date});
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {newEvent.type !== 'reminder' && (
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="time" className="text-right">
+                          Horário
+                        </Label>
+                        <Input
+                          id="time"
+                          type="time"
+                          value={newEvent.time}
+                          onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                          className="col-span-3"
+                        />
+                      </div>
+                    )}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="description" className="text-right">
+                        Descrição
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={newEvent.description}
+                        onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" onClick={handleAddEvent}>Adicionar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             }
           />
           
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="outline" size="icon" onClick={handlePrevMonth}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-lg font-semibold">
-              {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </h2>
-            <Button variant="outline" size="icon" onClick={handleNextMonth}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            <Card className="lg:col-span-2 glass">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">Calendário</CardTitle>
-                <CardDescription>Visualize e gerencie seus eventos</CardDescription>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Calendário</CardTitle>
+                <CardDescription>Selecione uma data para ver os eventos</CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="month" className="w-full">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="month">Mês</TabsTrigger>
-                    <TabsTrigger value="week">Semana</TabsTrigger>
-                    <TabsTrigger value="day">Dia</TabsTrigger>
-                    <TabsTrigger value="agenda">Agenda</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="month" className="mt-0">
-                    <CalendarComponent
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={handleDateSelect}
-                      className="rounded-md border shadow-sm p-3"
-                      classNames={{
-                        day_today: "bg-primary/10 font-bold text-primary",
-                        day_selected: "bg-primary text-primary-foreground",
-                        day_outside: "text-muted-foreground opacity-50",
-                        day_disabled: "text-muted-foreground opacity-50",
-                        day_hidden: "invisible",
-                      }}
-                      modifiersClassNames={{
-                        highlighted: "bg-primary/20"
-                      }}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="week" className="mt-2">
-                    Em breve
-                  </TabsContent>
-                  
-                  <TabsContent value="day" className="mt-2">
-                    Em breve
-                  </TabsContent>
-                  
-                  <TabsContent value="agenda" className="mt-2">
-                    Em breve
-                  </TabsContent>
-                </Tabs>
+                <CalendarComponent
+                  mode="single"
+                  selected={date}
+                  onSelect={(day) => day && setDate(day)}
+                  className="rounded-md border"
+                  locale={ptBR}
+                  modifiers={{
+                    highlighted: eventDates
+                  }}
+                  modifiersClassNames={{
+                    highlighted: "bg-primary/20"
+                  }}
+                />
+                
+                <div className="mt-4">
+                  <Button variant="outline" className="w-full" onClick={() => setDate(new Date())}>
+                    Hoje
+                  </Button>
+                </div>
               </CardContent>
             </Card>
             
-            <Card className="glass">
+            <Card className="md:col-span-2">
               <CardHeader>
-                <CardTitle>Eventos do Dia</CardTitle>
-                <CardDescription>Seus eventos para {selectedDate ? formatDate(selectedDate) : 'hoje'}</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>
+                      {date ? format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }) : ''}
+                    </CardTitle>
+                    <CardDescription>
+                      {selectedDateEvents.length === 0 
+                        ? 'Nenhum evento para esta data' 
+                        : `${selectedDateEvents.length} item(ns) agendado(s)`}
+                    </CardDescription>
+                  </div>
+                  <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'month' | 'list')}>
+                    <TabsList>
+                      <TabsTrigger value="month">Mês</TabsTrigger>
+                      <TabsTrigger value="list">Lista</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
               </CardHeader>
-              <CardContent className="p-4">
-                {selectedDate ? (
-                  events.filter(event => {
-                    const eventDate = new Date(event.date);
-                    return (
-                      eventDate.getDate() === selectedDate.getDate() &&
-                      eventDate.getMonth() === selectedDate.getMonth() &&
-                      eventDate.getFullYear() === selectedDate.getFullYear()
-                    );
-                  }).length > 0 ? (
-                    <ul className="list-none p-0">
-                      {events.filter(event => {
-                        const eventDate = new Date(event.date);
-                        return (
-                          eventDate.getDate() === selectedDate.getDate() &&
-                          eventDate.getMonth() === selectedDate.getMonth() &&
-                          eventDate.getFullYear() === selectedDate.getFullYear()
-                        );
-                      }).map(event => (
-                        <li key={event.id} className="mb-2 p-3 rounded-md shadow-sm border" style={{ backgroundColor: event.color, color: 'white' }}>
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold">{event.title}</span>
-                            <span className="text-sm">{event.time}</span>
-                          </div>
-                          <p className="text-sm">{event.location}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">Nenhum evento para este dia.</p>
-                  )
+              <CardContent>
+                {viewMode === 'month' ? (
+                  <div className="space-y-4">
+                    {selectedDateEvents.length === 0 ? (
+                      <div className="text-center py-10">
+                        <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+                        <h3 className="mt-2 text-lg font-medium">Nenhum evento</h3>
+                        <p className="text-muted-foreground">
+                          Não há eventos agendados para esta data.
+                        </p>
+                        <Button className="mt-4" onClick={() => setIsAddEventOpen(true)}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Adicionar Evento
+                        </Button>
+                      </div>
+                    ) : (
+                      selectedDateEvents.map(event => (
+                        <Card key={event.id} className="overflow-hidden">
+                          <div className={`h-2 ${
+                            event.type === 'event' ? 'bg-blue-500' : 
+                            event.type === 'reminder' ? 'bg-yellow-500' : 
+                            event.type === 'task' ? (event.completed ? 'bg-green-500' : 'bg-red-500') : ''
+                          }`} />
+                          <CardContent className="pt-6">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  {event.type === 'event' && <CalendarIcon size={16} className="text-blue-500" />}
+                                  {event.type === 'reminder' && <AlertTriangle size={16} className="text-yellow-500" />}
+                                  {event.type === 'task' && (
+                                    event.completed 
+                                      ? <CheckCircle size={16} className="text-green-500" /> 
+                                      : <Clock size={16} className="text-red-500" />
+                                  )}
+                                  <h3 className={`font-medium ${
+                                    event.type === 'task' && event.completed ? 'line-through text-muted-foreground' : ''
+                                  }`}>
+                                    {event.title}
+                                  </h3>
+                                </div>
+                                {event.time && (
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    <Clock size={14} className="inline mr-1" />
+                                    {event.time}
+                                  </p>
+                                )}
+                                {event.description && (
+                                  <p className="text-sm mt-2">{event.description}</p>
+                                )}
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical size={16} />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {event.type === 'task' && (
+                                    <DropdownMenuItem onClick={() => handleToggleTaskCompletion(event.id)}>
+                                      {event.completed ? (
+                                        <>
+                                          <Clock className="mr-2 h-4 w-4" />
+                                          <span>Marcar como pendente</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CheckCircle className="mr-2 h-4 w-4" />
+                                          <span>Marcar como concluída</span>
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuItem>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    <span>Editar</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDeleteEvent(event.id)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Excluir</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
                 ) : (
-                  <p className="text-muted-foreground">Selecione uma data para ver os eventos.</p>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar eventos..."
+                        className="pl-8"
+                      />
+                    </div>
+                    
+                    <div className="rounded-md border">
+                      {events.length === 0 ? (
+                        <div className="text-center py-10">
+                          <p className="text-muted-foreground">Nenhum evento encontrado</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {events
+                            .sort((a, b) => a.date.getTime() - b.date.getTime())
+                            .map(event => (
+                              <div key={event.id} className="flex items-center p-4 hover:bg-muted/50">
+                                <div className={`w-3 h-3 rounded-full mr-4 ${
+                                  event.type === 'event' ? 'bg-blue-500' : 
+                                  event.type === 'reminder' ? 'bg-yellow-500' : 
+                                  event.type === 'task' ? (event.completed ? 'bg-green-500' : 'bg-red-500') : ''
+                                }`} />
+                                <div className="flex-1 min-w-0">
+                                  <p className={`font-medium truncate ${
+                                    event.type === 'task' && event.completed ? 'line-through text-muted-foreground' : ''
+                                  }`}>
+                                    {event.title}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {format(event.date, "d 'de' MMMM", { locale: ptBR })}
+                                    {event.time ? ` · ${event.time}` : ''}
+                                  </p>
+                                </div>
+                                <div className="flex gap-2">
+                                  {event.type === 'task' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleToggleTaskCompletion(event.id)}
+                                    >
+                                      {event.completed ? (
+                                        <Clock size={16} />
+                                      ) : (
+                                        <CheckCircle size={16} />
+                                      )}
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDeleteEvent(event.id)}
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </CardContent>
+              <CardFooter>
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+                    <span>Evento</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2" />
+                    <span>Lembrete</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
+                    <span>Tarefa Pendente</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2" />
+                    <span>Tarefa Concluída</span>
+                  </div>
+                </div>
+              </CardFooter>
             </Card>
           </div>
-          
-          {/* Add Event Modal */}
-          {isAddEventModalOpen && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-              <Card className="w-full max-w-md glass">
-                <CardHeader>
-                  <CardTitle>Adicionar Novo Evento</CardTitle>
-                  <CardDescription>Crie um novo evento no seu calendário</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="grid gap-4">
-                    <div>
-                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">Título</label>
-                      <input
-                        type="text"
-                        name="title"
-                        id="title"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        value={newEvent.title}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="date" className="block text-sm font-medium text-gray-700">Data</label>
-                      <input
-                        type="date"
-                        name="date"
-                        id="date"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        value={newEvent.date.toISOString().split('T')[0]}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="time" className="block text-sm font-medium text-gray-700">Hora</label>
-                      <input
-                        type="time"
-                        name="time"
-                        id="time"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        value={newEvent.time}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="location" className="block text-sm font-medium text-gray-700">Localização</label>
-                      <input
-                        type="text"
-                        name="location"
-                        id="location"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        value={newEvent.location}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-                      <textarea
-                        name="description"
-                        id="description"
-                        rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        value={newEvent.description}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Cor do Evento</label>
-                      <div className="flex gap-2">
-                        {eventColors.map(color => (
-                          <button
-                            key={color}
-                            type="button"
-                            className="w-6 h-6 rounded-full focus:outline-none"
-                            style={{ backgroundColor: color, border: newEvent.color === color ? '2px solid black' : 'none' }}
-                            onClick={() => handleColorChange(color)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={handleCloseAddEventModal}>Cancelar</Button>
-                  <Button onClick={handleSubmitEvent}>Adicionar Evento</Button>
-                </CardFooter>
-              </Card>
-            </div>
-          )}
-          
-          {/* Event Details Modal */}
-          {isEventDetailsModalOpen && selectedEvent && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-              <Card className="w-full max-w-md glass">
-                <CardHeader>
-                  <CardTitle>Detalhes do Evento</CardTitle>
-                  <CardDescription>{selectedEvent.title}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="grid gap-4">
-                    <div>
-                      <p className="block text-sm font-medium text-gray-700">Data:</p>
-                      <p>{formatDate(new Date(selectedEvent.date))}</p>
-                    </div>
-                    <div>
-                      <p className="block text-sm font-medium text-gray-700">Hora:</p>
-                      <p>{selectedEvent.time}</p>
-                    </div>
-                    <div>
-                      <p className="block text-sm font-medium text-gray-700">Localização:</p>
-                      <p>{selectedEvent.location}</p>
-                    </div>
-                    <div>
-                      <p className="block text-sm font-medium text-gray-700">Descrição:</p>
-                      <p>{selectedEvent.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={handleCloseEventDetailsModal}>Fechar</Button>
-                </CardFooter>
-              </Card>
-            </div>
-          )}
         </div>
       </div>
     </div>

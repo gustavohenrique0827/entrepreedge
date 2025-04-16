@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useToast } from "@/hooks/use-toast";
 
 // Define segment types
-export type BusinessSegmentType = 'generic' | 'agro' | 'ecommerce' | 'health' | 'fashion' | 'services' | 'tech' | 'legal' | 'education' | 'manufacturing' | 'accounting';
+export type BusinessSegmentType = 'generic' | 'agro' | 'ecommerce' | 'health' | 'fashion' | 'services' | 'tech' | 'legal' | 'education' | 'manufacturing';
 
 // Visual preferences for each segment
 export interface SegmentVisualPreferences {
@@ -93,13 +93,6 @@ const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPrefe
     typography: 'sans-serif',
     iconStyle: 'filled',
     layoutPriorities: ['production', 'inventory', 'orders']
-  },
-  accounting: {
-    primaryColor: '#1E40AF', // Deep blue
-    secondaryColor: '#064E3B', // Dark green
-    typography: 'serif',
-    iconStyle: 'filled',
-    layoutPriorities: ['fiscal', 'taxes', 'accounting', 'invoices']
   }
 };
 
@@ -114,8 +107,7 @@ const segmentNames: Record<BusinessSegmentType, string> = {
   tech: 'Tecnologia',
   legal: 'Jurídico',
   education: 'Educação',
-  manufacturing: 'Indústria',
-  accounting: 'Contabilidade'
+  manufacturing: 'Indústria'
 };
 
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
@@ -129,18 +121,6 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
     const savedSegment = localStorage.getItem('segment') as BusinessSegmentType;
     if (savedSegment && visualPreferencesBySegment[savedSegment]) {
       setCurrentSegment(savedSegment);
-    }
-    
-    // Apply saved colors on initial load
-    const primaryColor = localStorage.getItem('primaryColor');
-    const secondaryColor = localStorage.getItem('secondaryColor');
-    
-    if (primaryColor) {
-      document.documentElement.style.setProperty('--primary-color', primaryColor);
-    }
-    
-    if (secondaryColor) {
-      document.documentElement.style.setProperty('--secondary-color', secondaryColor);
     }
   }, []);
 

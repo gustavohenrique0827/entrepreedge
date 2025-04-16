@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar as CalendarIcon, Clock, Plus, Filter, Search, Users, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Plus, Filter, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
-import { useSegment } from '@/contexts/SegmentContext';
 
 // Mock data for time entries
 const mockTimeEntries = [
@@ -24,7 +24,6 @@ const mockTimeEntries = [
 
 const TimeTracking = () => {
   const { toast } = useToast();
-  const { primaryColor, secondaryColor } = useSegment().getVisualPreferences();
   const [timeEntries, setTimeEntries] = useState(mockTimeEntries);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -158,9 +157,9 @@ const TimeTracking = () => {
   );
 
   const navItems = [
-    { name: 'Colaboradores', href: '/personnel/employees', icon: <Users size={18} /> },
+    { name: 'Colaboradores', href: '/personnel/employees', icon: <Clock size={18} /> },
     { name: 'Ponto Eletrônico', href: '/personnel/time-tracking', icon: <Clock size={18} /> },
-    { name: 'Holerites', href: '/personnel/payslips', icon: <FileText size={18} /> }
+    { name: 'Holerites', href: '/personnel/payslips', icon: <Clock size={18} /> }
   ];
 
   return (
