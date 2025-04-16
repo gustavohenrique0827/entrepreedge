@@ -303,7 +303,7 @@ const Calendar = () => {
                     day: {
                       today: {
                         color: primaryColor,
-                        fontWeight: 'bold'
+                        fontWeight: 700
                       }
                     }
                   }}
