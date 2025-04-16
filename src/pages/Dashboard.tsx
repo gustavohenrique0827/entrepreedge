@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -23,6 +24,7 @@ import StatCard from '@/components/StatCard';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSegment } from "@/contexts/SegmentContext";
 import api from '@/services/dbService';
 
 const financialData = [
@@ -72,6 +74,7 @@ const Dashboard = () => {
   });
   const { currentPlan, hasAccess } = useSubscription();
   const { toast } = useToast();
+  const { getVisualPreferences } = useSegment();
   
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
@@ -88,9 +91,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserSettings = async () => {
       try {
+        // Get theme colors from the segment visual preferences
+        const segmentPrefs = getVisualPreferences();
+        
         const settings = {
-          theme_primary_color: localStorage.getItem('themePrimaryColor') || '#3b82f6',
-          theme_secondary_color: localStorage.getItem('themeSecondaryColor') || '#10b981',
+          theme_primary_color: localStorage.getItem('primaryColor') || segmentPrefs.primaryColor,
+          theme_secondary_color: localStorage.getItem('secondaryColor') || segmentPrefs.secondaryColor,
           logo_url: localStorage.getItem('logoUrl') || null
         };
         
@@ -100,6 +106,7 @@ const Dashboard = () => {
           logoUrl: settings.logo_url
         });
         
+        // Apply the colors immediately when dashboard is loaded
         document.documentElement.style.setProperty('--primary', settings.theme_primary_color);
         document.documentElement.style.setProperty('--secondary', settings.theme_secondary_color);
       } catch (error) {
@@ -108,7 +115,7 @@ const Dashboard = () => {
     };
     
     fetchUserSettings();
-  }, []);
+  }, [getVisualPreferences]);
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
@@ -118,6 +125,9 @@ const Dashboard = () => {
   ];
 
   const renderFinancialChart = () => {
+    const primaryColor = customTheme.primaryColor;
+    const secondaryColor = customTheme.secondaryColor;
+    
     switch (chartType) {
       case 'area':
         return (
@@ -132,16 +142,16 @@ const Dashboard = () => {
                 type="monotone" 
                 dataKey="receita" 
                 name="Receita" 
-                stroke={customTheme.primaryColor} 
-                fill={customTheme.primaryColor} 
+                stroke={primaryColor} 
+                fill={primaryColor} 
                 fillOpacity={0.3} 
               />
               <Area 
                 type="monotone" 
                 dataKey="despesas" 
                 name="Despesas" 
-                stroke={customTheme.secondaryColor} 
-                fill={customTheme.secondaryColor} 
+                stroke={secondaryColor} 
+                fill={secondaryColor} 
                 fillOpacity={0.3} 
               />
             </AreaChart>
@@ -160,14 +170,14 @@ const Dashboard = () => {
                 type="monotone" 
                 dataKey="receita" 
                 name="Receita" 
-                stroke={customTheme.primaryColor} 
+                stroke={primaryColor} 
                 activeDot={{ r: 8 }} 
               />
               <Line 
                 type="monotone" 
                 dataKey="despesas" 
                 name="Despesas" 
-                stroke={customTheme.secondaryColor} 
+                stroke={secondaryColor} 
               />
             </LineChart>
           </ResponsiveContainer>
@@ -181,8 +191,8 @@ const Dashboard = () => {
               <YAxis />
               <Tooltip formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`} />
               <Legend />
-              <Bar dataKey="receita" name="Receita" fill={customTheme.primaryColor} />
-              <Bar dataKey="despesas" name="Despesas" fill={customTheme.secondaryColor} />
+              <Bar dataKey="receita" name="Receita" fill={primaryColor} />
+              <Bar dataKey="despesas" name="Despesas" fill={secondaryColor} />
             </BarChart>
           </ResponsiveContainer>
         );
@@ -330,7 +340,12 @@ const Dashboard = () => {
                         <ResponsiveContainer width="100%" height={280}>
                           <PieChart>
                             <Pie
-                              data={categoryData}
+                              data={categoryData.map(item => ({
+                                ...item,
+                                fill: item.name === 'Marketing' ? customTheme.primaryColor :
+                                      item.name === 'Vendas' ? customTheme.secondaryColor :
+                                      item.name === 'Produtos' ? '#36B37E' : '#00B8D9'
+                              }))}
                               cx="50%"
                               cy="50%"
                               innerRadius={60}

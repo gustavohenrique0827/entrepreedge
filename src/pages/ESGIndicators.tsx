@@ -3,206 +3,225 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Leaf, Recycle, Droplets, Factory, BatteryCharging, Building, Heart, Users, BriefcaseBusiness } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { BarChart, LineChart, AreaChart, PieChart, ResponsiveContainer, Bar, Line, Area, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, LineChart, PieChart, Activity, Leaf, Building2, Users, AreaChart, DollarSign, BarChart2 } from 'lucide-react';
+import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart as RechartsLineChart, Line, AreaChart as RechartsAreaChart, Area } from 'recharts';
+import { useSegment } from '@/contexts/SegmentContext';
 
-// Sample data for graphs
-const environmentalData = {
-  bar: [
-    { name: 'Jan', valor: 1200 },
-    { name: 'Fev', valor: 1900 },
-    { name: 'Mar', valor: 3000 },
-    { name: 'Abr', valor: 2780 },
-    { name: 'Mai', valor: 1890 },
-    { name: 'Jun', valor: 2390 },
-    { name: 'Jul', valor: 3490 },
+const ESG_DATA = {
+  environmental: [
+    { name: 'Emissões de CO2', value: 30, target: 25, color: '#00A3C4' },
+    { name: 'Consumo de Energia', value: 45, target: 40, color: '#36B37E' },
+    { name: 'Uso de Água', value: 20, target: 15, color: '#6554C0' },
+    { name: 'Geração de Resíduos', value: 35, target: 30, color: '#FF8B00' },
+    { name: 'Reciclagem', value: 60, target: 75, color: '#FF5630' },
   ],
-  line: [
-    { name: 'Jan', valor: 4000 },
-    { name: 'Fev', valor: 3000 },
-    { name: 'Mar', valor: 2000 },
-    { name: 'Abr', valor: 2780 },
-    { name: 'Mai', valor: 1890 },
-    { name: 'Jun', valor: 2390 },
-    { name: 'Jul', valor: 3490 },
+  social: [
+    { name: 'Diversidade de Gênero', value: 62, target: 50, color: '#00A3C4' },
+    { name: 'Inclusão Racial', value: 48, target: 50, color: '#36B37E' },
+    { name: 'Saúde e Segurança', value: 75, target: 80, color: '#6554C0' },
+    { name: 'Treinamento', value: 55, target: 60, color: '#FF8B00' },
+    { name: 'Engajamento Comunitário', value: 40, target: 45, color: '#FF5630' },
   ],
-  area: [
-    { name: 'Jan', valor: 4000 },
-    { name: 'Fev', valor: 5000 },
-    { name: 'Mar', valor: 3000 },
-    { name: 'Abr', valor: 4000 },
-    { name: 'Mai', valor: 3000 },
-    { name: 'Jun', valor: 5000 },
-    { name: 'Jul', valor: 6000 },
-  ],
-  pie: [
-    { name: 'Reciclagem', valor: 400 },
-    { name: 'Energia renovável', valor: 300 },
-    { name: 'Água reaproveitada', valor: 300 },
-    { name: 'Emissões reduzidas', valor: 200 },
-  ],
+  governance: [
+    { name: 'Transparência', value: 80, target: 85, color: '#00A3C4' },
+    { name: 'Ética Empresarial', value: 75, target: 80, color: '#36B37E' },
+    { name: 'Gestão de Riscos', value: 65, target: 70, color: '#6554C0' },
+    { name: 'Diversidade no Conselho', value: 50, target: 60, color: '#FF8B00' },
+    { name: 'Políticas Anticorrupção', value: 85, target: 90, color: '#FF5630' },
+  ]
 };
 
-const socialData = {
-  bar: [
-    { name: 'Jan', valor: 500 },
-    { name: 'Fev', valor: 800 },
-    { name: 'Mar', valor: 1500 },
-    { name: 'Abr', valor: 1300 },
-    { name: 'Mai', valor: 1700 },
-    { name: 'Jun', valor: 1400 },
-    { name: 'Jul', valor: 2000 },
+// Time series data for tracking progress over months
+const TIME_DATA = {
+  environmental: [
+    { month: 'Jan', value: 28, target: 25 },
+    { month: 'Fev', value: 29, target: 25 },
+    { month: 'Mar', value: 30, target: 25 },
+    { month: 'Abr', value: 32, target: 25 },
+    { month: 'Mai', value: 31, target: 25 },
+    { month: 'Jun', value: 30, target: 25 },
   ],
-  line: [
-    { name: 'Jan', valor: 1000 },
-    { name: 'Fev', valor: 1500 },
-    { name: 'Mar', valor: 1300 },
-    { name: 'Abr', valor: 1780 },
-    { name: 'Mai', valor: 1890 },
-    { name: 'Jun', valor: 2390 },
-    { name: 'Jul', valor: 2490 },
+  social: [
+    { month: 'Jan', value: 58, target: 50 },
+    { month: 'Fev', value: 60, target: 50 },
+    { month: 'Mar', value: 59, target: 50 },
+    { month: 'Abr', value: 62, target: 50 },
+    { month: 'Mai', value: 63, target: 50 },
+    { month: 'Jun', value: 62, target: 50 },
   ],
-  area: [
-    { name: 'Jan', valor: 2000 },
-    { name: 'Fev', valor: 2500 },
-    { name: 'Mar', valor: 2000 },
-    { name: 'Abr', valor: 3000 },
-    { name: 'Mai', valor: 2500 },
-    { name: 'Jun', valor: 4000 },
-    { name: 'Jul', valor: 3500 },
-  ],
-  pie: [
-    { name: 'Diversidade', valor: 500 },
-    { name: 'Treinamento', valor: 300 },
-    { name: 'Benefícios', valor: 250 },
-    { name: 'Voluntariado', valor: 200 },
-  ],
+  governance: [
+    { month: 'Jan', value: 76, target: 85 },
+    { month: 'Fev', value: 78, target: 85 },
+    { month: 'Mar', value: 77, target: 85 },
+    { month: 'Abr', value: 79, target: 85 },
+    { month: 'Mai', value: 80, target: 85 },
+    { month: 'Jun', value: 80, target: 85 },
+  ]
 };
 
-const governanceData = {
-  bar: [
-    { name: 'Jan', valor: 900 },
-    { name: 'Fev', valor: 1200 },
-    { name: 'Mar', valor: 1600 },
-    { name: 'Abr', valor: 1400 },
-    { name: 'Mai', valor: 1900 },
-    { name: 'Jun', valor: 2100 },
-    { name: 'Jul', valor: 2400 },
+// Comparison data with industry averages
+const COMPARISON_DATA = {
+  environmental: [
+    { name: 'Emissões de CO2', company: 30, industry: 35 },
+    { name: 'Consumo de Energia', company: 45, industry: 50 },
+    { name: 'Uso de Água', company: 20, industry: 25 },
+    { name: 'Geração de Resíduos', company: 35, industry: 38 },
+    { name: 'Reciclagem', company: 60, industry: 55 },
   ],
-  line: [
-    { name: 'Jan', valor: 2000 },
-    { name: 'Fev', valor: 2200 },
-    { name: 'Mar', valor: 2100 },
-    { name: 'Abr', valor: 2500 },
-    { name: 'Mai', valor: 2300 },
-    { name: 'Jun', valor: 2800 },
-    { name: 'Jul', valor: 3100 },
+  social: [
+    { name: 'Diversidade de Gênero', company: 62, industry: 45 },
+    { name: 'Inclusão Racial', company: 48, industry: 40 },
+    { name: 'Saúde e Segurança', company: 75, industry: 70 },
+    { name: 'Treinamento', company: 55, industry: 50 },
+    { name: 'Engajamento Comunitário', company: 40, industry: 35 },
   ],
-  area: [
-    { name: 'Jan', valor: 3000 },
-    { name: 'Fev', valor: 3200 },
-    { name: 'Mar', valor: 3100 },
-    { name: 'Abr', valor: 3300 },
-    { name: 'Mai', valor: 3500 },
-    { name: 'Jun', valor: 3700 },
-    { name: 'Jul', valor: 4000 },
-  ],
-  pie: [
-    { name: 'Transparência', valor: 350 },
-    { name: 'Ética', valor: 300 },
-    { name: 'Compliance', valor: 280 },
-    { name: 'Gestão de Riscos', valor: 240 },
-  ],
+  governance: [
+    { name: 'Transparência', company: 80, industry: 75 },
+    { name: 'Ética Empresarial', company: 75, industry: 70 },
+    { name: 'Gestão de Riscos', company: 65, industry: 60 },
+    { name: 'Diversidade no Conselho', company: 50, industry: 45 },
+    { name: 'Políticas Anticorrupção', company: 85, industry: 80 },
+  ]
 };
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+// Chart types available
+const CHART_TYPES = [
+  { id: 'bar', label: 'Barras', icon: <BarChart className="h-4 w-4" /> },
+  { id: 'line', label: 'Linha', icon: <LineChart className="h-4 w-4" /> },
+  { id: 'pie', label: 'Pizza', icon: <PieChart className="h-4 w-4" /> },
+  { id: 'area', label: 'Área', icon: <AreaChart className="h-4 w-4" /> },
+];
 
 const ESGIndicators = () => {
+  const { getVisualPreferences } = useSegment();
   const [activeTab, setActiveTab] = useState('environmental');
-  const [chartType, setChartType] = useState('bar');
+  const [selectedChart, setSelectedChart] = useState('bar');
+  const [timeframe, setTimeframe] = useState('actual');
   
-  // Function to get the current data based on active tab
-  const getCurrentData = () => {
-    if (activeTab === 'environmental') return environmentalData;
-    if (activeTab === 'social') return socialData;
-    return governanceData;
+  const primaryColor = getVisualPreferences().primaryColor;
+  const secondaryColor = getVisualPreferences().secondaryColor;
+  
+  const getIconForCategory = (category) => {
+    switch(category) {
+      case 'environmental': return <Leaf className="h-5 w-5" />;
+      case 'social': return <Users className="h-5 w-5" />;
+      case 'governance': return <Building2 className="h-5 w-5" />;
+      default: return <Activity className="h-5 w-5" />;
+    }
   };
   
-  // Function to render the appropriate chart based on type
+  // Calculate overall score for a category
+  const calculateCategoryScore = (category) => {
+    const data = ESG_DATA[category];
+    return Math.round(data.reduce((acc, item) => acc + item.value, 0) / data.length);
+  };
+  
+  // Get color based on performance (red if below target, green if above)
+  const getPerformanceColor = (value, target) => {
+    return value >= target ? '#36B37E' : '#FF5630';
+  };
+
+  // Render the selected chart type for the active category
   const renderChart = () => {
-    const data = getCurrentData()[chartType as keyof typeof environmentalData];
+    const categoryData = ESG_DATA[activeTab];
     
-    switch(chartType) {
+    switch (selectedChart) {
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <RechartsBarChart data={categoryData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="valor" fill="var(--primary-color)" />
-            </BarChart>
+              <Bar name="Valor Atual" dataKey="value" fill={primaryColor} />
+              <Bar name="Meta" dataKey="target" fill={secondaryColor} />
+            </RechartsBarChart>
           </ResponsiveContainer>
         );
+      
       case 'line':
         return (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <RechartsLineChart data={TIME_DATA[activeTab]}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
+              <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="valor" stroke="var(--primary-color)" activeDot={{ r: 8 }} />
-            </LineChart>
+              <Line name="Valor Atual" type="monotone" dataKey="value" stroke={primaryColor} activeDot={{ r: 8 }} />
+              <Line name="Meta" type="monotone" dataKey="target" stroke={secondaryColor} strokeDasharray="5 5" />
+            </RechartsLineChart>
           </ResponsiveContainer>
         );
-      case 'area':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area type="monotone" dataKey="valor" stroke="var(--primary-color)" fill="var(--primary-color)" fillOpacity={0.3} />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
+        
       case 'pie':
         return (
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
+          <ResponsiveContainer width="100%" height={320}>
+            <RechartsPieChart>
               <Pie
-                data={data}
+                data={categoryData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={100}
+                outerRadius={120}
                 fill="#8884d8"
-                dataKey="valor"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                dataKey="value"
+                nameKey="name"
+                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
               >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {categoryData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip />
               <Legend />
-            </PieChart>
+            </RechartsPieChart>
           </ResponsiveContainer>
         );
+        
+      case 'area':
+        return (
+          <ResponsiveContainer width="100%" height={320}>
+            <RechartsAreaChart data={TIME_DATA[activeTab]}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Area type="monotone" name="Valor Atual" dataKey="value" stroke={primaryColor} fill={primaryColor} fillOpacity={0.3} />
+              <Area type="monotone" name="Meta" dataKey="target" stroke={secondaryColor} fill={secondaryColor} fillOpacity={0.3} strokeDasharray="5 5" />
+            </RechartsAreaChart>
+          </ResponsiveContainer>
+        );
+      
       default:
-        return <div>Selecione um tipo de gráfico</div>;
+        return null;
     }
   };
   
+  // Render comparison chart for industry benchmarking
+  const renderComparisonChart = () => {
+    const comparisonData = COMPARISON_DATA[activeTab];
+    
+    return (
+      <ResponsiveContainer width="100%" height={220}>
+        <RechartsBarChart data={comparisonData} layout="vertical">
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" />
+          <YAxis dataKey="name" type="category" width={100} />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="company" name="Sua Empresa" fill={primaryColor} />
+          <Bar dataKey="industry" name="Média do Setor" fill={secondaryColor} />
+        </RechartsBarChart>
+      </ResponsiveContainer>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -214,339 +233,253 @@ const ESGIndicators = () => {
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1">Indicadores ESG</h1>
             <p className="text-sm text-muted-foreground">
-              Monitore o progresso da sua empresa em iniciativas ambientais, sociais e de governança
+              Métricas ambientais, sociais e de governança da sua empresa
             </p>
           </div>
           
-          <Alert className="mb-6 border-primary/20 bg-primary/5">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertTitle className="text-sm font-medium">Benefícios ESG</AlertTitle>
-            <AlertDescription className="text-xs">
-              Empresas com boas práticas ESG geralmente apresentam melhores resultados e maior valor de mercado a longo prazo.
-            </AlertDescription>
-          </Alert>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card className={`border-l-4 ${activeTab === 'environmental' ? 'border-l-emerald-500' : 'border-l-transparent'}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700">
+                        <Leaf className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Ambiental</p>
+                        <p className="text-2xl font-bold">{calculateCategoryScore('environmental')}%</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant={activeTab === 'environmental' ? 'default' : 'outline'} 
+                    onClick={() => setActiveTab('environmental')}
+                    size="sm"
+                  >
+                    {activeTab === 'environmental' ? 'Visualizando' : 'Visualizar'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`border-l-4 ${activeTab === 'social' ? 'border-l-blue-500' : 'border-l-transparent'}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Social</p>
+                        <p className="text-2xl font-bold">{calculateCategoryScore('social')}%</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant={activeTab === 'social' ? 'default' : 'outline'} 
+                    onClick={() => setActiveTab('social')}
+                    size="sm"
+                  >
+                    {activeTab === 'social' ? 'Visualizando' : 'Visualizar'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`border-l-4 ${activeTab === 'governance' ? 'border-l-purple-500' : 'border-l-transparent'}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-700">
+                        <Building2 className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Governança</p>
+                        <p className="text-2xl font-bold">{calculateCategoryScore('governance')}%</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant={activeTab === 'governance' ? 'default' : 'outline'} 
+                    onClick={() => setActiveTab('governance')}
+                    size="sm"
+                  >
+                    {activeTab === 'governance' ? 'Visualizando' : 'Visualizar'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
-          <Tabs 
-            defaultValue="environmental" 
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="mb-6"
-          >
-            <TabsList className="grid grid-cols-3 w-full md:w-[600px]">
-              <TabsTrigger value="environmental" className="flex items-center gap-2">
-                <Leaf size={16} />
-                <span>Ambiental</span>
-              </TabsTrigger>
-              <TabsTrigger value="social" className="flex items-center gap-2">
-                <Heart size={16} />
-                <span>Social</span>
-              </TabsTrigger>
-              <TabsTrigger value="governance" className="flex items-center gap-2">
-                <Building size={16} />
-                <span>Governança</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="environmental" className="pt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Leaf size={18} className="text-green-500" />
-                    Métricas Ambientais
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
+            <div className="lg:col-span-1">
+              <Card className="h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-1">
+                    <BarChart2 size={16} />
+                    Tipo de Gráfico
                   </CardTitle>
-                  <CardDescription>Monitoramento do impacto ambiental da empresa</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Emissão de CO2</p>
-                          <p className="text-xl font-bold mt-1">14.5 <span className="text-xs font-normal">ton</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <Factory className="h-5 w-5 text-green-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Energia Renovável</p>
-                          <p className="text-xl font-bold mt-1">42% <span className="text-xs font-normal">do total</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <BatteryCharging className="h-5 w-5 text-green-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Consumo de Água</p>
-                          <p className="text-xl font-bold mt-1">3.2 <span className="text-xs font-normal">mil m³</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <Droplets className="h-5 w-5 text-green-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Reciclagem</p>
-                          <p className="text-xl font-bold mt-1">78% <span className="text-xs font-normal">do lixo</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <Recycle className="h-5 w-5 text-green-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                <CardContent className="p-3">
+                  <div className="space-y-1">
+                    {CHART_TYPES.map(chart => (
+                      <Button
+                        key={chart.id}
+                        variant={selectedChart === chart.id ? 'default' : 'outline'}
+                        className="w-full justify-start gap-2 mb-2"
+                        onClick={() => setSelectedChart(chart.id)}
+                      >
+                        {chart.icon}
+                        {chart.label}
+                      </Button>
+                    ))}
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant={chartType === 'bar' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('bar')}
-                        size="sm"
-                      >
-                        Barras
-                      </Button>
-                      <Button 
-                        variant={chartType === 'line' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('line')}
-                        size="sm"
-                      >
-                        Linha
-                      </Button>
-                      <Button 
-                        variant={chartType === 'area' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('area')}
-                        size="sm"
-                      >
-                        Área
-                      </Button>
-                      <Button 
-                        variant={chartType === 'pie' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('pie')}
-                        size="sm"
-                      >
-                        Pizza
-                      </Button>
-                    </div>
-                    
-                    <div className="p-4 border rounded-md">
-                      {renderChart()}
+                  <div className="mt-4 pt-4 border-t">
+                    <h3 className="font-medium text-sm mb-2">Período de Tempo</h3>
+                    <Tabs defaultValue="actual" value={timeframe} onValueChange={setTimeframe}>
+                      <TabsList className="w-full">
+                        <TabsTrigger value="actual">Atual</TabsTrigger>
+                        <TabsTrigger value="progress">Histórico</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t">
+                    <h3 className="font-medium text-sm mb-2">Detalhes</h3>
+                    <div className="text-xs space-y-1">
+                      {ESG_DATA[activeTab].map((item, idx) => (
+                        <div key={idx} className="py-1 border-b last:border-b-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-medium">{item.name}</span>
+                            <span className={item.value >= item.target ? 'text-green-600' : 'text-red-600'}>
+                              {item.value}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full ${item.value >= item.target ? 'bg-green-500' : 'bg-red-500'}`} 
+                              style={{ width: `${item.value}%` }}
+                            ></div>
+                          </div>
+                          <div className="flex items-center justify-between text-muted-foreground mt-1">
+                            <span>Meta: {item.target}%</span>
+                            <span className={item.value >= item.target ? 'text-green-600' : 'text-red-600'}>
+                              {item.value >= item.target ? '+' : ''}{item.value - item.target}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </div>
             
-            <TabsContent value="social" className="pt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Heart size={18} className="text-red-500" />
-                    Métricas Sociais
-                  </CardTitle>
-                  <CardDescription>Acompanhamento das iniciativas sociais e de recursos humanos</CardDescription>
+            <div className="lg:col-span-4">
+              <Card className="h-full">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {getIconForCategory(activeTab)}
+                      {activeTab === 'environmental' ? 'Indicadores Ambientais' :
+                       activeTab === 'social' ? 'Indicadores Sociais' : 'Indicadores de Governança'}
+                    </CardTitle>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg">
+                      {timeframe === 'actual' ? 'Visualização atual' : 'Visualização histórica'}
+                    </span>
+                  </div>
+                  <CardDescription className="text-xs">
+                    {activeTab === 'environmental' ? 'Métricas de sustentabilidade e impacto ambiental' :
+                     activeTab === 'social' ? 'Métricas de impacto social e relacionamento com stakeholders' : 
+                     'Métricas de transparência, ética e práticas de gestão'}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Diversidade</p>
-                          <p className="text-xl font-bold mt-1">48% <span className="text-xs font-normal">mulheres</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <Users className="h-5 w-5 text-red-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Treinamento</p>
-                          <p className="text-xl font-bold mt-1">22 <span className="text-xs font-normal">horas/col.</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <BriefcaseBusiness className="h-5 w-5 text-red-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Voluntariado</p>
-                          <p className="text-xl font-bold mt-1">480 <span className="text-xs font-normal">horas</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <Heart className="h-5 w-5 text-red-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Rotatividade</p>
-                          <p className="text-xl font-bold mt-1">12% <span className="text-xs font-normal">anual</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <Users className="h-5 w-5 text-red-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                <CardContent>
+                  <div className="h-[320px]">
+                    {renderChart()}
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant={chartType === 'bar' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('bar')}
-                        size="sm"
-                      >
-                        Barras
-                      </Button>
-                      <Button 
-                        variant={chartType === 'line' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('line')}
-                        size="sm"
-                      >
-                        Linha
-                      </Button>
-                      <Button 
-                        variant={chartType === 'area' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('area')}
-                        size="sm"
-                      >
-                        Área
-                      </Button>
-                      <Button 
-                        variant={chartType === 'pie' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('pie')}
-                        size="sm"
-                      >
-                        Pizza
-                      </Button>
-                    </div>
-                    
-                    <div className="p-4 border rounded-md">
-                      {renderChart()}
+                  <div className="mt-6 pt-6 border-t">
+                    <h3 className="text-sm font-medium mb-3">Comparação com o Setor</h3>
+                    <div className="h-[220px]">
+                      {renderComparisonChart()}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-            
-            <TabsContent value="governance" className="pt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Building size={18} className="text-blue-500" />
-                    Métricas de Governança
-                  </CardTitle>
-                  <CardDescription>Acompanhamento das práticas de governança corporativa</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Transparência</p>
-                          <p className="text-xl font-bold mt-1">94% <span className="text-xs font-normal">índice</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Building className="h-5 w-5 text-blue-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Compliance</p>
-                          <p className="text-xl font-bold mt-1">100% <span className="text-xs font-normal">conformidade</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Building className="h-5 w-5 text-blue-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Ética</p>
-                          <p className="text-xl font-bold mt-1">0 <span className="text-xs font-normal">violações</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Building className="h-5 w-5 text-blue-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Riscos</p>
-                          <p className="text-xl font-bold mt-1">87% <span className="text-xs font-normal">mitigação</span></p>
-                        </div>
-                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <AlertCircle className="h-5 w-5 text-blue-500" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant={chartType === 'bar' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('bar')}
-                        size="sm"
-                      >
-                        Barras
-                      </Button>
-                      <Button 
-                        variant={chartType === 'line' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('line')}
-                        size="sm"
-                      >
-                        Linha
-                      </Button>
-                      <Button 
-                        variant={chartType === 'area' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('area')}
-                        size="sm"
-                      >
-                        Área
-                      </Button>
-                      <Button 
-                        variant={chartType === 'pie' ? 'default' : 'outline'} 
-                        onClick={() => setChartType('pie')}
-                        size="sm"
-                      >
-                        Pizza
-                      </Button>
+            </div>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recomendações para Melhorias</CardTitle>
+              <CardDescription>Ações sugeridas para melhorar suas métricas ESG</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <h3 className="flex items-center gap-2 font-medium">
+                    <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
+                      <Leaf className="h-4 w-4" />
                     </div>
-                    
-                    <div className="p-4 border rounded-md">
-                      {renderChart()}
+                    <span>Recomendações Ambientais</span>
+                  </h3>
+                  <ul className="pl-4 text-sm space-y-1 list-disc">
+                    <li>Implementar programa de eficiência energética</li>
+                    <li>Reduzir consumo de água em 10% nos próximos 6 meses</li>
+                    <li>Aumentar taxa de reciclagem para 75%</li>
+                    <li>Implementar programa de compensação de carbono</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="flex items-center gap-2 font-medium">
+                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
+                      <Users className="h-4 w-4" />
                     </div>
+                    <span>Recomendações Sociais</span>
+                  </h3>
+                  <ul className="pl-4 text-sm space-y-1 list-disc">
+                    <li>Implementar política de diversidade e inclusão</li>
+                    <li>Aumentar horas de treinamento por funcionário</li>
+                    <li>Expandir programas de voluntariado corporativo</li>
+                    <li>Melhorar métricas de saúde e segurança ocupacional</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="flex items-center gap-2 font-medium">
+                    <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <span>Recomendações de Governança</span>
+                  </h3>
+                  <ul className="pl-4 text-sm space-y-1 list-disc">
+                    <li>Aumentar diversidade no conselho administrativo</li>
+                    <li>Publicar relatório de sustentabilidade anual</li>
+                    <li>Implementar programa de compliance mais robusto</li>
+                    <li>Estabelecer políticas de remuneração transparentes</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Relatório ESG Completo</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Baixe o relatório completo com todas as métricas e recomendações detalhadas.
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  <Button>Gerar Relatório</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
