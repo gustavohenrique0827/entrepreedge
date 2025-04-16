@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Palette } from 'lucide-react';
+import { AlertCircle, Palette, Check } from 'lucide-react';
+import { useSegment } from '@/contexts/SegmentContext';
 
 const AppearanceSettings = () => {
   const { toast } = useToast();
+  const { currentSegment, getVisualPreferences, applySegmentVisuals } = useSegment();
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [fontSize, setFontSize] = useState(localStorage.getItem('fontSize') || 'medium');
   const [notifications, setNotifications] = useState(localStorage.getItem('notifications') !== 'false');
   const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#8B5CF6');
   const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('secondaryColor') || '#D946EF');
-  const segment = localStorage.getItem('segment') || 'generic';
 
   // Apply dark mode when component mounts and when changed
   useEffect(() => {
@@ -47,8 +48,43 @@ const AppearanceSettings = () => {
 
   // Apply colors when component mounts and when changed
   useEffect(() => {
+    // Apply to CSS variables
     document.documentElement.style.setProperty('--primary-color', primaryColor);
     document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
+    // Convert hex to HSL and apply to Tailwind variables
+    const hexToHSL = (hex: string) => {
+      // Remove the # from the beginning
+      hex = hex.replace(/^#/, '');
+
+      // Parse the hex values
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+      // Find max and min values to calculate the lightness
+      let max = Math.max(r, g, b);
+      let min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      // Calculate hue and saturation
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+
+    const primaryHSL = hexToHSL(primaryColor);
+    const secondaryHSL = hexToHSL(secondaryColor);
+    
+    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   }, [primaryColor, secondaryColor]);
 
   const handleDarkModeChange = (checked: boolean) => {
@@ -76,56 +112,49 @@ const AppearanceSettings = () => {
     localStorage.setItem('secondaryColor', e.target.value);
   };
 
-  // Get segment-specific color recommendations
-  const getSegmentRecommendations = () => {
-    switch(segment) {
-      case 'financial':
-        return {
-          primary: '#0052CC',
-          secondary: '#36B37E'
-        };
-      case 'healthcare':
-        return {
-          primary: '#00A3C4',
-          secondary: '#00875A'
-        };
-      case 'education':
-        return {
-          primary: '#6554C0',
-          secondary: '#00B8D9'
-        };
-      case 'ecommerce':
-        return {
-          primary: '#FF5630',
-          secondary: '#6554C0'
-        };
-      case 'manufacturing':
-        return {
-          primary: '#505F79',
-          secondary: '#0052CC'
-        };
-      default:
-        return {
-          primary: '#8B5CF6',
-          secondary: '#D946EF'
-        };
-    }
-  };
-
   const applySegmentColors = () => {
-    const recommendations = getSegmentRecommendations();
-    setPrimaryColor(recommendations.primary);
-    setSecondaryColor(recommendations.secondary);
-    localStorage.setItem('primaryColor', recommendations.primary);
-    localStorage.setItem('secondaryColor', recommendations.secondary);
-    
-    toast({
-      title: "Cores do segmento aplicadas",
-      description: `Cores recomendadas para o segmento "${segment}" foram aplicadas.`,
-    });
+    applySegmentVisuals();
+    const prefs = getVisualPreferences();
+    setPrimaryColor(prefs.primaryColor);
+    setSecondaryColor(prefs.secondaryColor);
   };
 
   const handleSaveAppearance = () => {
+    // Update document variables directly
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
+    // Update in localStorage
+    localStorage.setItem('primaryColor', primaryColor);
+    localStorage.setItem('secondaryColor', secondaryColor);
+    
+    // Convert to HSL for Tailwind
+    const hexToHSL = (hex: string) => {
+      hex = hex.replace(/^#/, '');
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+      
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+    
+    const primaryHSL = hexToHSL(primaryColor);
+    const secondaryHSL = hexToHSL(secondaryColor);
+    
+    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+    
     toast({
       title: "Configurações salvas",
       description: "Suas preferências de aparência foram atualizadas com sucesso.",
@@ -220,8 +249,8 @@ const AppearanceSettings = () => {
             </div>
           </div>
           
-          <div className="p-3 border rounded-md bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200 mt-3 text-sm flex items-start gap-2">
-            <AlertCircle size={16} className="mt-0.5" />
+          <div className="bg-background p-3 border rounded-md mt-3 text-sm flex items-start gap-2">
+            <Check size={16} className="mt-0.5 text-green-500" />
             <p>
               As cores serão aplicadas a todos os elementos do sistema que usam a cor primária ou secundária.
             </p>

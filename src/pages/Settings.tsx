@@ -9,6 +9,7 @@ import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
+import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -56,6 +57,40 @@ const Settings = () => {
     // Apply theme colors
     document.documentElement.style.setProperty('--primary-color', primaryColor);
     document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
+    // Convert to HSL for Tailwind variables
+    const hexToHSL = (hex: string) => {
+      // Remove the # from the beginning
+      hex = hex.replace(/^#/, '');
+
+      // Parse the hex values
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+      // Find max and min values to calculate the lightness
+      let max = Math.max(r, g, b);
+      let min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      // Calculate hue and saturation
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+    
+    const primaryHSL = hexToHSL(primaryColor);
+    const secondaryHSL = hexToHSL(secondaryColor);
+    
+    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
     
     // Update document title
     document.title = `${companyName} - Configurações`;
@@ -144,8 +179,10 @@ const Settings = () => {
                   <SubscriptionPlans />
                 </TabsContent>
                 
-                <TabsContent value="appearance" className="mt-0">
+                <TabsContent value="appearance" className="mt-0 p-4">
                   <AppearanceSettings />
+                  <div className="h-6"></div>
+                  <VisualizationSettings />
                 </TabsContent>
                 
                 <TabsContent value="notifications" className="mt-0">

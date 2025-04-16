@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import {
@@ -61,12 +61,22 @@ type SidebarCollapsibleItem = {
 const Sidebar = () => {
   const location = useLocation();
   const { hasAccess } = useSubscription();
-  const { segmentName } = useSegment();
+  const { segmentName, currentSegment } = useSegment();
   
   // State for collapsible sections
   const [personnelOpen, setPersonnelOpen] = useState(false);
   const [accountingOpen, setAccountingOpen] = useState(false);
   
+  // Auto expand sections based on current path
+  useEffect(() => {
+    if (location.pathname.startsWith('/personnel')) {
+      setPersonnelOpen(true);
+    }
+    if (location.pathname.startsWith('/accounting')) {
+      setAccountingOpen(true);
+    }
+  }, [location.pathname]);
+
   const isActive = (path: string) => {
     return location.pathname === path;
   };
@@ -116,6 +126,16 @@ const Sidebar = () => {
   ];
 
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  
+  // Apply sidebar styles based on segment
+  useEffect(() => {
+    const prefs = localStorage.getItem('primaryColor') || '#8B5CF6';
+    if (prefs) {
+      // Apply sidebar accent color
+      document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`); // 15% opacity for accent bg
+      document.documentElement.style.setProperty('--sidebar-primary', prefs);
+    }
+  }, [currentSegment]);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
@@ -182,92 +202,88 @@ const Sidebar = () => {
           </div>
 
           {/* Departamento Pessoal section - only show if user has access */}
-          {hasAccess('hr') && (
-            <div className="px-3 py-2">
-              <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-                Departamento Pessoal
-              </div>
-              <div
-                className={cn(
-                  "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                  isInPath("/personnel")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80"
-                )}
-                onClick={() => setPersonnelOpen(!personnelOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <Briefcase size={18} />
-                  <span>Departamento Pessoal</span>
-                </div>
-                {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </div>
-              
-              {personnelOpen && (
-                <div className="ml-9 space-y-1 mt-1">
-                  {personnelItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      className={cn(
-                        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                        isActive(item.href)
-                          ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70"
-                      )}
-                    >
-                      {item.icon}
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              )}
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Departamento Pessoal
             </div>
-          )}
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/personnel")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setPersonnelOpen(!personnelOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <Briefcase size={18} />
+                <span>Departamento Pessoal</span>
+              </div>
+              {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {personnelOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {personnelItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Área Contábil section - only show if user has access */}
-          {hasAccess('accounting') && (
-            <div className="px-3 py-2">
-              <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-                Área Contábil
-              </div>
-              <div
-                className={cn(
-                  "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                  isInPath("/accounting")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80"
-                )}
-                onClick={() => setAccountingOpen(!accountingOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <FileText size={18} />
-                  <span>Área Contábil</span>
-                </div>
-                {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </div>
-              
-              {accountingOpen && (
-                <div className="ml-9 space-y-1 mt-1">
-                  {accountingItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      className={cn(
-                        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                        isActive(item.href)
-                          ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70"
-                      )}
-                    >
-                      {item.icon}
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              )}
+          {/* Área Contábil section */}
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Área Contábil
             </div>
-          )}
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/accounting")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setAccountingOpen(!accountingOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <FileText size={18} />
+                <span>Área Contábil</span>
+              </div>
+              {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {accountingOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {accountingItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="px-3 py-2">
             <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
