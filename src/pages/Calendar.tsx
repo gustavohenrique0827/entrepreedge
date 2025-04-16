@@ -102,7 +102,7 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { toast } = useToast();
   
-  const getWeekDays = (date) => {
+  const getWeekDays = (date: Date) => {
     const start = startOfWeek(date, { weekStartsOn: 0 });
     const end = endOfWeek(date, { weekStartsOn: 0 });
     
@@ -119,7 +119,7 @@ const CalendarPage = () => {
   
   const weekDays = getWeekDays(currentDate);
   
-  const getEventsForDay = (day) => {
+  const getEventsForDay = (day: Date) => {
     return events.filter(event => {
       const eventDate = parseISO(event.startTime);
       return isSameDay(eventDate, day);
@@ -168,6 +168,7 @@ const CalendarPage = () => {
     } else if (view === 'day') {
       return format(day, 'EEEE, dd MMMM', { locale: ptBR });
     }
+    return '';
   };
   
   const handleEventClick = (event: any) => {
