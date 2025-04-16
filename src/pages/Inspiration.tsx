@@ -191,12 +191,12 @@ const COLLABORATION_TIPS = [
 ];
 
 const Inspiration = () => {
-  const [selectedStory, setSelectedStory] = useState(null);
-  const [selectedTrend, setSelectedTrend] = useState(null);
-  const [selectedTip, setSelectedTip] = useState(null);
+  const [selectedStory, setSelectedStory] = useState<typeof SUCCESS_STORIES[0] | null>(null);
+  const [selectedTrend, setSelectedTrend] = useState<typeof MARKET_TRENDS[0] | null>(null);
+  const [selectedTip, setSelectedTip] = useState<typeof COLLABORATION_TIPS[0] | null>(null);
   const { toast } = useToast();
   
-  const handleShare = (item, type) => {
+  const handleShare = (item: any, type: string) => {
     // Simulate sharing functionality
     toast({
       title: "Conteúdo compartilhado",
@@ -204,7 +204,7 @@ const Inspiration = () => {
     });
   };
   
-  const handleSave = (item, type) => {
+  const handleSave = (item: any, type: string) => {
     // Simulate saving functionality
     toast({
       title: "Conteúdo salvo",
@@ -212,7 +212,7 @@ const Inspiration = () => {
     });
   };
   
-  const handleLike = (item, type) => {
+  const handleLike = (item: any, type: string) => {
     // Simulate like functionality
     toast({
       title: "Conteúdo curtido",
