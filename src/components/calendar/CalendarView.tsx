@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
