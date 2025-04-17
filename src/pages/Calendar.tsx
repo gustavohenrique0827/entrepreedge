@@ -2,8 +2,6 @@
 import React, { useState } from 'react';
 import { format, addDays, parseISO } from 'date-fns';
 import { Card, CardContent } from "@/components/ui/card";
-import Navbar from '@/components/Navbar';
-import Sidebar from '@/components/Sidebar';
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
@@ -16,12 +14,16 @@ import EventDetails from '@/components/calendar/EventDetails';
 import { UpcomingEvents, CalendarCategories, Reminders } from '@/components/calendar/SidebarComponents';
 import { EVENT_CATEGORIES, INITIAL_EVENTS } from '@/components/calendar/constants';
 import { Event, EventFormData } from '@/components/calendar/types';
+import AddEventDialog from '@/components/calendar/AddEventDialog';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState<boolean>(false);
+  const [isAddEventOpen, setIsAddEventOpen] = useState<boolean>(false);
   const [newEvent, setNewEvent] = useState<EventFormData>({
     title: '',
     description: '',
@@ -64,6 +66,7 @@ const CalendarPage = () => {
     
     setEvents([...events, createdEvent]);
     setIsCreatingEvent(false);
+    setIsAddEventOpen(false);
     setNewEvent({
       title: '',
       description: '',
@@ -90,6 +93,11 @@ const CalendarPage = () => {
       description: "O evento foi excluído com sucesso.",
     });
   };
+
+  // Handle quick event/reminder creation
+  const handleAddEvent = () => {
+    setIsAddEventOpen(true);
+  };
   
   return (
     <PageContainer>
@@ -99,15 +107,21 @@ const CalendarPage = () => {
       />
       
       <div className="space-y-6">
-        <CalendarHeader 
-          currentDate={currentDate}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          setCurrentDate={setCurrentDate}
-          view={view}
-          setView={setView}
-          onNewEvent={() => setIsCreatingEvent(true)}
-        />
+        <div className="flex justify-between items-center">
+          <CalendarHeader 
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            setCurrentDate={setCurrentDate}
+            view={view}
+            setView={setView}
+            onNewEvent={() => setIsCreatingEvent(true)}
+          />
+          <Button onClick={handleAddEvent} className="ml-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Lembrete/Evento
+          </Button>
+        </div>
         
         <Card>
           <CardContent className="p-4">
@@ -139,6 +153,15 @@ const CalendarPage = () => {
           event={selectedEvent}
           onClose={handleCloseEventDetails}
           onDelete={handleDeleteEvent}
+          categories={EVENT_CATEGORIES}
+        />
+
+        <AddEventDialog
+          isOpen={isAddEventOpen}
+          onClose={() => setIsAddEventOpen(false)}
+          onSave={handleCreateEvent}
+          event={newEvent}
+          setEvent={setNewEvent}
           categories={EVENT_CATEGORIES}
         />
       </div>
