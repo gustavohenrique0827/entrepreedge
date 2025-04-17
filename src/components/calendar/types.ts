@@ -37,3 +37,32 @@ export interface DayColumnProps {
   view: 'day' | 'week';
   onEventClick: (event: Event) => void;
 }
+
+// Adding missing types
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface EventDetailsProps {
+  event: Event | null;
+  onClose: () => void;
+  onDelete: (id: number) => void;
+  categories: Category[];
+}
+
+export interface EventFormProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  newEvent: EventFormData;
+  setNewEvent: (event: EventFormData) => void;
+  handleCreateEvent: () => void;
+  categories: Category[];
+}
+
+export interface SidebarComponentProps {
+  events: Event[];
+  categories: Category[];
+  onEventClick?: (event: Event) => void;
+}

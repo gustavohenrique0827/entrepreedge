@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,8 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
 import { Download, Edit, Eye, FileText, Plus, Printer, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageContainer } from '@/components/PageContainer';
@@ -33,6 +32,11 @@ const Payslips = () => {
     payslip.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
     payslip.period.includes(searchTerm)
   );
+
+  // Helper function to determine badge variant
+  const getBadgeVariant = (status: string) => {
+    return status === 'Paid' ? 'default' : 'secondary';
+  };
 
   return (
     <PageContainer>
@@ -75,7 +79,7 @@ const Payslips = () => {
                     <TableCell>{payslip.employee}</TableCell>
                     <TableCell>{payslip.period}</TableCell>
                     <TableCell>
-                      <Badge variant={payslip.status === 'Paid' ? 'success' : 'secondary'}>
+                      <Badge variant={getBadgeVariant(payslip.status)}>
                         {payslip.status}
                       </Badge>
                     </TableCell>

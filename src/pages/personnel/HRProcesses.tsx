@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,8 +13,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
 import { Check, Clock, Filter, Plus, Search, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageContainer } from '@/components/PageContainer';
