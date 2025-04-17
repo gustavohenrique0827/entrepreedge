@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, addDays } from 'date-fns';
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,8 +6,8 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import { Home, BarChart2, Target, BookOpen } from 'lucide-react';
 
-// Import refactored components
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventForm from '@/components/calendar/EventForm';
@@ -17,7 +16,6 @@ import { UpcomingEvents, CalendarCategories, Reminders } from '@/components/cale
 import { EVENT_CATEGORIES, INITIAL_EVENTS } from '@/components/calendar/constants';
 import { Event, EventFormData } from '@/components/calendar/types';
 import AddEventDialog from '@/components/calendar/AddEventDialog';
-import { Plus } from 'lucide-react';
 
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -97,7 +95,6 @@ const CalendarPage = () => {
     });
   };
 
-  // Handle quick event/reminder creation
   const handleAddEvent = () => {
     setIsAddEventOpen(true);
   };
