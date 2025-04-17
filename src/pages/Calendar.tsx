@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { useToast } from "@/hooks/use-toast";
-import PageContainer from '@/components/PageContainer';
-import PageHeader from '@/components/PageHeader';
+import { PageContainer } from '@/components/PageContainer';
+import { PageHeader } from '@/components/PageHeader';
 
 // Import refactored components
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -32,7 +32,7 @@ const CalendarPage = () => {
     participants: '',
     reminder: '30min'
   });
-  const [view, setView] = useState<'day' | 'week' | 'month'>('week');
+  const [view, setView] = useState<'month' | 'week' | 'day'>('week');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
   

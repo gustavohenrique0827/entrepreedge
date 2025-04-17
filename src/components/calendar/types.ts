@@ -4,19 +4,13 @@ import { ReactNode } from 'react';
 export interface Event {
   id: number;
   title: string;
-  description: string;
+  description?: string;
   startTime: string;
   endTime: string;
-  location: string;
+  location?: string;
   category: string;
   participants: string[];
   reminder: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  color: string;
 }
 
 export interface EventFormData {
@@ -30,48 +24,16 @@ export interface EventFormData {
   reminder: string;
 }
 
-export interface DayColumnProps {
-  day: Date;
-  events: Event[];
-  onEventClick: (event: Event) => void;
-  view: 'day' | 'week';
-}
-
 export interface CalendarViewProps {
   currentDate: Date;
   events: Event[];
-  view: 'day' | 'week';
+  view: 'day' | 'week' | 'month';
   onEventClick: (event: Event) => void;
 }
 
-export interface CalendarHeaderProps {
-  currentDate: Date;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  setCurrentDate: (date: Date) => void;
-  view: 'day' | 'week';
-  setView: (view: 'day' | 'week') => void;
-  onNewEvent: () => void;
-}
-
-export interface EventDetailsProps {
-  event: Event | null;
-  onClose: () => void;
-  onDelete: (id: number) => void;
-  categories: Category[];
-}
-
-export interface EventFormProps {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-  newEvent: EventFormData;
-  setNewEvent: (newEvent: EventFormData) => void;
-  handleCreateEvent: () => void;
-  categories: Category[];
-}
-
-export interface SidebarComponentProps {
+export interface DayColumnProps {
+  day: Date;
   events: Event[];
-  categories: Category[];
+  view: 'day' | 'week';
   onEventClick: (event: Event) => void;
 }
