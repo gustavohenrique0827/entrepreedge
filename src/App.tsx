@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,13 +26,11 @@ import ESGIndicators from "./pages/ESGIndicators";
 import Calendar from "./pages/Calendar";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SegmentProvider } from "./contexts/SegmentContext";
-// Import Personnel pages
 import EmployeeManagement from "./pages/personnel/EmployeeManagement";
 import TimeTracking from "./pages/personnel/TimeTracking";
 import Payslips from "./pages/personnel/Payslips";
 import Hiring from "./pages/personnel/Hiring";
 import HRProcesses from "./pages/personnel/HRProcesses";
-// Import Accounting pages
 import Overview from "./pages/accounting/Overview";
 import Entries from "./pages/accounting/Entries";
 import Fiscal from "./pages/accounting/Fiscal";
@@ -42,31 +39,31 @@ import Invoices from "./pages/accounting/Invoices";
 import Reports from "./pages/accounting/Reports";
 import MEI from "./pages/accounting/MEI";
 import FinancialStatements from "./pages/accounting/FinancialStatements";
+import CustomProcesses from "./pages/dev-admin/CustomProcesses";
+import AccessLevels from "./pages/dev-admin/AccessLevels";
+import Companies from "./pages/dev-admin/Companies";
+import PlansManagement from "./pages/dev-admin/Plans";
+import ReportsManagement from "./pages/dev-admin/Reports";
+import SupportManagement from "./pages/dev-admin/Support";
 
 const queryClient = new QueryClient();
 
-// Initialize global settings
 const initializeSettings = () => {
-  // Apply dark mode
   if (localStorage.getItem('darkMode') === 'true') {
     document.documentElement.classList.add('dark');
   } else {
     document.documentElement.classList.remove('dark');
   }
   
-  // Apply font size
   const fontSize = localStorage.getItem('fontSize') || 'medium';
   document.documentElement.setAttribute('data-font-size', fontSize);
   
-  // Apply language
   const language = localStorage.getItem('language') || 'pt-BR';
   document.documentElement.lang = language.split('-')[0];
   
-  // Apply company name to document title
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   document.title = `${companyName} - Sistema`;
   
-  // Initialize global currency formatter
   const currency = localStorage.getItem('currency') || 'BRL';
   if (currency === 'BRL') {
     window.currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -76,28 +73,19 @@ const initializeSettings = () => {
     window.currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
   }
   
-  // Apply theme colors - IMPORTANT: must be applied on app mount to ensure persistence
   const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
   const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   document.documentElement.style.setProperty('--primary-color', primaryColor);
   document.documentElement.style.setProperty('--secondary-color', secondaryColor);
   
-  // Convert to HSL for Tailwind variables
   const hexToHSL = (hex: string) => {
-    // Remove the # from the beginning
     hex = hex.replace(/^#/, '');
-
-    // Parse the hex values
     let r = parseInt(hex.substring(0, 2), 16) / 255;
     let g = parseInt(hex.substring(2, 4), 16) / 255;
     let b = parseInt(hex.substring(4, 6), 16) / 255;
-
-    // Find max and min values to calculate the lightness
     let max = Math.max(r, g, b);
     let min = Math.min(r, g, b);
     let h = 0, s = 0, l = (max + min) / 2;
-
-    // Calculate hue and saturation
     if (max !== min) {
       let d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -106,7 +94,6 @@ const initializeSettings = () => {
       else if (max === b) h = (r - g) / d + 4;
       h *= 60;
     }
-
     return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
   };
   
@@ -116,22 +103,18 @@ const initializeSettings = () => {
   document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   
-  // Apply sidebar accent
   document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`);
   document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
 };
 
-// Initialize settings right away
 initializeSettings();
 
 const App = () => {
   const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
   
-  // Re-apply settings when app component mounts
   useEffect(() => {
     initializeSettings();
     
-    // Listen for storage changes from other tabs
     const handleStorageChange = () => {
       initializeSettings();
     };
@@ -150,12 +133,10 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  {/* Public routes */}
                   <Route path="/auth" element={
                     isAuthenticated ? <Navigate to="/" replace /> : <Auth />
                   } />
                   
-                  {/* Protected routes */}
                   <Route path="/" element={
                     <ProtectedRoute>
                       <Index />
@@ -215,7 +196,6 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
-                  {/* Analytics and other feature routes */}
                   <Route path="/benchmarking" element={
                     <ProtectedRoute>
                       <Benchmarking />
@@ -237,7 +217,6 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
-                  {/* Personnel module routes */}
                   <Route path="/personnel" element={
                     <ProtectedRoute>
                       <EmployeeManagement />
@@ -269,7 +248,6 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
-                  {/* Accounting module routes */}
                   <Route path="/accounting/overview" element={
                     <ProtectedRoute>
                       <Overview />
@@ -316,7 +294,37 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
-                  {/* Catch-all route */}
+                  <Route path="/dev-admin/custom-processes" element={
+                    <ProtectedRoute>
+                      <CustomProcesses />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dev-admin/access-levels" element={
+                    <ProtectedRoute>
+                      <AccessLevels />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dev-admin/companies" element={
+                    <ProtectedRoute>
+                      <Companies />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dev-admin/reports" element={
+                    <ProtectedRoute>
+                      <ReportsManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dev-admin/plans" element={
+                    <ProtectedRoute>
+                      <PlansManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dev-admin/support" element={
+                    <ProtectedRoute>
+                      <SupportManagement />
+                    </ProtectedRoute>
+                  } />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

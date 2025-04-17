@@ -2,345 +2,291 @@
 import React, { useState } from 'react';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Search, 
-  Building, 
-  Users, 
-  Calendar, 
-  BarChart3, 
-  Package, 
-  Settings, 
-  Eye, 
-  ExternalLink, 
-  Clock, 
-  Info 
-} from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Home, BarChart2, Code, Settings, Eye, Building, Calendar, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format } from 'date-fns';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { format, addMonths } from 'date-fns';
 
-interface Company {
-  id: number;
-  name: string;
-  segment: string;
-  plan: 'basic' | 'pro' | 'enterprise';
-  status: 'active' | 'trial' | 'expired' | 'suspended';
-  usersCount: number;
-  createdAt: string;
-  lastLogin: string;
-  logo?: string;
-  cnpj?: string;
-  subscription: {
-    startDate: string;
-    endDate: string;
-    value: number;
-    interval: 'monthly' | 'annual';
-    autoRenew: boolean;
-  };
-}
+// Sample data for companies
+const initialCompanies = [
+  { 
+    id: 1, 
+    name: 'Tech Solutions Ltda', 
+    document: '12.345.678/0001-90', 
+    plan: 'enterprise', 
+    status: 'active', 
+    employees: 25, 
+    createdAt: '2022-10-15', 
+    planExpiration: '2024-10-15',
+    contact: 'contato@techsolutions.com.br',
+    address: 'Av. Paulista, 1000, São Paulo - SP'
+  },
+  { 
+    id: 2, 
+    name: 'Comércio Express ME', 
+    document: '98.765.432/0001-21', 
+    plan: 'pro', 
+    status: 'active', 
+    employees: 8, 
+    createdAt: '2023-03-20', 
+    planExpiration: '2024-03-20',
+    contact: 'financeiro@comercioexpress.com.br',
+    address: 'Rua da Consolação, 500, São Paulo - SP'
+  },
+  { 
+    id: 3, 
+    name: 'Consultoria Financeira SA', 
+    document: '45.678.901/0001-23', 
+    plan: 'basic', 
+    status: 'inactive', 
+    employees: 3, 
+    createdAt: '2023-05-10', 
+    planExpiration: '2023-11-10',
+    contact: 'atendimento@consultoriafinanceira.com.br',
+    address: 'Av. Rio Branco, 200, Rio de Janeiro - RJ'
+  },
+  { 
+    id: 4, 
+    name: 'Indústria Nacional Ltda', 
+    document: '34.567.890/0001-45', 
+    plan: 'enterprise', 
+    status: 'active', 
+    employees: 120, 
+    createdAt: '2021-08-05', 
+    planExpiration: '2024-08-05',
+    contact: 'comercial@industrianacional.com.br',
+    address: 'Rod. Anhanguera, Km 100, Campinas - SP'
+  },
+  { 
+    id: 5, 
+    name: 'Serviços Contábeis ME', 
+    document: '23.456.789/0001-67', 
+    plan: 'pro', 
+    status: 'active', 
+    employees: 12, 
+    createdAt: '2022-12-01', 
+    planExpiration: '2024-12-01',
+    contact: 'contato@servicoscontabeis.com.br',
+    address: 'Rua XV de Novembro, 300, Curitiba - PR'
+  },
+];
 
 const Companies = () => {
-  const { toast } = useToast();
+  const [companies, setCompanies] = useState(initialCompanies);
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<string>('all');
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  
-  const [companies, setCompanies] = useState<Company[]>([
-    {
-      id: 1,
-      name: 'Empresa ABC',
-      segment: 'Tecnologia',
-      plan: 'pro',
-      status: 'active',
-      usersCount: 8,
-      createdAt: '2024-11-15',
-      lastLogin: '2025-03-31',
-      logo: '',
-      cnpj: '12.345.678/0001-90',
-      subscription: {
-        startDate: '2024-11-15',
-        endDate: '2025-11-15',
-        value: 199.90,
-        interval: 'monthly',
-        autoRenew: true
-      }
-    },
-    {
-      id: 2,
-      name: 'Consultoria XYZ',
-      segment: 'Consultoria',
-      plan: 'enterprise',
-      status: 'active',
-      usersCount: 25,
-      createdAt: '2024-10-03',
-      lastLogin: '2025-04-01',
-      logo: '',
-      cnpj: '98.765.432/0001-10',
-      subscription: {
-        startDate: '2024-10-03',
-        endDate: '2025-10-03',
-        value: 999.90,
-        interval: 'annual',
-        autoRenew: true
-      }
-    },
-    {
-      id: 3,
-      name: 'Startup 123',
-      segment: 'E-commerce',
-      plan: 'basic',
-      status: 'trial',
-      usersCount: 3,
-      createdAt: '2025-03-20',
-      lastLogin: '2025-04-02',
-      logo: '',
-      cnpj: '23.456.789/0001-23',
-      subscription: {
-        startDate: '2025-03-20',
-        endDate: '2025-04-20',
-        value: 0,
-        interval: 'monthly',
-        autoRenew: false
-      }
-    },
-    {
-      id: 4,
-      name: 'Indústria 456',
-      segment: 'Indústria',
-      plan: 'pro',
-      status: 'expired',
-      usersCount: 12,
-      createdAt: '2024-05-10',
-      lastLogin: '2025-02-15',
-      logo: '',
-      cnpj: '34.567.890/0001-45',
-      subscription: {
-        startDate: '2024-05-10',
-        endDate: '2025-03-10',
-        value: 199.90,
-        interval: 'monthly',
-        autoRenew: false
-      }
-    },
-    {
-      id: 5,
-      name: 'Clínica Saúde',
-      segment: 'Saúde',
-      plan: 'basic',
-      status: 'suspended',
-      usersCount: 5,
-      createdAt: '2024-08-22',
-      lastLogin: '2025-01-30',
-      logo: '',
-      cnpj: '45.678.901/0001-67',
-      subscription: {
-        startDate: '2024-08-22',
-        endDate: '2025-02-22',
-        value: 99.90,
-        interval: 'monthly',
-        autoRenew: true
-      }
-    }
-  ]);
-  
-  const viewCompanyDetails = (company: Company) => {
-    setSelectedCompany(company);
-    setIsDetailsOpen(true);
-  };
-  
-  const getPlanBadge = (plan: 'basic' | 'pro' | 'enterprise') => {
-    switch (plan) {
-      case 'basic':
-        return <Badge variant="outline">Básico</Badge>;
-      case 'pro':
-        return <Badge variant="secondary">Pro</Badge>;
-      case 'enterprise':
-        return <Badge variant="default">Enterprise</Badge>;
-      default:
-        return <Badge variant="outline">Básico</Badge>;
-    }
-  };
-  
-  const getStatusBadge = (status: 'active' | 'trial' | 'expired' | 'suspended') => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-500">Ativo</Badge>;
-      case 'trial':
-        return <Badge variant="secondary">Trial</Badge>;
-      case 'expired':
-        return <Badge variant="destructive">Expirado</Badge>;
-      case 'suspended':
-        return <Badge variant="outline" className="border-red-500 text-red-500">Suspenso</Badge>;
-      default:
-        return <Badge variant="outline">Desconhecido</Badge>;
-    }
-  };
-  
-  // Filter companies based on search term and active tab
-  const filteredCompanies = companies.filter(company => {
-    const matchesSearch = 
-      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.segment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.cnpj?.includes(searchTerm.toLowerCase());
-    
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'active') return matchesSearch && company.status === 'active';
-    if (activeTab === 'trial') return matchesSearch && company.status === 'trial';
-    if (activeTab === 'expired') return matchesSearch && company.status === 'expired';
-    if (activeTab === 'suspended') return matchesSearch && company.status === 'suspended';
-    
-    return matchesSearch;
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
   });
-  
+  const [newPlan, setNewPlan] = useState({
+    plan: '',
+    duration: '12'
+  });
+  const { toast } = useToast();
+
+  const filteredCompanies = companies.filter(company => 
+    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.document.includes(searchTerm)
+  );
+
+  const handleViewDetails = (company: any) => {
+    setSelectedCompany(company);
+    setShowDetailsModal(true);
+  };
+
+  const handlePlanChange = (company: any) => {
+    setSelectedCompany(company);
+    setNewPlan({
+      plan: company.plan,
+      duration: '12'
+    });
+    setShowPlanModal(true);
+  };
+
+  const savePlanChange = () => {
+    if (!selectedCompany || !newPlan.plan) return;
+
+    const expirationDate = addMonths(new Date(), parseInt(newPlan.duration));
+    
+    setCompanies(companies.map(company => 
+      company.id === selectedCompany.id 
+        ? { 
+            ...company, 
+            plan: newPlan.plan, 
+            status: 'active',
+            planExpiration: format(expirationDate, 'yyyy-MM-dd')
+          } 
+        : company
+    ));
+    
+    setShowPlanModal(false);
+    
+    toast({
+      title: "Plano atualizado",
+      description: `O plano da empresa ${selectedCompany.name} foi atualizado com sucesso para ${newPlan.plan.toUpperCase()}.`,
+    });
+  };
+
+  const toggleCompanyStatus = (id: number) => {
+    setCompanies(companies.map(company => 
+      company.id === id 
+        ? { ...company, status: company.status === 'active' ? 'inactive' : 'active' } 
+        : company
+    ));
+    
+    const company = companies.find(c => c.id === id);
+    
+    toast({
+      title: "Status atualizado",
+      description: `A empresa ${company?.name} foi ${company?.status === 'active' ? 'desativada' : 'ativada'} com sucesso.`,
+    });
+  };
+
+  const navItems = [
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: <Home size={18} />
+    },
+    {
+      name: 'Dev/Admin',
+      href: '/dev-admin/companies',
+      icon: <Code size={18} />
+    },
+    {
+      name: 'Configurações',
+      href: '/settings',
+      icon: <Settings size={18} />
+    },
+  ];
+
   return (
-    <PageContainer>
-      <PageHeader 
-        title="Empresas" 
-        description="Gerencie as empresas cadastradas no sistema" 
-      />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
       
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <Tabs 
-            defaultValue="all" 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList>
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="active">Ativas</TabsTrigger>
-              <TabsTrigger value="trial">Trial</TabsTrigger>
-              <TabsTrigger value="expired">Expiradas</TabsTrigger>
-              <TabsTrigger value="suspended">Suspensas</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <div className="flex items-center ml-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar empresa..."
-                className="pl-8 w-[250px]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex-1 ml-[240px] transition-all duration-300">
+        <Navbar items={navItems} />
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Empresas Cadastradas</CardTitle>
-            <CardDescription>
-              Visualize e gerencie as empresas cadastradas no sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px]">
+        <PageContainer>
+          <PageHeader 
+            title="Empresas" 
+            description="Visualize e gerencie todas as empresas cadastradas no sistema"
+          />
+          
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <CardTitle>Empresas Cadastradas</CardTitle>
+                  <CardDescription>
+                    Lista de todas as empresas com seus respectivos planos
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Input
+                    placeholder="Buscar por nome ou CNPJ..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-[250px]"
+                  />
+                  <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empresa</TableHead>
-                    <TableHead>Segmento</TableHead>
+                    <TableHead>CNPJ</TableHead>
                     <TableHead>Plano</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Usuários</TableHead>
-                    <TableHead>Entrada</TableHead>
-                    <TableHead>Último Acesso</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+                    <TableHead>Funcionários</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCompanies.length > 0 ? (
-                    filteredCompanies.map((company) => (
-                      <TableRow key={company.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                              {company.logo ? (
-                                <AvatarImage src={company.logo} alt={company.name} />
-                              ) : (
-                                <AvatarFallback>
-                                  {company.name.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              )}
-                            </Avatar>
-                            <div className="font-medium">{company.name}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{company.segment}</TableCell>
-                        <TableCell>{getPlanBadge(company.plan)}</TableCell>
-                        <TableCell>{getStatusBadge(company.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            {company.usersCount}
-                          </div>
-                        </TableCell>
-                        <TableCell>{company.createdAt}</TableCell>
-                        <TableCell>{company.lastLogin}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => viewCompanyDetails(company)}
-                              className="text-primary"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Settings className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
-                        Nenhuma empresa encontrada.
+                  {filteredCompanies.map((company) => (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell>{company.document}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          company.plan === 'enterprise' ? 'default' : 
+                          company.plan === 'pro' ? 'secondary' : 'outline'
+                        }>
+                          {company.plan === 'enterprise' ? 'Enterprise' : 
+                           company.plan === 'pro' ? 'Pro' : 'Básico'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={company.status === 'active' ? 'default' : 'destructive'}>
+                          {company.status === 'active' ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{company.employees}</TableCell>
+                      <TableCell>{company.planExpiration}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            title="Ver Detalhes"
+                            onClick={() => handleViewDetails(company)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            title="Alterar Plano"
+                            onClick={() => handlePlanChange(company)}
+                          >
+                            <Building className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant={company.status === 'active' ? 'destructive' : 'outline'} 
+                            size="icon" 
+                            title={company.status === 'active' ? 'Desativar' : 'Ativar'}
+                            onClick={() => toggleCompanyStatus(company.id)}
+                          >
+                            <Users className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  )}
+                  ))}
                 </TableBody>
               </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        
-        {selectedCompany && (
-          <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+            </CardContent>
+            <CardFooter className="flex justify-between flex-col sm:flex-row">
+              <div className="text-sm text-muted-foreground">
+                Total de empresas: {companies.length}
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+                Ativas: {companies.filter(c => c.status === 'active').length} | 
+                Inativas: {companies.filter(c => c.status === 'inactive').length}
+              </div>
+            </CardFooter>
+          </Card>
+          
+          {/* Company Details Modal */}
+          <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Detalhes da Empresa</DialogTitle>
@@ -348,108 +294,134 @@ const Companies = () => {
                   Informações detalhadas sobre a empresa selecionada
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-4 space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    {selectedCompany.logo ? (
-                      <AvatarImage src={selectedCompany.logo} alt={selectedCompany.name} />
-                    ) : (
-                      <AvatarFallback className="text-lg">
-                        {selectedCompany.name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <h2 className="text-xl font-bold">{selectedCompany.name}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline">{selectedCompany.segment}</Badge>
-                      {getPlanBadge(selectedCompany.plan)}
-                      {getStatusBadge(selectedCompany.status)}
+              
+              {selectedCompany && (
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Nome</Label>
+                      <p className="font-medium">{selectedCompany.name}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">CNPJ</Label>
+                      <p className="font-medium">{selectedCompany.document}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Funcionários</Label>
+                      <p className="font-medium">{selectedCompany.employees}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Endereço</Label>
+                    <p className="font-medium">{selectedCompany.address}</p>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Contato</Label>
+                    <p className="font-medium">{selectedCompany.contact}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Plano</Label>
+                      <p className="font-medium capitalize">{selectedCompany.plan}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Status</Label>
+                      <p className="font-medium capitalize">{selectedCompany.status}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Vencimento</Label>
+                      <p className="font-medium">{selectedCompany.planExpiration}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Data de Cadastro</Label>
+                      <p className="font-medium">{selectedCompany.createdAt}</p>
                     </div>
                   </div>
                 </div>
-                
-                <Separator />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">CNPJ</h3>
-                    <p>{selectedCompany.cnpj || 'Não informado'}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Data de Cadastro</h3>
-                    <p>{selectedCompany.createdAt}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Último Acesso</h3>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <p>{selectedCompany.lastLogin}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Usuários</h3>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <p>{selectedCompany.usersCount} usuários</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <Card className="mt-4">
-                  <CardHeader className="py-3">
-                    <CardTitle className="text-base">Detalhes da Assinatura</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Plano</h3>
-                        <p className="font-medium">
-                          {selectedCompany.plan === 'basic' && 'Básico'}
-                          {selectedCompany.plan === 'pro' && 'Profissional'}
-                          {selectedCompany.plan === 'enterprise' && 'Enterprise'}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Valor</h3>
-                        <p className="font-medium">
-                          R$ {selectedCompany.subscription.value.toFixed(2)}/{selectedCompany.subscription.interval === 'monthly' ? 'mês' : 'ano'}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Início</h3>
-                        <p>{selectedCompany.subscription.startDate}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground">Término</h3>
-                        <p>{selectedCompany.subscription.endDate}</p>
-                      </div>
-                      <div className="col-span-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">Renovação Automática</h3>
-                        <Badge variant={selectedCompany.subscription.autoRenew ? 'default' : 'outline'}>
-                          {selectedCompany.subscription.autoRenew ? 'Ativada' : 'Desativada'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <div className="flex justify-between mt-4">
-                  <Button variant="outline">
-                    <Building className="mr-2 h-4 w-4" />
-                    Acessar Portal
-                  </Button>
-                  <Button>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Gerenciar Empresa
-                  </Button>
-                </div>
-              </div>
+              )}
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+                  Fechar
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
-        )}
+          
+          {/* Plan Change Modal */}
+          <Dialog open={showPlanModal} onOpenChange={setShowPlanModal}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Alterar Plano</DialogTitle>
+                <DialogDescription>
+                  {selectedCompany ? `Altere o plano da empresa ${selectedCompany.name}` : 'Altere o plano da empresa selecionada'}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="plan">Plano</Label>
+                  <Select
+                    value={newPlan.plan}
+                    onValueChange={(value) => setNewPlan({...newPlan, plan: value})}
+                  >
+                    <SelectTrigger id="plan">
+                      <SelectValue placeholder="Selecione o plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Básico</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="duration">Duração</Label>
+                  <Select
+                    value={newPlan.duration}
+                    onValueChange={(value) => setNewPlan({...newPlan, duration: value})}
+                  >
+                    <SelectTrigger id="duration">
+                      <SelectValue placeholder="Selecione a duração" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 mês</SelectItem>
+                      <SelectItem value="3">3 meses</SelectItem>
+                      <SelectItem value="6">6 meses</SelectItem>
+                      <SelectItem value="12">12 meses</SelectItem>
+                      <SelectItem value="24">24 meses</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2 pt-2">
+                  <Label>Nova Data de Vencimento</Label>
+                  <p className="text-sm font-medium">
+                    {format(addMonths(new Date(), parseInt(newPlan.duration)), 'dd/MM/yyyy')}
+                  </p>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowPlanModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={savePlanChange}>
+                  Salvar Alteração
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </PageContainer>
       </div>
-    </PageContainer>
+    </div>
   );
 };
 
