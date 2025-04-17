@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -18,12 +17,14 @@ const VisualizationSettings = () => {
   const [primaryColor, setPrimaryColor] = useState(getVisualPreferences().primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(getVisualPreferences().secondaryColor);
   const [layoutPreview, setLayoutPreview] = useState('default');
+  const [layoutPriorities, setLayoutPriorities] = useState<string[]>(getVisualPreferences().layoutPriorities || []);
   
   // Update colors when segment changes
   useEffect(() => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
+    setLayoutPriorities(prefs.layoutPriorities || []);
   }, [currentSegment, getVisualPreferences]);
 
   const segments: {id: BusinessSegmentType, name: string}[] = [
@@ -44,6 +45,7 @@ const VisualizationSettings = () => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
+    setLayoutPriorities(prefs.layoutPriorities || []);
     
     toast({
       title: "Segmento atualizado",
@@ -55,12 +57,74 @@ const VisualizationSettings = () => {
     setPrimaryColor(e.target.value);
     localStorage.setItem('primaryColor', e.target.value);
     document.documentElement.style.setProperty('--primary-color', e.target.value);
+    
+    // Convert to HSL for Tailwind variables
+    const hexToHSL = (hex: string) => {
+      // Remove the # from the beginning
+      hex = hex.replace(/^#/, '');
+
+      // Parse the hex values
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+      // Find max and min values to calculate the lightness
+      let max = Math.max(r, g, b);
+      let min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      // Calculate hue and saturation
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+    
+    const primaryHSL = hexToHSL(e.target.value);
+    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   };
 
   const handleSecondaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSecondaryColor(e.target.value);
     localStorage.setItem('secondaryColor', e.target.value);
     document.documentElement.style.setProperty('--secondary-color', e.target.value);
+    
+    // Convert to HSL for Tailwind variables
+    const hexToHSL = (hex: string) => {
+      // Remove the # from the beginning
+      hex = hex.replace(/^#/, '');
+
+      // Parse the hex values
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+      // Find max and min values to calculate the lightness
+      let max = Math.max(r, g, b);
+      let min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      // Calculate hue and saturation
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+    
+    const secondaryHSL = hexToHSL(e.target.value);
+    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   };
 
   const applySegmentColors = () => {
@@ -69,6 +133,46 @@ const VisualizationSettings = () => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
+    // Keep layout priorities unchanged when applying colors
+    
+    toast({
+      title: "Cores aplicadas",
+      description: "As cores recomendadas para o segmento foram aplicadas com sucesso.",
+    });
+  };
+
+  const reorganizeLayout = () => {
+    // Save current layout priorities but don't affect visual appearance
+    const newPriorities = ['dashboard', 'finances', 'goals'];
+    
+    switch(layoutPreview) {
+      case 'dashboard':
+        newPriorities.unshift('dashboard');
+        break;
+      case 'finances':
+        newPriorities.unshift('finances');
+        break;
+      case 'sales':
+        newPriorities.unshift('sales');
+        break;
+      case 'inventory':
+        newPriorities.unshift('inventory');
+        break;
+      default:
+        break;
+    }
+    
+    // Remove duplicates
+    const uniquePriorities = [...new Set(newPriorities)];
+    setLayoutPriorities(uniquePriorities);
+    
+    // Store the layout preferences in a separate localStorage entry
+    localStorage.setItem('layoutPriorities', JSON.stringify(uniquePriorities));
+    
+    toast({
+      title: "Layout reorganizado",
+      description: `Layout priorizado para "${layoutPreview === 'default' ? 'Padrão' : layoutPreview}"`,
+    });
   };
 
   return (
@@ -164,7 +268,7 @@ const VisualizationSettings = () => {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <Label htmlFor="layout-preview">Prioridades de Layout</Label>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={reorganizeLayout}>
               <Sparkles className="mr-2 h-4 w-4" />
               Reorganizar Layout
             </Button>
@@ -184,18 +288,12 @@ const VisualizationSettings = () => {
           </Select>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
-            <div className="border rounded-md p-3 flex items-center">
-              <Check size={16} className="mr-2 text-green-500" />
-              <span className="text-sm">Dashboard</span>
-            </div>
-            <div className="border rounded-md p-3 flex items-center">
-              <Check size={16} className="mr-2 text-green-500" />
-              <span className="text-sm">Finanças</span>
-            </div>
-            <div className="border rounded-md p-3 flex items-center">
-              <Check size={16} className="mr-2 text-green-500" />
-              <span className="text-sm">Vendas</span>
-            </div>
+            {layoutPriorities.slice(0, 3).map((priority, index) => (
+              <div key={priority} className="border rounded-md p-3 flex items-center">
+                <Check size={16} className="mr-2 text-green-500" />
+                <span className="text-sm capitalize">{priority}</span>
+              </div>
+            ))}
           </div>
         </div>
 

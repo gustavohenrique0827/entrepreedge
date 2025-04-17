@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import StatCard from './StatCard';
 import AddTransactionDialog from './finances/AddTransactionDialog';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {
   id: string;
@@ -14,6 +15,15 @@ interface Transaction {
   date: string;
   type: 'income' | 'expense';
   category: string;
+}
+
+interface Report {
+  id: string;
+  title: string;
+  description: string;
+  dateGenerated: string;
+  type: 'expenses' | 'income' | 'profitability' | 'projection';
+  data: any;
 }
 
 // Sample data
@@ -26,16 +36,27 @@ const sampleTransactions: Transaction[] = [
 ];
 
 const FinanceTracker: React.FC = () => {
+  const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>(
     JSON.parse(localStorage.getItem('transactions') || JSON.stringify(sampleTransactions))
   );
+  const [reports, setReports] = useState<Report[]>(
+    JSON.parse(localStorage.getItem('reports') || '[]')
+  );
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [activeReport, setActiveReport] = useState<Report | null>(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const { hasAccess, currentPlan } = useSubscription();
 
   // Save transactions to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('transactions', JSON.stringify(transactions));
   }, [transactions]);
+
+  // Save reports to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('reports', JSON.stringify(reports));
+  }, [reports]);
 
   const handleAddTransaction = (newTransaction: Transaction) => {
     setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
@@ -58,6 +79,122 @@ const FinanceTracker: React.FC = () => {
       style: 'currency',
       currency: 'BRL',
     });
+  };
+
+  // Generate report function
+  const generateReport = (type: 'expenses' | 'income' | 'profitability' | 'projection') => {
+    setIsGeneratingReport(true);
+    
+    // Simulate report generation delay
+    setTimeout(() => {
+      const newReport: Report = {
+        id: `report-${Date.now()}`,
+        title: type === 'expenses' ? 'Relatório de despesas por categoria' :
+               type === 'income' ? 'Relatório de receitas por categoria' :
+               type === 'profitability' ? 'Relatório de rentabilidade mensal' : 
+               'Projeção financeira',
+        description: `Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}`,
+        dateGenerated: new Date().toISOString(),
+        type: type,
+        data: type === 'expenses' ? 
+          generateExpensesByCategoryData() : 
+          type === 'income' ? 
+            generateIncomeData() :
+            type === 'profitability' ?
+              generateProfitabilityData() :
+              generateProjectionData()
+      };
+      
+      setReports(prev => [newReport, ...prev]);
+      setActiveReport(newReport);
+      setIsGeneratingReport(false);
+      
+      toast({
+        title: "Relatório gerado",
+        description: `${newReport.title} foi gerado com sucesso.`,
+      });
+    }, 1500);
+  };
+
+  // Sample data generators for reports
+  const generateExpensesByCategoryData = () => {
+    const categories = [...new Set(transactions.filter(t => t.type === 'expense').map(t => t.category))];
+    return categories.map(category => ({
+      category,
+      amount: transactions.filter(t => t.type === 'expense' && t.category === category)
+        .reduce((sum, transaction) => sum + transaction.amount, 0)
+    }));
+  };
+
+  const generateIncomeData = () => {
+    const categories = [...new Set(transactions.filter(t => t.type === 'income').map(t => t.category))];
+    return categories.map(category => ({
+      category,
+      amount: transactions.filter(t => t.type === 'income' && t.category === category)
+        .reduce((sum, transaction) => sum + transaction.amount, 0)
+    }));
+  };
+
+  const generateProfitabilityData = () => {
+    // Group by month
+    const months = [...new Set(transactions.map(t => t.date.substring(0, 7)))].sort();
+    return months.map(month => {
+      const monthIncome = transactions
+        .filter(t => t.type === 'income' && t.date.startsWith(month))
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const monthExpenses = transactions
+        .filter(t => t.type === 'expense' && t.date.startsWith(month))
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      return {
+        month: month,
+        income: monthIncome,
+        expenses: monthExpenses,
+        profit: monthIncome - monthExpenses,
+        profitMargin: monthIncome > 0 ? ((monthIncome - monthExpenses) / monthIncome) * 100 : 0
+      };
+    });
+  };
+
+  const generateProjectionData = () => {
+    // Simple projection based on last 3 months average
+    const lastMonths = [...new Set(transactions.map(t => t.date.substring(0, 7)))]
+      .sort()
+      .slice(-3);
+    
+    const averageIncome = lastMonths.length > 0 ? 
+      lastMonths.reduce((sum, month) => 
+        sum + transactions
+          .filter(t => t.type === 'income' && t.date.startsWith(month))
+          .reduce((sum, t) => sum + t.amount, 0), 
+        0) / lastMonths.length 
+      : 0;
+    
+    const averageExpenses = lastMonths.length > 0 ?
+      lastMonths.reduce((sum, month) => 
+        sum + transactions
+          .filter(t => t.type === 'expense' && t.date.startsWith(month))
+          .reduce((sum, t) => sum + t.amount, 0),
+        0) / lastMonths.length
+      : 0;
+    
+    // Project next 3 months
+    const currentDate = new Date();
+    const projections = [];
+    
+    for (let i = 1; i <= 3; i++) {
+      const projectionDate = new Date(currentDate);
+      projectionDate.setMonth(currentDate.getMonth() + i);
+      
+      projections.push({
+        month: projectionDate.toISOString().substring(0, 7),
+        projectedIncome: averageIncome * (1 + (Math.random() * 0.1)),
+        projectedExpenses: averageExpenses * (1 + (Math.random() * 0.05)),
+      });
+    }
+    
+    return projections;
   };
 
   return (
@@ -189,41 +326,191 @@ const FinanceTracker: React.FC = () => {
               <CardDescription>Análise detalhada das suas finanças</CardDescription>
             </CardHeader>
             <CardContent>
-              {hasAccess('customReports') ? (
+              {activeReport ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                      <p className="text-sm text-muted-foreground mb-1">Relatório de despesas por categoria</p>
-                      <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
-                    </div>
-                    <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                      <p className="text-sm text-muted-foreground mb-1">Relatório de rentabilidade mensal</p>
-                      <Button size="sm" variant="outline" className="mt-2">Gerar relatório</Button>
-                    </div>
-                    {currentPlan === 'premium' && (
-                      <>
-                        <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                          <p className="text-sm text-muted-foreground mb-1">Análise preditiva de tendências</p>
-                          <Button size="sm" variant="outline" className="mt-2">Executar análise</Button>
-                        </div>
-                        <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                          <p className="text-sm text-muted-foreground mb-1">Relatório de projeção financeira</p>
-                          <Button size="sm" variant="outline" className="mt-2">Gerar projeção</Button>
-                        </div>
-                      </>
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">{activeReport.title}</h3>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setActiveReport(null)}
+                    >
+                      Voltar para lista
+                    </Button>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">{activeReport.description}</p>
+                  
+                  <div className="border rounded-md p-4 mt-4">
+                    {activeReport.type === 'expenses' && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Despesas por categoria</h4>
+                        {activeReport.data.map((item: any) => (
+                          <div key={item.category} className="flex justify-between border-b pb-2">
+                            <span className="text-sm">{item.category}</span>
+                            <span className="text-sm font-medium">{formatCurrency(item.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {activeReport.type === 'income' && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Receitas por categoria</h4>
+                        {activeReport.data.map((item: any) => (
+                          <div key={item.category} className="flex justify-between border-b pb-2">
+                            <span className="text-sm">{item.category}</span>
+                            <span className="text-sm font-medium">{formatCurrency(item.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {activeReport.type === 'profitability' && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Rentabilidade mensal</h4>
+                        {activeReport.data.map((item: any) => (
+                          <div key={item.month} className="border-b pb-3 pt-1">
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium">
+                                {new Date(item.month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <span className={`text-sm font-medium ${item.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {formatCurrency(item.profit)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-xs text-muted-foreground">Receitas: {formatCurrency(item.income)}</span>
+                              <span className="text-xs text-muted-foreground">Despesas: {formatCurrency(item.expenses)}</span>
+                            </div>
+                            <div className="mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                Margem de lucro: {item.profitMargin.toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {activeReport.type === 'projection' && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium">Projeção Financeira</h4>
+                        {activeReport.data.map((item: any) => (
+                          <div key={item.month} className="border-b pb-3 pt-1">
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium">
+                                {new Date(item.month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <span className="text-sm font-medium text-primary">
+                                {formatCurrency(item.projectedIncome - item.projectedExpenses)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-xs text-muted-foreground">Receitas: {formatCurrency(item.projectedIncome)}</span>
+                              <span className="text-xs text-muted-foreground">Despesas: {formatCurrency(item.projectedExpenses)}</span>
+                            </div>
+                          </div>
+                        ))}
+                        <p className="text-xs text-muted-foreground italic">
+                          *Projeção baseada no histórico dos últimos 3 meses
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="p-6 text-center">
-                  <p className="text-muted-foreground mb-4">Relatórios personalizados estão disponíveis no Plano Empresarial ou Premium.</p>
-                  <Button variant="outline" onClick={() => {
-                    localStorage.setItem('settingsTab', 'subscription');
-                    window.location.href = '/settings';
-                  }}>
-                    Atualizar plano
-                  </Button>
-                </div>
+                hasAccess('customReports') ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                        <p className="text-sm text-muted-foreground mb-1">Relatório de despesas por categoria</p>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2" 
+                          onClick={() => generateReport('expenses')}
+                          disabled={isGeneratingReport}
+                        >
+                          {isGeneratingReport ? 'Gerando...' : 'Gerar relatório'}
+                        </Button>
+                      </div>
+                      <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                        <p className="text-sm text-muted-foreground mb-1">Relatório de rentabilidade mensal</p>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2"
+                          onClick={() => generateReport('profitability')}
+                          disabled={isGeneratingReport}
+                        >
+                          {isGeneratingReport ? 'Gerando...' : 'Gerar relatório'}
+                        </Button>
+                      </div>
+                      {currentPlan === 'premium' && (
+                        <>
+                          <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                            <p className="text-sm text-muted-foreground mb-1">Análise preditiva de tendências</p>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="mt-2"
+                              onClick={() => generateReport('projection')}
+                              disabled={isGeneratingReport}
+                            >
+                              {isGeneratingReport ? 'Gerando...' : 'Executar análise'}
+                            </Button>
+                          </div>
+                          <div className="border border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                            <p className="text-sm text-muted-foreground mb-1">Relatório de projeção financeira</p>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="mt-2"
+                              onClick={() => generateReport('projection')}
+                              disabled={isGeneratingReport}
+                            >
+                              {isGeneratingReport ? 'Gerando...' : 'Gerar projeção'}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    
+                    {reports.length > 0 && (
+                      <div className="mt-8">
+                        <h3 className="text-sm font-medium mb-3">Relatórios anteriores</h3>
+                        <div className="space-y-2">
+                          {reports.map((report) => (
+                            <div 
+                              key={report.id} 
+                              className="p-3 border rounded-md flex justify-between items-center cursor-pointer hover:bg-muted/50"
+                              onClick={() => setActiveReport(report)}
+                            >
+                              <div>
+                                <h4 className="text-sm font-medium">{report.title}</h4>
+                                <p className="text-xs text-muted-foreground">
+                                  Gerado em {new Date(report.dateGenerated).toLocaleDateString('pt-BR')}
+                                </p>
+                              </div>
+                              <Button variant="ghost" size="sm">Ver</Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <p className="text-muted-foreground mb-4">Relatórios personalizados estão disponíveis no Plano Empresarial ou Premium.</p>
+                    <Button variant="outline" onClick={() => {
+                      localStorage.setItem('settingsTab', 'subscription');
+                      window.location.href = '/settings';
+                    }}>
+                      Atualizar plano
+                    </Button>
+                  </div>
+                )
               )}
             </CardContent>
           </Card>

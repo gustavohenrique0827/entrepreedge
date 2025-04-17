@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import DayColumn from './DayColumn';
 import { getWeekDays, getEventsForDay, getCategoryColor, formatDuration } from './utils';
 import { CalendarViewProps } from './types';
+import { EVENT_CATEGORIES } from './constants';
 
 const CalendarView: React.FC<CalendarViewProps> = ({ 
   currentDate, 
@@ -79,7 +80,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     )}
                     
                     <div className="text-sm bg-muted/50 px-2 py-0.5 rounded-full">
-                      {/* {EVENT_CATEGORIES.find(cat => cat.id === event.category)?.name} */}
+                      {EVENT_CATEGORIES.find(cat => cat.id === event.category)?.name || 'Categoria'}
                     </div>
                   </div>
                 </div>
