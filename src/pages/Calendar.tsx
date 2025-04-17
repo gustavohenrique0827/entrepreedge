@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,7 @@ import { PageHeader } from '@/components/PageHeader';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import { Home, BarChart2, Target, BookOpen } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarView from '@/components/calendar/CalendarView';
@@ -38,6 +38,11 @@ const CalendarPage = () => {
   const [view, setView] = useState<'month' | 'week' | 'day'>('week');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
+  const { applyThemeColors } = useTheme();
+  
+  useEffect(() => {
+    applyThemeColors();
+  }, []);
   
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);

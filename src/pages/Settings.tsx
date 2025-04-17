@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -13,88 +12,29 @@ import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Card, CardContent } from "@/components/ui/card";
 
 const Settings = () => {
   const { toast } = useToast();
   const { currentPlan } = useSubscription();
   const { segmentName } = useSegment();
+  const { applyThemeColors } = useTheme();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
-  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
-  const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   
   // Save active tab to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('settingsTab', activeTab);
   }, [activeTab]);
 
-  // Apply any stored settings on page load
+  // Apply the theme colors on component mount
   useEffect(() => {
-    // Apply dark mode
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
-    // Apply font size
-    const fontSize = localStorage.getItem('fontSize') || 'medium';
-    document.documentElement.setAttribute('data-font-size', fontSize);
-    
-    // Reset body classes
-    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
-    
-    // Apply appropriate font size class
-    if (fontSize === 'small') {
-      document.documentElement.classList.add('text-sm');
-    } else if (fontSize === 'medium') {
-      document.documentElement.classList.add('text-base');
-    } else if (fontSize === 'large') {
-      document.documentElement.classList.add('text-lg');
-    }
-    
-    // Apply theme colors
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-    
-    // Convert to HSL for Tailwind variables
-    const hexToHSL = (hex: string) => {
-      // Remove the # from the beginning
-      hex = hex.replace(/^#/, '');
-
-      // Parse the hex values
-      let r = parseInt(hex.substring(0, 2), 16) / 255;
-      let g = parseInt(hex.substring(2, 4), 16) / 255;
-      let b = parseInt(hex.substring(4, 6), 16) / 255;
-
-      // Find max and min values to calculate the lightness
-      let max = Math.max(r, g, b);
-      let min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-
-      // Calculate hue and saturation
-      if (max !== min) {
-        let d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-        else if (max === g) h = (b - r) / d + 2;
-        else if (max === b) h = (r - g) / d + 4;
-        h *= 60;
-      }
-
-      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
-    };
-    
-    const primaryHSL = hexToHSL(primaryColor);
-    const secondaryHSL = hexToHSL(secondaryColor);
-    
-    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+    applyThemeColors();
     
     // Update document title
     document.title = `${companyName} - Configurações`;
-  }, [companyName, primaryColor, secondaryColor]);
+  }, []);
   
   const navItems = [
     {

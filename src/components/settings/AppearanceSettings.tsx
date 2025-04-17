@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -10,151 +9,44 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Palette, Check } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const AppearanceSettings = () => {
   const { toast } = useToast();
   const { currentSegment, getVisualPreferences, applySegmentVisuals } = useSegment();
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
-  const [fontSize, setFontSize] = useState(localStorage.getItem('fontSize') || 'medium');
-  const [notifications, setNotifications] = useState(localStorage.getItem('notifications') !== 'false');
-  const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#8B5CF6');
-  const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('secondaryColor') || '#D946EF');
-
-  // Apply dark mode when component mounts and when changed
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  // Apply font size when component mounts and when changed
-  useEffect(() => {
-    document.documentElement.setAttribute('data-font-size', fontSize);
-    
-    // Apply font size classes
-    if (fontSize === 'small') {
-      document.documentElement.classList.add('text-sm');
-      document.documentElement.classList.remove('text-base', 'text-lg');
-    } else if (fontSize === 'medium') {
-      document.documentElement.classList.add('text-base');
-      document.documentElement.classList.remove('text-sm', 'text-lg');
-    } else if (fontSize === 'large') {
-      document.documentElement.classList.add('text-lg');
-      document.documentElement.classList.remove('text-sm', 'text-base');
-    }
-  }, [fontSize]);
-
-  // Apply colors when component mounts and when changed
-  useEffect(() => {
-    // Apply to CSS variables
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-    
-    // Convert hex to HSL and apply to Tailwind variables
-    const hexToHSL = (hex: string) => {
-      // Remove the # from the beginning
-      hex = hex.replace(/^#/, '');
-
-      // Parse the hex values
-      let r = parseInt(hex.substring(0, 2), 16) / 255;
-      let g = parseInt(hex.substring(2, 4), 16) / 255;
-      let b = parseInt(hex.substring(4, 6), 16) / 255;
-
-      // Find max and min values to calculate the lightness
-      let max = Math.max(r, g, b);
-      let min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-
-      // Calculate hue and saturation
-      if (max !== min) {
-        let d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-        else if (max === g) h = (b - r) / d + 2;
-        else if (max === b) h = (r - g) / d + 4;
-        h *= 60;
-      }
-
-      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
-    };
-
-    const primaryHSL = hexToHSL(primaryColor);
-    const secondaryHSL = hexToHSL(secondaryColor);
-    
-    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
-  }, [primaryColor, secondaryColor]);
+  const { 
+    primaryColor, 
+    secondaryColor, 
+    darkMode, 
+    fontSize, 
+    updateThemeColors, 
+    toggleDarkMode, 
+    setFontSize 
+  } = useTheme();
 
   const handleDarkModeChange = (checked: boolean) => {
-    setDarkMode(checked);
-    localStorage.setItem('darkMode', checked.toString());
+    toggleDarkMode(checked);
   };
 
   const handleFontSizeChange = (value: string) => {
     setFontSize(value);
-    localStorage.setItem('fontSize', value);
-  };
-
-  const handleNotificationsChange = (checked: boolean) => {
-    setNotifications(checked);
-    localStorage.setItem('notifications', checked.toString());
   };
 
   const handlePrimaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrimaryColor(e.target.value);
-    localStorage.setItem('primaryColor', e.target.value);
+    updateThemeColors(e.target.value, secondaryColor);
   };
 
   const handleSecondaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSecondaryColor(e.target.value);
-    localStorage.setItem('secondaryColor', e.target.value);
+    updateThemeColors(primaryColor, e.target.value);
   };
 
   const applySegmentColors = () => {
     applySegmentVisuals();
     const prefs = getVisualPreferences();
-    setPrimaryColor(prefs.primaryColor);
-    setSecondaryColor(prefs.secondaryColor);
+    updateThemeColors(prefs.primaryColor, prefs.secondaryColor);
   };
 
   const handleSaveAppearance = () => {
-    // Update document variables directly
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-    
-    // Update in localStorage
-    localStorage.setItem('primaryColor', primaryColor);
-    localStorage.setItem('secondaryColor', secondaryColor);
-    
-    // Convert to HSL for Tailwind
-    const hexToHSL = (hex: string) => {
-      hex = hex.replace(/^#/, '');
-      let r = parseInt(hex.substring(0, 2), 16) / 255;
-      let g = parseInt(hex.substring(2, 4), 16) / 255;
-      let b = parseInt(hex.substring(4, 6), 16) / 255;
-      let max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-      
-      if (max !== min) {
-        let d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-        else if (max === g) h = (b - r) / d + 2;
-        else if (max === b) h = (r - g) / d + 4;
-        h *= 60;
-      }
-      
-      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
-    };
-    
-    const primaryHSL = hexToHSL(primaryColor);
-    const secondaryHSL = hexToHSL(secondaryColor);
-    
-    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
-    
     toast({
       title: "Configurações salvas",
       description: "Suas preferências de aparência foram atualizadas com sucesso.",
@@ -213,7 +105,7 @@ const AppearanceSettings = () => {
                   id="primary-color" 
                   type="text" 
                   value={primaryColor} 
-                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  onChange={(e) => updateThemeColors(e.target.value, secondaryColor)}
                   className="flex-1"
                 />
                 <Input 
@@ -236,7 +128,7 @@ const AppearanceSettings = () => {
                   id="secondary-color" 
                   type="text" 
                   value={secondaryColor} 
-                  onChange={(e) => setSecondaryColor(e.target.value)}
+                  onChange={(e) => updateThemeColors(primaryColor, e.target.value)}
                   className="flex-1"
                 />
                 <Input 
@@ -263,8 +155,8 @@ const AppearanceSettings = () => {
           <Label htmlFor="notifications">Notificações</Label>
           <Switch 
             id="notifications" 
-            checked={notifications} 
-            onCheckedChange={handleNotificationsChange}
+            checked={false}
+            onCheckedChange={() => {}}
           />
         </div>
 
