@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
-import { format, isToday } from 'date-fns';
+import { format, isToday, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,10 +18,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   const weekDays = getWeekDays(currentDate);
   
+  // For Month view, get all days in current month
+  const monthDays = React.useMemo(() => {
+    const start = startOfMonth(currentDate);
+    const end = endOfMonth(currentDate);
+    return eachDayOfInterval({ start, end });
+  }, [currentDate]);
+  
   return (
     <>
       {view === 'week' && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto">
           {weekDays.map(day => (
             <DayColumn 
               key={day.toString()} 
@@ -31,6 +38,64 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               view={view}
             />
           ))}
+        </div>
+      )}
+      
+      {view === 'month' && (
+        <div className="min-h-[600px]">
+          <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+            {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map((dayName) => (
+              <div key={dayName} className="py-2 text-sm font-medium text-muted-foreground">
+                {dayName}
+              </div>
+            ))}
+          </div>
+          
+          <div className="grid grid-cols-7 gap-1 auto-rows-fr">
+            {monthDays.map((day) => {
+              const dayEvents = getEventsForDay(events, day);
+              const isCurrentMonth = isSameMonth(day, currentDate);
+              
+              return (
+                <div 
+                  key={day.toString()} 
+                  className={cn(
+                    "min-h-[100px] border rounded-md p-1 relative",
+                    isToday(day) ? "border-primary bg-primary/5" : "border-border",
+                    !isCurrentMonth && "opacity-40"
+                  )}
+                >
+                  <div className={cn(
+                    "text-right text-sm p-1",
+                    isToday(day) ? "font-bold text-primary" : ""
+                  )}>
+                    {format(day, 'd')}
+                  </div>
+                  
+                  <div className="space-y-1 max-h-[80px] overflow-y-auto">
+                    {dayEvents.length > 0 ? (
+                      dayEvents.slice(0, 3).map((event) => (
+                        <div 
+                          key={event.id}
+                          onClick={() => onEventClick(event)}
+                          className="text-xs p-1 rounded cursor-pointer truncate"
+                          style={{ backgroundColor: `${getCategoryColor(event.category)}20`, borderLeft: `2px solid ${getCategoryColor(event.category)}` }}
+                        >
+                          {event.title}
+                        </div>
+                      ))
+                    ) : null}
+                    
+                    {dayEvents.length > 3 && (
+                      <div className="text-xs text-center text-muted-foreground">
+                        +{dayEvents.length - 3} mais
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
       

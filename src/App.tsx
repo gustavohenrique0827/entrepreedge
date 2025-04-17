@@ -24,13 +24,24 @@ import Benchmarking from "./pages/Benchmarking";
 import Simulator from "./pages/Simulator";
 import Inspiration from "./pages/Inspiration";
 import ESGIndicators from "./pages/ESGIndicators";
+import Calendar from "./pages/Calendar";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SegmentProvider } from "./contexts/SegmentContext";
 // Import Personnel pages
 import EmployeeManagement from "./pages/personnel/EmployeeManagement";
 import TimeTracking from "./pages/personnel/TimeTracking";
+import Payslips from "./pages/personnel/Payslips";
+import Hiring from "./pages/personnel/Hiring";
+import HRProcesses from "./pages/personnel/HRProcesses";
 // Import Accounting pages
 import Overview from "./pages/accounting/Overview";
+import Entries from "./pages/accounting/Entries";
+import Fiscal from "./pages/accounting/Fiscal";
+import Taxes from "./pages/accounting/Taxes";
+import Invoices from "./pages/accounting/Invoices";
+import Reports from "./pages/accounting/Reports";
+import MEI from "./pages/accounting/MEI";
+import FinancialStatements from "./pages/accounting/FinancialStatements";
 
 const queryClient = new QueryClient();
 
@@ -65,7 +76,7 @@ const initializeSettings = () => {
     window.currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
   }
   
-  // Apply theme colors
+  // Apply theme colors - IMPORTANT: must be applied on app mount to ensure persistence
   const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
   const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   document.documentElement.style.setProperty('--primary-color', primaryColor);
@@ -104,6 +115,10 @@ const initializeSettings = () => {
   
   document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+  
+  // Apply sidebar accent
+  document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`);
+  document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
 };
 
 // Initialize settings right away
@@ -194,6 +209,11 @@ const App = () => {
                       <Contact />
                     </ProtectedRoute>
                   } />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
                   
                   {/* Analytics and other feature routes */}
                   <Route path="/benchmarking" element={
@@ -233,6 +253,21 @@ const App = () => {
                       <TimeTracking />
                     </ProtectedRoute>
                   } />
+                  <Route path="/personnel/payslips" element={
+                    <ProtectedRoute>
+                      <Payslips />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/hiring" element={
+                    <ProtectedRoute>
+                      <Hiring />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/processes" element={
+                    <ProtectedRoute>
+                      <HRProcesses />
+                    </ProtectedRoute>
+                  } />
                   
                   {/* Accounting module routes */}
                   <Route path="/accounting/overview" element={
@@ -247,37 +282,37 @@ const App = () => {
                   } />
                   <Route path="/accounting/entries" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <Entries />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/fiscal" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <Fiscal />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/taxes" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <Taxes />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/invoices" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <Invoices />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/reports" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <Reports />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/mei" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <MEI />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/financial-statements" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <FinancialStatements />
                     </ProtectedRoute>
                   } />
                   

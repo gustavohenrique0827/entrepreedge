@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -17,15 +18,25 @@ const VisualizationSettings = () => {
   const [primaryColor, setPrimaryColor] = useState(getVisualPreferences().primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(getVisualPreferences().secondaryColor);
   const [layoutPreview, setLayoutPreview] = useState('default');
-  const [layoutPriorities, setLayoutPriorities] = useState<string[]>(getVisualPreferences().layoutPriorities || []);
+  const [layoutPriorities, setLayoutPriorities] = useState<string[]>(
+    JSON.parse(localStorage.getItem('layoutPriorities') || '[]') || 
+    getVisualPreferences().layoutPriorities || []
+  );
   
   // Update colors when segment changes
   useEffect(() => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
-    setLayoutPriorities(prefs.layoutPriorities || []);
   }, [currentSegment, getVisualPreferences]);
+
+  // Load layout priorities from localStorage separately
+  useEffect(() => {
+    const savedLayoutPriorities = localStorage.getItem('layoutPriorities');
+    if (savedLayoutPriorities) {
+      setLayoutPriorities(JSON.parse(savedLayoutPriorities));
+    }
+  }, []);
 
   const segments: {id: BusinessSegmentType, name: string}[] = [
     { id: 'generic', name: 'Genérico' },
@@ -45,7 +56,6 @@ const VisualizationSettings = () => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
-    setLayoutPriorities(prefs.layoutPriorities || []);
     
     toast({
       title: "Segmento atualizado",
@@ -88,6 +98,8 @@ const VisualizationSettings = () => {
     
     const primaryHSL = hexToHSL(e.target.value);
     document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    document.documentElement.style.setProperty('--sidebar-accent', `${e.target.value}15`);
+    document.documentElement.style.setProperty('--sidebar-primary', e.target.value);
   };
 
   const handleSecondaryColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +145,8 @@ const VisualizationSettings = () => {
     const prefs = getVisualPreferences();
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
-    // Keep layout priorities unchanged when applying colors
+    
+    // Don't change layout priorities when applying colors
     
     toast({
       title: "Cores aplicadas",
@@ -142,32 +155,32 @@ const VisualizationSettings = () => {
   };
 
   const reorganizeLayout = () => {
-    // Save current layout priorities but don't affect visual appearance
-    const newPriorities = ['dashboard', 'finances', 'goals'];
+    // Create a new set of layout priorities based on the selected layout preview
+    // This doesn't affect the visual appearance (colors)
+    let newPriorities: string[] = [];
     
     switch(layoutPreview) {
       case 'dashboard':
-        newPriorities.unshift('dashboard');
+        newPriorities = ['dashboard', 'finances', 'goals', 'calendar'];
         break;
       case 'finances':
-        newPriorities.unshift('finances');
+        newPriorities = ['finances', 'goals', 'dashboard', 'calendar'];
         break;
       case 'sales':
-        newPriorities.unshift('sales');
+        newPriorities = ['sales', 'finances', 'dashboard', 'goals'];
         break;
       case 'inventory':
-        newPriorities.unshift('inventory');
+        newPriorities = ['inventory', 'finances', 'dashboard', 'goals'];
         break;
       default:
+        newPriorities = ['dashboard', 'finances', 'goals', 'calendar'];
         break;
     }
     
-    // Remove duplicates
-    const uniquePriorities = [...new Set(newPriorities)];
-    setLayoutPriorities(uniquePriorities);
+    setLayoutPriorities(newPriorities);
     
-    // Store the layout preferences in a separate localStorage entry
-    localStorage.setItem('layoutPriorities', JSON.stringify(uniquePriorities));
+    // Store the layout preferences in localStorage (separate from visual preferences)
+    localStorage.setItem('layoutPriorities', JSON.stringify(newPriorities));
     
     toast({
       title: "Layout reorganizado",
@@ -301,7 +314,7 @@ const VisualizationSettings = () => {
           <AlertCircle size={16} className="mt-0.5" />
           <p>
             As configurações de visualização específicas para o segmento <strong>{segments.find(s => s.id === currentSegment)?.name}</strong> serão aplicadas 
-            automaticamente em todo o sistema para melhor experiência de uso.
+            automaticamente em todo o sistema para melhor experiência de uso. As prioridades de layout são independentes das cores do tema.
           </p>
         </div>
       </CardContent>
