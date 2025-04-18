@@ -12,10 +12,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ChevronDown, Filter, Search } from 'lucide-react';
+import { ChevronDown, Filter, Search, Calendar, KanbanSquare, List, AlertTriangle, CalendarClock, Clock } from 'lucide-react';
 import api from '@/services/dbService';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Define the Goal interface
 export interface Goal {
@@ -31,11 +44,158 @@ export interface Goal {
   createdAt: string;
 }
 
+const KanbanColumn = ({ title, status, goals, onDrop }: { 
+  title: string; 
+  status: string; 
+  goals: Goal[]; 
+  onDrop: (id: string, status: string) => void 
+}) => {
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'GOAL',
+    drop: (item: { id: string }) => onDrop(item.id, status),
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
+
+  return (
+    <div 
+      ref={drop} 
+      className={cn(
+        "flex-1 border rounded-lg p-4 min-h-[500px] min-w-[280px] transition-colors",
+        isOver ? "bg-muted/50" : ""
+      )}
+    >
+      <h3 className="font-medium text-sm mb-4 flex items-center">{title}</h3>
+      <div className="space-y-3">
+        {goals.map(goal => (
+          <GoalCard key={goal.id} goal={goal} />
+        ))}
+        {goals.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground/60">
+            <p className="text-sm">Sem metas</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const GoalCard = ({ goal }: { goal: Goal }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'GOAL',
+    item: { id: goal.id },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  const progressPercent = (goal.currentValue / goal.targetValue) * 100;
+
+  return (
+    <div
+      ref={drag}
+      className={cn(
+        "rounded-md p-3 bg-card border shadow-sm cursor-move transition-opacity",
+        isDragging ? "opacity-50" : "opacity-100"
+      )}
+    >
+      <p className="font-medium text-sm mb-1">{goal.title}</p>
+      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{goal.description}</p>
+      
+      <div className="space-y-2">
+        <div className="w-full bg-muted rounded-full h-1.5">
+          <div
+            className={`h-1.5 rounded-full ${
+              progressPercent >= 100
+                ? "bg-green-500"
+                : progressPercent >= 50
+                ? "bg-amber-500"
+                : "bg-blue-500"
+            }`}
+            style={{ width: `${Math.min(100, progressPercent)}%` }}
+          ></div>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3 inline mr-1" />
+            {format(new Date(goal.dueDate), 'dd/MM/yyyy')}
+          </span>
+          <span className="text-xs font-medium">{Math.round(progressPercent)}%</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CalendarView = ({ goals }: { goals: Goal[] }) => {
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  return (
+    <div>
+      <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+          <div key={day} className="text-sm font-medium text-muted-foreground">
+            {day}
+          </div>
+        ))}
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1 auto-rows-fr">
+        {days.map((day) => {
+          const dayGoals = goals.filter(goal => {
+            const goalDate = new Date(goal.dueDate);
+            return goalDate.getDate() === day.getDate() && 
+                  goalDate.getMonth() === day.getMonth() && 
+                  goalDate.getFullYear() === day.getFullYear();
+          });
+          
+          const isCurrentMonth = isSameMonth(day, now);
+          
+          return (
+            <div 
+              key={day.toString()} 
+              className={cn(
+                "min-h-[100px] border rounded-md p-2 relative",
+                isToday(day) ? "border-primary bg-primary/5" : "border-border",
+                !isCurrentMonth && "opacity-40"
+              )}
+            >
+              <div className={cn(
+                "text-right text-sm p-1",
+                isToday(day) ? "font-bold text-primary" : ""
+              )}>
+                {format(day, 'd')}
+              </div>
+              
+              <div className="space-y-1 max-h-[80px] overflow-y-auto">
+                {dayGoals.map((goal) => (
+                  <div 
+                    key={goal.id}
+                    className="text-xs p-1 rounded bg-primary/10 border-l-2 border-primary truncate"
+                  >
+                    {goal.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const Goals = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [view, setView] = useState('list');
   const { toast } = useToast();
   const { hasAccess } = useSubscription();
 
@@ -122,6 +282,19 @@ const Goals = () => {
     }
   };
 
+  // Handle Kanban drag and drop status change
+  const handleDrop = (id: string, newStatus: string) => {
+    const updatedGoals = goals.map(goal => 
+      goal.id === id ? { ...goal, status: newStatus as "em andamento" | "concluída" | "atrasada" } : goal
+    );
+    handleGoalsChange(updatedGoals);
+    
+    toast({
+      title: "Meta atualizada",
+      description: `Status alterado para: ${newStatus}`,
+    });
+  };
+
   // Filter goals based on search query, status filter and category filter
   const filteredGoals = goals.filter((goal) => {
     const matchesSearch = goal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -136,6 +309,11 @@ const Goals = () => {
     
     return matchesSearch && matchesStatusFilter && matchesCategoryFilter;
   });
+
+  // Group goals by status for Kanban view
+  const pendingGoals = filteredGoals.filter(g => g.status === 'em andamento');
+  const completedGoals = filteredGoals.filter(g => g.status === 'concluída');
+  const overdueGoals = filteredGoals.filter(g => g.status === 'atrasada');
 
   // If user doesn't have access to goals module, show upgrade message
   if (!hasAccess('goals')) {
@@ -186,12 +364,21 @@ const Goals = () => {
           />
           
           <div className="mb-6">
-            <Tabs defaultValue="list" className="w-full">
+            <Tabs value={view} onValueChange={setView} className="w-full">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
                 <TabsList className="mb-4 sm:mb-0">
-                  <TabsTrigger value="list">Lista</TabsTrigger>
-                  <TabsTrigger value="kanban">Kanban</TabsTrigger>
-                  <TabsTrigger value="calendar">Calendário</TabsTrigger>
+                  <TabsTrigger value="list" className="flex items-center gap-1">
+                    <List className="h-4 w-4" />
+                    <span className="hidden sm:inline">Lista</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="kanban" className="flex items-center gap-1">
+                    <KanbanSquare className="h-4 w-4" />
+                    <span className="hidden sm:inline">Kanban</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="calendar" className="flex items-center gap-1">
+                    <CalendarClock className="h-4 w-4" />
+                    <span className="hidden sm:inline">Calendário</span>
+                  </TabsTrigger>
                 </TabsList>
                 
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -206,7 +393,7 @@ const Goals = () => {
                     />
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-col sm:flex-row">
                     <Select value={filter} onValueChange={setFilter}>
                       <SelectTrigger className="w-full sm:w-[150px]">
                         <div className="flex items-center">
@@ -257,23 +444,47 @@ const Goals = () => {
               </TabsContent>
               
               <TabsContent value="kanban" className="mt-0">
-                <div className="bg-muted/10 border border-dashed rounded-lg p-8 text-center">
-                  <h3 className="text-xl font-medium mb-2">Visualização Kanban</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    A visualização Kanban estará disponível em breve.
-                  </p>
-                  <Button variant="outline">Ativar Versão Beta</Button>
-                </div>
+                <DndProvider backend={HTML5Backend}>
+                  <div className="overflow-x-auto">
+                    <div className="flex gap-4 pb-4 min-w-[900px]">
+                      <KanbanColumn 
+                        title="Em Andamento" 
+                        status="em andamento" 
+                        goals={pendingGoals} 
+                        onDrop={handleDrop} 
+                      />
+                      <KanbanColumn 
+                        title="Concluídas" 
+                        status="concluída" 
+                        goals={completedGoals} 
+                        onDrop={handleDrop} 
+                      />
+                      <KanbanColumn 
+                        title="Atrasadas" 
+                        status="atrasada" 
+                        goals={overdueGoals} 
+                        onDrop={handleDrop} 
+                      />
+                    </div>
+                  </div>
+                </DndProvider>
               </TabsContent>
               
               <TabsContent value="calendar" className="mt-0">
-                <div className="bg-muted/10 border border-dashed rounded-lg p-8 text-center">
-                  <h3 className="text-xl font-medium mb-2">Visualização de Calendário</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    A visualização de Calendário estará disponível em breve.
-                  </p>
-                  <Button variant="outline">Ativar Versão Beta</Button>
-                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center">
+                      <Calendar className="mr-2 h-5 w-5" />
+                      Calendário de Metas - {format(new Date(), 'MMMM yyyy', { locale: ptBR })}
+                    </CardTitle>
+                    <CardDescription>
+                      Visualize suas metas organizadas por prazo de entrega
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <CalendarView goals={filteredGoals} />
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>

@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Download, Edit, Eye, FileText, Plus, Printer, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Download, Edit, Eye, Plus, Printer, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
+import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
 
 const Payslips = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,15 +18,23 @@ const Payslips = () => {
 
   const handleDownload = () => {
     toast({
-      title: "Download Initiated",
-      description: "Payslip download has started.",
+      title: "Download Iniciado",
+      description: "O download do holerite foi iniciado.",
     });
   };
 
+  // Definir os itens de navegação para o Navbar
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Metas', href: '/goals', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Aprendizados', href: '/learn', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> }
+  ];
+
   const payslipsData = [
-    { id: 1, employee: 'John Doe', period: '2024-01', status: 'Paid' },
-    { id: 2, employee: 'Jane Smith', period: '2024-01', status: 'Paid' },
-    { id: 3, employee: 'Alice Johnson', period: '2024-01', status: 'Pending' },
+    { id: 1, employee: 'João Silva', period: '2024-01', status: 'Pago' },
+    { id: 2, employee: 'Maria Santos', period: '2024-01', status: 'Pago' },
+    { id: 3, employee: 'Alice Oliveira', period: '2024-01', status: 'Pendente' },
   ];
 
   const filteredPayslips = payslipsData.filter(payslip =>
@@ -33,85 +42,97 @@ const Payslips = () => {
     payslip.period.includes(searchTerm)
   );
 
-  // Helper function to determine badge variant
+  // Função para determinar a variante do badge
   const getBadgeVariant = (status: string) => {
-    return status === 'Paid' ? 'default' : 'secondary';
+    return status === 'Pago' ? 'default' : 'secondary';
   };
 
   return (
-    <PageContainer>
-      <PageHeader title="Payslips" description="Manage and view employee payslips" />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
+      <div className="flex-1 ml-[240px] transition-all duration-300">
+        <Navbar items={navItems} />
+        <PageContainer>
+          <PageHeader title="Holerites" description="Gerenciar e visualizar holerites dos colaboradores" />
 
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <Input
-            type="search"
-            placeholder="Search employee or period..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Generate Payslip
-          </Button>
-        </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+              <div className="relative w-full sm:w-auto">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Buscar colaborador ou período..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 w-full sm:w-[300px]"
+                />
+              </div>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Gerar Holerite
+              </Button>
+            </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payslips Overview</CardTitle>
-            <CardDescription>View and manage employee payslips.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPayslips.map((payslip) => (
-                  <TableRow key={payslip.id}>
-                    <TableCell>{payslip.id}</TableCell>
-                    <TableCell>{payslip.employee}</TableCell>
-                    <TableCell>{payslip.period}</TableCell>
-                    <TableCell>
-                      <Badge variant={getBadgeVariant(payslip.status)}>
-                        {payslip.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={handleDownload}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-          <CardFooter className="justify-between">
-            <div>Total Payslips: {filteredPayslips.length}</div>
-            <Button variant="outline">
-              <Printer className="mr-2 h-4 w-4" />
-              Print All
-            </Button>
-          </CardFooter>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Visão Geral de Holerites</CardTitle>
+                <CardDescription>Visualize e gerencie os holerites dos colaboradores.</CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Colaborador</TableHead>
+                      <TableHead>Período</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayslips.map((payslip) => (
+                      <TableRow key={payslip.id}>
+                        <TableCell>{payslip.id}</TableCell>
+                        <TableCell>{payslip.employee}</TableCell>
+                        <TableCell>{payslip.period}</TableCell>
+                        <TableCell>
+                          <Badge variant={getBadgeVariant(payslip.status)}>
+                            {payslip.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={handleDownload}>
+                              <Download className="mr-2 h-4 w-4" />
+                              <span className="hidden sm:inline">Baixar</span>
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="mr-2 h-4 w-4" />
+                              <span className="hidden sm:inline">Visualizar</span>
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="mr-2 h-4 w-4" />
+                              <span className="hidden sm:inline">Editar</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>Total de Holerites: {filteredPayslips.length}</div>
+                <Button variant="outline">
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimir Todos
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </PageContainer>
       </div>
-    </PageContainer>
+    </div>
   );
 };
 
