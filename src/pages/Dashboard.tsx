@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -13,7 +14,12 @@ import {
   Users,
   Briefcase,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Palette, 
+  Bell, 
+  Shield, 
+  Sliders, 
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -332,7 +338,7 @@ const Dashboard = () => {
                       <CardTitle className="text-base flex items-center gap-1">
                         <DollarSign size={16} /> 
                         Distribuição por Categoria
-                      CardTitle>
+                      </CardTitle>
                       <CardDescription className="text-xs">
                         Percentual de receita por categoria
                       </CardDescription>
