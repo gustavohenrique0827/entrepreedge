@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -22,21 +21,21 @@ const Settings = () => {
   const { applyThemeColors } = useTheme();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
-  
-  // Save active tab to localStorage whenever it changes
+
+  // Salvar tab ativa no localStorage sempre que mudar
   useEffect(() => {
     localStorage.setItem('settingsTab', activeTab);
   }, [activeTab]);
 
-  // Apply the theme colors on component mount only
+  // Garantir sempre que ao montar ou atualizar página o tema será reaplicado conforme localStorage
   useEffect(() => {
-    // Apply theme colors once - no repetição por atualização
+    // Sempre aplique as cores no mount
     applyThemeColors();
-    
-    // Update document title
+
+    // Atualize titulo da página
     document.title = `${companyName} - Configurações`;
-  }, []);
-  
+  }, [companyName, applyThemeColors]);
+
   const navItems = [
     {
       name: 'Dashboard',
