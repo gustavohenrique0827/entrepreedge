@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Define payslip data type
 interface Payslip {
   id: number;
   employee: string;
@@ -66,7 +64,13 @@ const Payslips = () => {
     });
   };
 
-  // Expanded payslips data
+  const handleGeneratePayslip = () => {
+    toast({
+      title: "Gerar Holerite",
+      description: "Processo de geração de holerite iniciado.",
+    });
+  };
+
   const payslipsData: Payslip[] = [
     { id: 1, employee: 'João Silva', period: '2024-01', status: 'Pago', amount: 'R$ 3.450,00', department: 'Comercial' },
     { id: 2, employee: 'Maria Santos', period: '2024-01', status: 'Pago', amount: 'R$ 4.200,00', department: 'Tecnologia' },
@@ -78,7 +82,6 @@ const Payslips = () => {
     { id: 8, employee: 'Miguel Costa', period: '2024-03', status: 'Pendente', amount: 'R$ 2.950,00', department: 'Marketing' },
   ];
 
-  // Filter and sort logic
   const filteredPayslips = payslipsData
     .filter(payslip => {
       const matchesSearch = 
@@ -108,10 +111,8 @@ const Payslips = () => {
         : String(b[sortColumn]).localeCompare(String(a[sortColumn]));
     });
 
-  // Unique periods for filter
   const periods = [...new Set(payslipsData.map(p => p.period))];
 
-  // Badge variant selector
   const getBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pago':
@@ -125,7 +126,6 @@ const Payslips = () => {
     }
   };
 
-  // Definir os itens de navegação para o Navbar
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
@@ -354,6 +354,13 @@ const Payslips = () => {
               </CardFooter>
             </Card>
           </div>
+
+          <Button 
+            onClick={handleGeneratePayslip} 
+            className="absolute top-4 right-4"
+          >
+            Gerar Novo Holerite
+          </Button>
         </PageContainer>
       </div>
     </div>
