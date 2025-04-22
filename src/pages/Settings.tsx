@@ -30,7 +30,7 @@ const Settings = () => {
 
   // Apply the theme colors on component mount only
   useEffect(() => {
-    // Apply theme colors once
+    // Apply theme colors once - no repetição por atualização
     applyThemeColors();
     
     // Update document title

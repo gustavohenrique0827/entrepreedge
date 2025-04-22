@@ -62,41 +62,54 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const applyThemeColors = () => {
-    // Apply to CSS variables
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-    
-    // Apply dark mode
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      // Apply to CSS variables
+      document.documentElement.style.setProperty('--primary-color', primaryColor);
+      document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+      
+      // Apply dark mode
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Apply font size safely
+      document.documentElement.setAttribute('data-font-size', fontSize);
+      
+      // Safely remove any previous font size classes
+      if (document.documentElement.classList.contains('text-sm')) {
+        document.documentElement.classList.remove('text-sm');
+      }
+      if (document.documentElement.classList.contains('text-base')) {
+        document.documentElement.classList.remove('text-base');
+      }
+      if (document.documentElement.classList.contains('text-lg')) {
+        document.documentElement.classList.remove('text-lg');
+      }
+      
+      // Add the appropriate font size class
+      if (fontSize === 'small') {
+        document.documentElement.classList.add('text-sm');
+      } else if (fontSize === 'medium') {
+        document.documentElement.classList.add('text-base');
+      } else if (fontSize === 'large') {
+        document.documentElement.classList.add('text-lg');
+      }
+      
+      // Apply theme colors to Tailwind CSS variables
+      const primaryHSL = hexToHSL(primaryColor);
+      const secondaryHSL = hexToHSL(secondaryColor);
+      
+      document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+      document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+      
+      // Apply sidebar accent color
+      document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`); // 15% opacity for accent bg
+      document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
+    } catch (error) {
+      console.error("Erro ao aplicar cores do tema:", error);
     }
-    
-    // Apply font size
-    document.documentElement.setAttribute('data-font-size', fontSize);
-    
-    // Remove any previous font size classes to avoid conflicts
-    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
-    
-    if (fontSize === 'small') {
-      document.documentElement.classList.add('text-sm');
-    } else if (fontSize === 'medium') {
-      document.documentElement.classList.add('text-base');
-    } else if (fontSize === 'large') {
-      document.documentElement.classList.add('text-lg');
-    }
-    
-    // Apply theme colors to Tailwind CSS variables
-    const primaryHSL = hexToHSL(primaryColor);
-    const secondaryHSL = hexToHSL(secondaryColor);
-    
-    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
-    
-    // Apply sidebar accent color
-    document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`); // 15% opacity for accent bg
-    document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
   };
 
   const updateThemeColors = (primary: string, secondary: string) => {
@@ -118,39 +131,47 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   // Apply theme settings whenever they change
   useEffect(() => {
-    applyThemeColors();
+    try {
+      applyThemeColors();
+    } catch (error) {
+      console.error("Erro ao aplicar mudanças no tema:", error);
+    }
   }, [primaryColor, secondaryColor, darkMode, fontSize]);
 
   // Apply theme settings on initial load
   useEffect(() => {
-    applyThemeColors();
-    
-    // Listen for storage events to sync settings across tabs
-    const handleStorageChange = () => {
-      const storedPrimaryColor = localStorage.getItem('primaryColor');
-      const storedSecondaryColor = localStorage.getItem('secondaryColor');
-      const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-      const storedFontSize = localStorage.getItem('fontSize');
+    try {
+      applyThemeColors();
       
-      if (storedPrimaryColor && storedPrimaryColor !== primaryColor) {
-        setPrimaryColor(storedPrimaryColor);
-      }
+      // Listen for storage events to sync settings across tabs
+      const handleStorageChange = () => {
+        const storedPrimaryColor = localStorage.getItem('primaryColor');
+        const storedSecondaryColor = localStorage.getItem('secondaryColor');
+        const storedDarkMode = localStorage.getItem('darkMode') === 'true';
+        const storedFontSize = localStorage.getItem('fontSize');
+        
+        if (storedPrimaryColor && storedPrimaryColor !== primaryColor) {
+          setPrimaryColor(storedPrimaryColor);
+        }
+        
+        if (storedSecondaryColor && storedSecondaryColor !== secondaryColor) {
+          setSecondaryColor(storedSecondaryColor);
+        }
+        
+        if (storedDarkMode !== darkMode) {
+          setDarkMode(storedDarkMode);
+        }
+        
+        if (storedFontSize && storedFontSize !== fontSize) {
+          setFontSizeState(storedFontSize);
+        }
+      };
       
-      if (storedSecondaryColor && storedSecondaryColor !== secondaryColor) {
-        setSecondaryColor(storedSecondaryColor);
-      }
-      
-      if (storedDarkMode !== darkMode) {
-        setDarkMode(storedDarkMode);
-      }
-      
-      if (storedFontSize && storedFontSize !== fontSize) {
-        setFontSizeState(storedFontSize);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    } catch (error) {
+      console.error("Erro na inicialização do tema:", error);
+    }
   }, []);
 
   return (
