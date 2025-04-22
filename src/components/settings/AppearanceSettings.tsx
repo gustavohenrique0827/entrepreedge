@@ -93,7 +93,12 @@ const AppearanceSettings = () => {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <Label>Cores do Sistema</Label>
-            <Button onClick={applySegmentColors} variant="outline" size="sm">
+            <Button 
+              onClick={applySegmentColors} 
+              variant="outline" 
+              size="sm"
+              type="button"
+            >
               <Palette className="mr-2 h-4 w-4" />
               Aplicar cores recomendadas
             </Button>
@@ -155,7 +160,11 @@ const AppearanceSettings = () => {
           </div>
         </div>
         
-        <Button className="mt-4 w-full" onClick={handleSaveAppearance}>
+        <Button 
+          className="mt-4 w-full" 
+          onClick={handleSaveAppearance}
+          type="button"
+        >
           Salvar Preferências
         </Button>
       </CardContent>

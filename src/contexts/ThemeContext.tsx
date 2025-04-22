@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type ThemeContextType = {
@@ -65,18 +66,29 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       // Apply to CSS variables
       document.documentElement.style.setProperty('--primary-color', primaryColor);
       document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-
-      // Apply dark mode safely
+      
+      // Apply dark mode
       if (darkMode) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
-
+      
       // Apply font size safely
       document.documentElement.setAttribute('data-font-size', fontSize);
-
-      document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
+      
+      // Safely remove any previous font size classes
+      if (document.documentElement.classList.contains('text-sm')) {
+        document.documentElement.classList.remove('text-sm');
+      }
+      if (document.documentElement.classList.contains('text-base')) {
+        document.documentElement.classList.remove('text-base');
+      }
+      if (document.documentElement.classList.contains('text-lg')) {
+        document.documentElement.classList.remove('text-lg');
+      }
+      
+      // Add the appropriate font size class
       if (fontSize === 'small') {
         document.documentElement.classList.add('text-sm');
       } else if (fontSize === 'medium') {
@@ -84,17 +96,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       } else if (fontSize === 'large') {
         document.documentElement.classList.add('text-lg');
       }
-
-      // Primary/Secondary in Tailwind HSL variables
+      
+      // Apply theme colors to Tailwind CSS variables
       const primaryHSL = hexToHSL(primaryColor);
       const secondaryHSL = hexToHSL(secondaryColor);
-
+      
       document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
       document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
       document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`);
       document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
     } catch (error) {
-      // Nunca lançar erro para o React tree
       console.error("Erro ao aplicar cores do tema:", error);
     }
   };
@@ -116,7 +127,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('fontSize', size);
   };
 
-  // Sempre aplique as preferências ao atualizar estado
+  // Apply theme settings whenever they change
   useEffect(() => {
     try {
       applyThemeColors();
@@ -125,32 +136,33 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [primaryColor, secondaryColor, darkMode, fontSize]);
 
-  // Sempre sincronize com o localStorage (outro tab ou refresh)
+  // Apply theme settings on initial load
   useEffect(() => {
     try {
       applyThemeColors();
 
+      // Listen for storage events to sync settings across tabs
       const handleStorageChange = () => {
         const storedPrimaryColor = localStorage.getItem('primaryColor');
         const storedSecondaryColor = localStorage.getItem('secondaryColor');
         const storedDarkMode = localStorage.getItem('darkMode') === 'true';
         const storedFontSize = localStorage.getItem('fontSize');
-
-        // Atualiza e re-aplica sempre se mudou
+        
         if (storedPrimaryColor && storedPrimaryColor !== primaryColor) {
           setPrimaryColor(storedPrimaryColor);
         }
+        
         if (storedSecondaryColor && storedSecondaryColor !== secondaryColor) {
           setSecondaryColor(storedSecondaryColor);
         }
+        
         if (storedDarkMode !== darkMode) {
           setDarkMode(storedDarkMode);
         }
+        
         if (storedFontSize && storedFontSize !== fontSize) {
           setFontSizeState(storedFontSize);
         }
-        // Sempre re-aplica independente
-        applyThemeColors();
       };
 
       window.addEventListener('storage', handleStorageChange);

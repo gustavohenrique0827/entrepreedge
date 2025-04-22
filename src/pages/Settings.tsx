@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -21,6 +22,7 @@ const Settings = () => {
   const { applyThemeColors } = useTheme();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('userRole') === 'admin');
 
   // Salvar tab ativa no localStorage sempre que mudar
   useEffect(() => {
@@ -29,7 +31,7 @@ const Settings = () => {
 
   // Garantir sempre que ao montar ou atualizar página o tema será reaplicado conforme localStorage
   useEffect(() => {
-    // Sempre aplique as cores no mount
+    // Apply theme colors once - no repetição por atualização
     applyThemeColors();
 
     // Atualize titulo da página
@@ -62,6 +64,12 @@ const Settings = () => {
       href: '/learn',
       icon: <BookOpen size={18} />
     },
+    // Mostrar opção de admin apenas para usuários administradores
+    ...(isAdmin ? [{
+      name: 'Admin',
+      href: '/dev-admin',
+      icon: <SettingsIcon size={18} />
+    }] : [])
   ];
 
   const tabIcons = {
