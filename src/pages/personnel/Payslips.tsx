@@ -5,15 +5,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, Edit, Eye, Plus, Printer, Search } from 'lucide-react';
+import { Download, Edit, Eye, Plus, Printer, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Payslips = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
 
   const handleDownload = () => {
@@ -35,12 +43,21 @@ const Payslips = () => {
     { id: 1, employee: 'João Silva', period: '2024-01', status: 'Pago' },
     { id: 2, employee: 'Maria Santos', period: '2024-01', status: 'Pago' },
     { id: 3, employee: 'Alice Oliveira', period: '2024-01', status: 'Pendente' },
+    { id: 4, employee: 'Carlos Mendes', period: '2024-02', status: 'Pago' },
+    { id: 5, employee: 'Fernanda Lima', period: '2024-02', status: 'Pendente' },
   ];
 
-  const filteredPayslips = payslipsData.filter(payslip =>
-    payslip.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payslip.period.includes(searchTerm)
-  );
+  const filteredPayslips = payslipsData.filter(payslip => {
+    const matchesSearch = 
+      payslip.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payslip.period.includes(searchTerm);
+    
+    const matchesStatus = 
+      statusFilter === 'all' || 
+      payslip.status.toLowerCase() === statusFilter.toLowerCase();
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Função para determinar a variante do badge
   const getBadgeVariant = (status: string) => {
@@ -57,15 +74,30 @@ const Payslips = () => {
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-              <div className="relative w-full sm:w-auto">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar colaborador ou período..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-full sm:w-[300px]"
-                />
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <div className="relative w-full sm:w-auto">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar colaborador ou período..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-full sm:w-[300px]"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <div className="flex items-center">
+                      <Filter className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Filtrar por status" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -90,34 +122,42 @@ const Payslips = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredPayslips.map((payslip) => (
-                      <TableRow key={payslip.id}>
-                        <TableCell>{payslip.id}</TableCell>
-                        <TableCell>{payslip.employee}</TableCell>
-                        <TableCell>{payslip.period}</TableCell>
-                        <TableCell>
-                          <Badge variant={getBadgeVariant(payslip.status)}>
-                            {payslip.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={handleDownload}>
-                              <Download className="mr-2 h-4 w-4" />
-                              <span className="hidden sm:inline">Baixar</span>
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span className="hidden sm:inline">Visualizar</span>
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span className="hidden sm:inline">Editar</span>
-                            </Button>
-                          </div>
+                    {filteredPayslips.length > 0 ? (
+                      filteredPayslips.map((payslip) => (
+                        <TableRow key={payslip.id}>
+                          <TableCell>{payslip.id}</TableCell>
+                          <TableCell>{payslip.employee}</TableCell>
+                          <TableCell>{payslip.period}</TableCell>
+                          <TableCell>
+                            <Badge variant={getBadgeVariant(payslip.status)}>
+                              {payslip.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="sm" onClick={handleDownload}>
+                                <Download className="mr-2 h-4 w-4" />
+                                <span className="hidden sm:inline">Baixar</span>
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="mr-2 h-4 w-4" />
+                                <span className="hidden sm:inline">Visualizar</span>
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="mr-2 h-4 w-4" />
+                                <span className="hidden sm:inline">Editar</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                          Nenhum holerite encontrado com os filtros aplicados
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
