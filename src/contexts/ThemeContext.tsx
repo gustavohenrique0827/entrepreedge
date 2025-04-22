@@ -75,6 +75,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     
     // Apply font size
     document.documentElement.setAttribute('data-font-size', fontSize);
+    
+    // Remove any previous font size classes to avoid conflicts
     document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
     
     if (fontSize === 'small') {

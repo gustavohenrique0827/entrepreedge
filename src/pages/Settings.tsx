@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -8,7 +9,6 @@ import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
-import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -28,8 +28,9 @@ const Settings = () => {
     localStorage.setItem('settingsTab', activeTab);
   }, [activeTab]);
 
-  // Apply the theme colors on component mount
+  // Apply the theme colors on component mount only
   useEffect(() => {
+    // Apply theme colors once
     applyThemeColors();
     
     // Update document title
@@ -121,8 +122,6 @@ const Settings = () => {
                 
                 <TabsContent value="appearance" className="mt-0 p-4">
                   <AppearanceSettings />
-                  <div className="h-6"></div>
-                  <VisualizationSettings />
                 </TabsContent>
                 
                 <TabsContent value="notifications" className="mt-0">

@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Palette, Check } from 'lucide-react';
+import { Check, Palette } from 'lucide-react';
 import { useSegment } from '@/contexts/SegmentContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -44,6 +45,11 @@ const AppearanceSettings = () => {
     applySegmentVisuals();
     const prefs = getVisualPreferences();
     updateThemeColors(prefs.primaryColor, prefs.secondaryColor);
+    
+    toast({
+      title: "Cores aplicadas",
+      description: "Cores do segmento aplicadas com sucesso."
+    });
   };
 
   const handleSaveAppearance = () => {
@@ -149,17 +155,6 @@ const AppearanceSettings = () => {
           </div>
         </div>
         
-        <Separator className="my-2" />
-        
-        <div className="flex items-center justify-between">
-          <Label htmlFor="notifications">Notificações</Label>
-          <Switch 
-            id="notifications" 
-            checked={false}
-            onCheckedChange={() => {}}
-          />
-        </div>
-
         <Button className="mt-4 w-full" onClick={handleSaveAppearance}>
           Salvar Preferências
         </Button>
