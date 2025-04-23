@@ -2,21 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Palette, Sliders } from 'lucide-react';
+import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Sliders } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubscriptionPlans from '@/components/settings/SubscriptionPlans';
-import AppearanceSettings from '@/components/settings/AppearanceSettings';
+import IntegratedSettings from '@/components/settings/IntegratedSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
-import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Card, CardContent } from "@/components/ui/card";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Settings = () => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const { currentPlan } = useSubscription();
   const { segmentName } = useSegment();
   const { applyThemeColors } = useTheme();
@@ -29,10 +30,14 @@ const Settings = () => {
     localStorage.setItem('settingsTab', activeTab);
   }, [activeTab]);
 
-  // Garantir sempre que ao montar ou atualizar página o tema será reaplicado conforme localStorage
+  // Aplicar tema apenas na montagem do componente
   useEffect(() => {
     // Apply theme colors once - no repetição por atualização
-    applyThemeColors();
+    try {
+      applyThemeColors();
+    } catch (error) {
+      console.error("Erro ao aplicar tema:", error);
+    }
 
     // Atualize titulo da página
     document.title = `${companyName} - Configurações`;
@@ -74,23 +79,22 @@ const Settings = () => {
 
   const tabIcons = {
     subscription: <SettingsIcon size={16} />,
-    appearance: <Palette size={16} />,
+    integrated: <Sliders size={16} />,
     notifications: <Bell size={16} />,
-    security: <Shield size={16} />,
-    preferences: <Sliders size={16} />
+    security: <Shield size={16} />
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
       <Sidebar />
       
-      <div className="flex-1 ml-[240px] transition-all duration-300">
+      <div className="flex-1 ml-0 md:ml-[240px] transition-all duration-300">
         <Navbar items={navItems} />
         
         <div className="container px-4 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1">Configurações do Sistema</h1>
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <p className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
               Gerencie as configurações para {companyName} - Segmento: {segmentName}
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                 Plano {currentPlan === 'free' ? 'Gratuito' : 
@@ -103,7 +107,7 @@ const Settings = () => {
           <Card className="mb-6 overflow-hidden border-none shadow-sm">
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0">
+                <TabsList className={`w-full ${isMobile ? 'grid grid-cols-2' : 'grid grid-cols-4'} rounded-none h-auto p-0`}>
                   {Object.entries(tabIcons).map(([key, icon]) => (
                     <TabsTrigger 
                       key={key} 
@@ -114,9 +118,8 @@ const Settings = () => {
                         {icon}
                         <span>
                           {key === 'subscription' ? 'Assinatura' :
-                           key === 'appearance' ? 'Aparência' :
-                           key === 'notifications' ? 'Notificações' :
-                           key === 'security' ? 'Segurança' : 'Preferências'}
+                           key === 'integrated' ? 'Aparência & Preferências' :
+                           key === 'notifications' ? 'Notificações' : 'Segurança'}
                         </span>
                       </div>
                     </TabsTrigger>
@@ -127,8 +130,8 @@ const Settings = () => {
                   <SubscriptionPlans />
                 </TabsContent>
                 
-                <TabsContent value="appearance" className="mt-0 p-4">
-                  <AppearanceSettings />
+                <TabsContent value="integrated" className="mt-0 p-4">
+                  <IntegratedSettings />
                 </TabsContent>
                 
                 <TabsContent value="notifications" className="mt-0">
@@ -137,10 +140,6 @@ const Settings = () => {
                 
                 <TabsContent value="security" className="mt-0">
                   <SecuritySettings />
-                </TabsContent>
-                
-                <TabsContent value="preferences" className="mt-0">
-                  <PreferencesSettings />
                 </TabsContent>
               </Tabs>
             </CardContent>
