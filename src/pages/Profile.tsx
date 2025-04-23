@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, User, Shield, Sliders } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileSettings from '@/components/settings/ProfileSettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -123,7 +124,7 @@ const Profile = () => {
                 </TabsList>
                 
                 <TabsContent value="profile" className="mt-0 p-4">
-                  <ProfileSettings />
+                  <VisualizationSettings />
                 </TabsContent>
                 
                 <TabsContent value="preferences" className="mt-0 p-4">
