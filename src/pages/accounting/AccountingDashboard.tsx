@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -12,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const AccountingDashboard = () => {
   const { toast } = useToast();
-  const { supabase, currentSegment, isConfigured } = useSupabase();
+  const { currentSegment, supabaseForSegment } = useSupabase();
   const [activeTab, setActiveTab] = React.useState('overview');
   
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';

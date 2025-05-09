@@ -25,7 +25,7 @@ import { useSupabase } from '@/contexts/SupabaseContext';
 
 const AccountingRobot = () => {
   const { toast } = useToast();
-  const { supabase, currentSegment } = useSupabase();
+  const { currentSegment, supabaseForSegment } = useSupabase();
   const [activeTask, setActiveTask] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>('');
   const [period, setPeriod] = useState<string>('');
@@ -140,7 +140,10 @@ const AccountingRobot = () => {
     }
   };
 
-  if (!supabase || !currentSegment) {
+  // Check if we have a segment and a client for that segment
+  const currentClient = currentSegment ? supabaseForSegment(currentSegment) : null;
+
+  if (!currentSegment || !currentClient) {
     return (
       <Card className="w-full shadow-sm border-dashed border-2">
         <CardHeader className="pb-2">
