@@ -3,146 +3,159 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
 
+// Base URL and key from the main Supabase project
+const SUPABASE_URL = "https://zsqffbtheeqenhewyqic.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzcWZmYnRoZWVxZW5oZXd5cWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MDE2NzAsImV4cCI6MjA2MjM3NzY3MH0._b8GHi3phGDL-k0R9cvf1vy3g4TqK7mGK93dUpzqYAs";
+
+// Main client for generic operations
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+interface SegmentConfig {
+  url: string;
+  key: string;
+}
+
 interface SupabaseContextType {
-  supabase: SupabaseClient | null;
-  loadingSupabase: boolean;
   currentSegment: string | null;
   switchSegment: (segment: string) => Promise<boolean>;
-  isConfigured: (segment: string) => boolean;
   allSegments: string[];
+  isConfigured: (segment: string) => boolean;
+  supabaseForSegment: (segment: string) => SupabaseClient | null;
+  addSegmentConfig: (segment: string, config: SegmentConfig) => void;
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
 export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { toast } = useToast();
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [currentSegment, setCurrentSegment] = useState<string | null>(null);
-  const [loadingSupabase, setLoadingSupabase] = useState<boolean>(false);
   const [allSegments, setAllSegments] = useState<string[]>([]);
-
-  // Load segment configurations from localStorage
-  const getSegmentConfigs = () => {
+  const [segmentClients, setSegmentClients] = useState<Record<string, SupabaseClient>>({});
+  const [segmentConfigs, setSegmentConfigs] = useState<Record<string, SegmentConfig>>({});
+  
+  // Initialize from localStorage
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem('segmentConfigs');
-      return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-      console.error("Error loading segment configurations:", e);
-      return {};
-    }
-  };
-
-  // Check if a segment has been configured
-  const isConfigured = (segment: string) => {
-    const configs = getSegmentConfigs();
-    return Boolean(configs[segment]?.url && configs[segment]?.key);
-  };
-
-  // Initialize or switch Supabase client based on segment
-  const switchSegment = async (segment: string): Promise<boolean> => {
-    setLoadingSupabase(true);
-    
-    try {
-      const configs = getSegmentConfigs();
-      const segmentConfig = configs[segment];
+      // Load segment configs
+      const configsStr = localStorage.getItem('segmentConfigs');
+      if (configsStr) {
+        const configs = JSON.parse(configsStr);
+        setSegmentConfigs(configs);
+        setAllSegments(Object.keys(configs));
+        
+        // Initialize clients for all configured segments
+        const clients: Record<string, SupabaseClient> = {};
+        Object.entries(configs).forEach(([segment, config]) => {
+          const { url, key } = config as SegmentConfig;
+          if (url && key) {
+            clients[segment] = createClient(url, key);
+          }
+        });
+        setSegmentClients(clients);
+      }
       
-      if (!segmentConfig?.url || !segmentConfig?.key) {
+      // Set current segment if saved
+      const savedSegment = localStorage.getItem('segment');
+      if (savedSegment) {
+        setCurrentSegment(savedSegment);
+      }
+    } catch (err) {
+      console.error("Error initializing Supabase context:", err);
+    }
+  }, []);
+  
+  // Function to check if a segment is configured
+  const isConfigured = (segment: string): boolean => {
+    if (!segmentConfigs || !segmentConfigs[segment]) return false;
+    const config = segmentConfigs[segment];
+    return !!(config?.url && config?.key);
+  };
+  
+  // Function to get a Supabase client for a specific segment
+  const supabaseForSegment = (segment: string): SupabaseClient | null => {
+    if (segment === 'generic') {
+      return supabase;
+    }
+    
+    return segmentClients[segment] || null;
+  };
+  
+  // Function to add or update segment configuration
+  const addSegmentConfig = (segment: string, config: SegmentConfig) => {
+    // Update local state
+    setSegmentConfigs(prev => ({
+      ...prev,
+      [segment]: config
+    }));
+    
+    // Create a client for this segment
+    const newClient = createClient(config.url, config.key);
+    setSegmentClients(prev => ({
+      ...prev,
+      [segment]: newClient
+    }));
+    
+    // Save to localStorage
+    const updatedConfigs = {
+      ...segmentConfigs,
+      [segment]: config
+    };
+    localStorage.setItem('segmentConfigs', JSON.stringify(updatedConfigs));
+    
+    // Update all segments list
+    if (!allSegments.includes(segment)) {
+      const newSegments = [...allSegments, segment];
+      setAllSegments(newSegments);
+    }
+    
+    toast({
+      title: "Configuração salva",
+      description: `Configuração para o segmento ${segment} foi salva com sucesso.`
+    });
+  };
+  
+  // Function to switch to a different segment
+  const switchSegment = async (segment: string): Promise<boolean> => {
+    try {
+      // If segment is not configured, cannot switch
+      if (!isConfigured(segment) && segment !== 'generic') {
         toast({
-          title: "Configuração incompleta",
-          description: `O segmento "${segment}" não possui configurações do Supabase. Configure-o nas preferências.`,
+          title: "Erro ao alterar segmento",
+          description: `O segmento "${segment}" não está configurado.`,
           variant: "destructive"
         });
-        setLoadingSupabase(false);
         return false;
       }
       
-      // Create new Supabase client with segment-specific credentials
-      const newClient = createClient(segmentConfig.url, segmentConfig.key);
-      
-      // Test the connection
-      const { error } = await newClient.from('test_connection').select('*').limit(1).maybeSingle();
-      
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "relation does not exist" which is fine - just means table doesn't exist
-        if (error.code === 'PGRST401') {
-          toast({
-            title: "Erro de autenticação",
-            description: "A chave do Supabase parece inválida. Verifique as configurações.",
-            variant: "destructive"
-          });
-        } else if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
-          toast({
-            title: "Erro de conexão",
-            description: "Não foi possível conectar ao Supabase. Verifique a URL e sua conexão.",
-            variant: "destructive"
-          });
-        } else if (error.code !== 'PGRST116') {
-          toast({
-            title: "Erro ao conectar",
-            description: `${error.message}`,
-            variant: "destructive"
-          });
-        }
-      }
-      
-      setSupabase(newClient);
+      // Update current segment
       setCurrentSegment(segment);
+      localStorage.setItem('segment', segment);
       
       toast({
-        title: "Segmento alternado",
-        description: `Conectado ao banco de dados do segmento: ${segment}`,
+        title: "Segmento alterado",
+        description: `Você agora está usando o segmento "${segment}".`
       });
       
       return true;
-    } catch (error) {
-      console.error("Error switching Supabase client:", error);
+    } catch (err) {
+      console.error("Error switching segment:", err);
       toast({
-        title: "Erro",
-        description: "Não foi possível conectar ao banco de dados. Verifique as configurações.",
+        title: "Erro ao alterar segmento",
+        description: `Não foi possível alternar para o segmento "${segment}".`,
         variant: "destructive"
       });
       return false;
-    } finally {
-      setLoadingSupabase(false);
     }
   };
 
-  // Update the list of available segments
-  useEffect(() => {
-    const configs = getSegmentConfigs();
-    setAllSegments(Object.keys(configs));
-  }, []);
-
-  // Initialize Supabase client on mount if a segment is saved in localStorage
-  useEffect(() => {
-    const savedSegment = localStorage.getItem('currentSegment');
-    if (savedSegment) {
-      switchSegment(savedSegment).then(success => {
-        if (!success) {
-          setCurrentSegment(null);
-        }
-      });
-    }
-  }, []);
-
-  // Save current segment to localStorage whenever it changes
-  useEffect(() => {
-    if (currentSegment) {
-      localStorage.setItem('currentSegment', currentSegment);
-      
-      // Also update the list of available segments
-      const configs = getSegmentConfigs();
-      setAllSegments(Object.keys(configs));
-    }
-  }, [currentSegment]);
-
   return (
     <SupabaseContext.Provider value={{
-      supabase,
-      loadingSupabase,
       currentSegment,
       switchSegment,
+      allSegments,
       isConfigured,
-      allSegments
+      supabaseForSegment,
+      addSegmentConfig
     }}>
       {children}
     </SupabaseContext.Provider>
