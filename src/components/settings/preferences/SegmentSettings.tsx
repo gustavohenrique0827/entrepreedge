@@ -253,7 +253,7 @@ const SegmentSettings = ({
                               <span className="text-xs font-medium">{option.name}</span>
                             </div>
                             {isConfiguredSegment && (
-                              <Badge variant="outline" size="sm" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                              <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
                                 Configurado
                               </Badge>
                             )}

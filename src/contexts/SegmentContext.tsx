@@ -1,10 +1,10 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useSupabase } from './SupabaseContext';
 
-// Define segment types
-export type BusinessSegmentType = 'generic' | 'sales' | 'financial' | 'health' | 'education' | 'ecommerce' | 'industrial';
+// Define segment types with all needed options
+export type BusinessSegmentType = 'generic' | 'sales' | 'financial' | 'health' | 'education' | 
+  'ecommerce' | 'industrial' | 'agro' | 'fashion' | 'services' | 'tech' | 'legal' | 'manufacturing';
 
 // Visual preferences for each segment
 export interface SegmentVisualPreferences {
@@ -74,6 +74,49 @@ const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPrefe
     typography: 'sans-serif',
     iconStyle: 'filled',
     layoutPriorities: ['production', 'maintenance', 'machines']
+  },
+  // Add the additional segments
+  agro: {
+    primaryColor: '#15803d', // Green
+    secondaryColor: '#eab308', // Yellow
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['crops', 'livestock', 'machinery']
+  },
+  fashion: {
+    primaryColor: '#db2777', // Pink
+    secondaryColor: '#6366f1', // Indigo
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['collections', 'inventory', 'sales']
+  },
+  services: {
+    primaryColor: '#4f46e5', // Indigo
+    secondaryColor: '#0ea5e9', // Sky
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['appointments', 'clients', 'schedule']
+  },
+  tech: {
+    primaryColor: '#2563eb', // Blue
+    secondaryColor: '#10b981', // Emerald
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['projects', 'clients', 'resources']
+  },
+  legal: {
+    primaryColor: '#0f172a', // Slate
+    secondaryColor: '#b91c1c', // Red
+    typography: 'serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['cases', 'clients', 'calendar']
+  },
+  manufacturing: {
+    primaryColor: '#475569', // Slate
+    secondaryColor: '#f97316', // Orange
+    typography: 'sans-serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'inventory', 'quality']
   }
 };
 
@@ -85,7 +128,14 @@ const segmentNames: Record<BusinessSegmentType, string> = {
   health: 'Saúde',
   education: 'Educação',
   ecommerce: 'E-commerce',
-  industrial: 'Industrial'
+  industrial: 'Industrial',
+  // Add names for the new segments
+  agro: 'Agronegócio',
+  fashion: 'Moda',
+  services: 'Serviços',
+  tech: 'Tecnologia',
+  legal: 'Jurídico',
+  manufacturing: 'Manufatura'
 };
 
 // Modules available for each segment
@@ -96,7 +146,14 @@ const modulesBySegment: Record<BusinessSegmentType, string[]> = {
   health: ['patients', 'appointments', 'exams', 'reports', 'prescriptions'],
   education: ['students', 'courses', 'enrollments', 'certificates', 'grades'],
   ecommerce: ['products', 'customers', 'orders', 'payments', 'shipping'],
-  industrial: ['machines', 'production-orders', 'maintenance', 'quality-control']
+  industrial: ['machines', 'production-orders', 'maintenance', 'quality-control'],
+  // Add modules for the new segments
+  agro: ['crops', 'livestock', 'machinery', 'weather', 'soil'],
+  fashion: ['collections', 'inventory', 'trends', 'suppliers', 'marketing'],
+  services: ['appointments', 'clients', 'scheduling', 'billing', 'feedback'],
+  tech: ['projects', 'clients', 'resources', 'development', 'support'],
+  legal: ['cases', 'clients', 'documents', 'calendar', 'billing'],
+  manufacturing: ['production', 'inventory', 'quality', 'maintenance', 'shipping']
 };
 
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
