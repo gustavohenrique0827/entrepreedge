@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Robot, Search, FileUp, FileText, FileCheck, Receipt, CreditCard } from 'lucide-react';
+import { Bot, Search, FileUp, FileText, FileCheck, Receipt, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -146,7 +145,7 @@ const AccountingRobot = () => {
       <Card className="w-full shadow-sm border-dashed border-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Robot className="h-5 w-5 text-muted-foreground" />
+            <Bot className="h-5 w-5 text-muted-foreground" />
             Robô Contábil
           </CardTitle>
           <CardDescription>
@@ -166,7 +165,7 @@ const AccountingRobot = () => {
     <Card className="w-full shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Robot className="h-5 w-5 text-primary" />
+          <Bot className="h-5 w-5 text-primary" />
           Robô Contábil
         </CardTitle>
         <CardDescription>
