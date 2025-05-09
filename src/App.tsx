@@ -32,6 +32,7 @@ import Payslips from "./pages/personnel/Payslips";
 import Hiring from "./pages/personnel/Hiring";
 import HRProcesses from "./pages/personnel/HRProcesses";
 import Overview from "./pages/accounting/Overview";
+import AccountingDashboard from "./pages/accounting/AccountingDashboard";
 import Entries from "./pages/accounting/Entries";
 import Fiscal from "./pages/accounting/Fiscal";
 import Taxes from "./pages/accounting/Taxes";
@@ -248,14 +249,19 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
+                  <Route path="/accounting" element={
+                    <ProtectedRoute>
+                      <AccountingDashboard />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/accounting/overview" element={
                     <ProtectedRoute>
                       <Overview />
                     </ProtectedRoute>
                   } />
-                  <Route path="/accounting" element={
+                  <Route path="/accounting/dashboard" element={
                     <ProtectedRoute>
-                      <Overview />
+                      <AccountingDashboard />
                     </ProtectedRoute>
                   } />
                   <Route path="/accounting/entries" element={

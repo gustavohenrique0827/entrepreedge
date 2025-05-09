@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,15 +7,20 @@ import { AlertCircle } from 'lucide-react';
 import CompanySettings from './preferences/CompanySettings';
 import LanguageCurrencySettings from './preferences/LanguageCurrencySettings';
 import SegmentSettings from './preferences/SegmentSettings';
+import { useSegment } from '@/contexts/SegmentContext';
+import { useSupabase } from '@/contexts/SupabaseContext';
 
 const PreferencesSettings = () => {
   const { toast } = useToast();
+  const { setCurrentSegment } = useSegment();
+  const { switchSegment } = useSupabase();
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'pt-BR');
   const [currency, setCurrency] = useState(localStorage.getItem('currency') || 'BRL');
   const [segment, setSegment] = useState(localStorage.getItem('segment') || 'generic');
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
   const [logoPreview, setLogoPreview] = useState(localStorage.getItem('logoUrl') || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompanyName(e.target.value);
@@ -45,22 +51,40 @@ const PreferencesSettings = () => {
     return amount.toString();
   };
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('companyName', companyName);
-    localStorage.setItem('language', language);
-    localStorage.setItem('currency', currency);
-    localStorage.setItem('segment', segment);
-    localStorage.setItem('logoUrl', logoUrl);
-    
-    toast({
-      title: "Configurações salvas",
-      description: "Suas preferências foram atualizadas com sucesso.",
-    });
-    
-    if (language !== localStorage.getItem('language')) {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      localStorage.setItem('companyName', companyName);
+      localStorage.setItem('language', language);
+      localStorage.setItem('currency', currency);
+      localStorage.setItem('segment', segment);
+      localStorage.setItem('logoUrl', logoUrl);
+      
+      // Update segment context
+      setCurrentSegment(segment as any);
+      
+      // Try to switch to the selected segment's Supabase connection
+      await switchSegment(segment);
+      
+      toast({
+        title: "Configurações salvas",
+        description: "Suas preferências foram atualizadas com sucesso.",
+      });
+      
+      if (language !== localStorage.getItem('language')) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar as configurações.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -108,8 +132,9 @@ const PreferencesSettings = () => {
           className="w-full" 
           onClick={handleSaveSettings}
           type="button"
+          disabled={isSaving}
         >
-          Salvar Todas as Configurações
+          {isSaving ? "Salvando..." : "Salvar Todas as Configurações"}
         </Button>
       </CardContent>
     </Card>
