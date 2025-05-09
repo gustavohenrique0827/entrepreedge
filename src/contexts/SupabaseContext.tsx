@@ -22,6 +22,7 @@ interface SupabaseContextType {
   isConfigured: (segment: string) => boolean;
   supabaseForSegment: (segment: string) => SupabaseClient | null;
   addSegmentConfig: (segment: string, config: SegmentConfig) => void;
+  loadUserSegment: () => Promise<string | null>;
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -63,9 +64,49 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       console.error("Error initializing Supabase context:", err);
     }
   }, []);
+
+  // Load user segment from Supabase based on logged in user
+  const loadUserSegment = async (): Promise<string | null> => {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return null;
+      
+      // For our test app, we'll use either:
+      // 1. The segment stored in the user's metadata if available
+      // 2. Or fallback to localStorage
+      
+      // Check if segment is in user metadata
+      if (user.user_metadata && user.user_metadata.segment) {
+        const segment = user.user_metadata.segment as string;
+        setCurrentSegment(segment);
+        localStorage.setItem('segment', segment);
+        return segment;
+      }
+      
+      // Alternatively, fetch from localStorage as fallback
+      const savedSegment = localStorage.getItem('segment');
+      if (savedSegment) {
+        setCurrentSegment(savedSegment);
+        return savedSegment;
+      }
+      
+      return null;
+    } catch (err) {
+      console.error("Error loading user segment:", err);
+      return null;
+    }
+  };
   
   // Function to check if a segment is configured
   const isConfigured = (segment: string): boolean => {
+    // Default segments are always "configured" for our test app
+    if (['sales', 'financial', 'health', 'education', 'ecommerce', 'industrial', 
+         'agro', 'fashion', 'services', 'tech', 'legal', 'manufacturing', 'generic'].includes(segment)) {
+      return true;
+    }
+    
     if (!segmentConfigs || !segmentConfigs[segment]) return false;
     const config = segmentConfigs[segment];
     return !!(config?.url && config?.key);
@@ -73,7 +114,9 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   
   // Function to get a Supabase client for a specific segment
   const supabaseForSegment = (segment: string): SupabaseClient | null => {
-    if (segment === 'generic') {
+    if (segment === 'generic' || 
+        ['sales', 'financial', 'health', 'education', 'ecommerce', 'industrial', 
+         'agro', 'fashion', 'services', 'tech', 'legal', 'manufacturing'].includes(segment)) {
       return supabase;
     }
     
@@ -155,7 +198,8 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       allSegments,
       isConfigured,
       supabaseForSegment,
-      addSegmentConfig
+      addSegmentConfig,
+      loadUserSegment
     }}>
       {children}
     </SupabaseContext.Provider>

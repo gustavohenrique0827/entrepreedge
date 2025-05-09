@@ -111,7 +111,8 @@ export const SegmentSidebar: React.FC = () => {
     cases: <Scale size={18} />,
     documents: <FileText size={18} />,
     production: <Factory size={18} />,
-    quality: <FileText size={18} />
+    quality: <FileText size={18} />,
+    accounting: <FileText size={18} />
   };
 
   // Segment-specific module labels in Portuguese
@@ -163,7 +164,8 @@ export const SegmentSidebar: React.FC = () => {
     cases: 'Casos',
     documents: 'Documentos',
     production: 'Produção',
-    quality: 'Qualidade'
+    quality: 'Qualidade',
+    accounting: 'Contabilidade'
   };
 
   // Get modules for current segment
@@ -255,15 +257,23 @@ export const SegmentSidebar: React.FC = () => {
           <SidebarItem 
             to="/" 
             icon={<Home size={18} />} 
-            label="Início" 
+            label={!collapsed ? "Início" : ""} 
             isActive={location.pathname === '/'}
           />
 
           <SidebarItem 
             to="/dashboard" 
             icon={<BarChart2 size={18} />} 
-            label="Dashboard" 
+            label={!collapsed ? "Dashboard" : ""} 
             isActive={location.pathname === '/dashboard'}
+          />
+          
+          {/* Accounting should be available for all segments */}
+          <SidebarItem
+            to="/accounting"
+            icon={<FileText size={18} />}
+            label={!collapsed ? "Contabilidade" : ""}
+            isActive={location.pathname.startsWith('/accounting')}
           />
 
           {/* Segment-specific modules */}
@@ -272,7 +282,7 @@ export const SegmentSidebar: React.FC = () => {
               key={module}
               to={`/modules/${currentSegment}/${module}`}
               icon={moduleIcons[module] || <FileText size={18} />}
-              label={!collapsed ? moduleLabels[module] || module : ''}
+              label={!collapsed ? moduleLabels[module] || module : ""}
               isActive={location.pathname === `/modules/${currentSegment}/${module}`}
             />
           ))}

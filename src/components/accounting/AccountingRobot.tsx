@@ -1,27 +1,36 @@
+
 import React, { useState } from 'react';
-import { Bot, Search, FileUp, FileText, FileCheck, Receipt, CreditCard } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+  FileSpreadsheet,
+  Calculator,
+  Receipt,
+  Upload,
+  Bot,
+  ChevronRight,
+  Loader2,
+  Check,
+  AlertCircle
+} from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
+import { useToast } from '@/hooks/use-toast';
 import { useSupabase } from '@/contexts/SupabaseContext';
+
+// Mock function for simulating API calls
+const simulateApiCall = (task: string): Promise<string> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`Completed ${task} successfully!`);
+    }, 2000);
+  });
+};
 
 const AccountingRobot = () => {
   const { toast } = useToast();
@@ -29,114 +38,93 @@ const AccountingRobot = () => {
   const [activeTask, setActiveTask] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>('');
   const [period, setPeriod] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-
+  const [file, setFile] = useState<File | null>(null);
+  const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [progress, setProgress] = useState(0);
+  const [processingMessage, setProcessingMessage] = useState('');
+  
+  const resetForm = () => {
+    setDocumentType('');
+    setPeriod('');
+    setFile(null);
+    setProcessingStatus('idle');
+    setProgress(0);
+    setProcessingMessage('');
+  };
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setUploadFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
   };
-
-  const handleFileUpload = async () => {
-    if (!uploadFile) {
+  
+  const handleProcess = async (task: string) => {
+    if (!documentType && task === 'interpret') {
       toast({
-        title: "Erro",
-        description: "Nenhum arquivo selecionado.",
-        variant: "destructive",
+        title: "Formulário incompleto",
+        description: "Por favor, selecione o tipo de documento.",
+        variant: "destructive"
       });
       return;
     }
-
-    setIsProcessing(true);
     
-    try {
-      // Simulate processing/uploading
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+    if (!file && task === 'upload') {
       toast({
-        title: "Sucesso",
-        description: `Arquivo "${uploadFile.name}" processado com sucesso.`,
-      });
-      
-      setUploadFile(null);
-      // Reset the file input
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-    } catch (error) {
-      console.error("Error processing file:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível processar o arquivo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchQuery) {
-      toast({
-        title: "Atenção",
-        description: "Digite algo para pesquisar.",
-        variant: "destructive",
+        title: "Arquivo ausente",
+        description: "Por favor, selecione um arquivo para enviar.",
+        variant: "destructive"
       });
       return;
     }
-
-    setIsProcessing(true);
     
-    try {
-      // Simulate search process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+    if (!period && (task === 'dre' || task === 'taxes')) {
       toast({
-        title: "Busca concluída",
-        description: `Não foram encontrados resultados para "${searchQuery}".`,
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao realizar a busca.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (!documentType || !period) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Selecione o tipo de documento e o período.",
-        variant: "destructive",
+        title: "Período não selecionado",
+        description: "Por favor, selecione o período para gerar o relatório.",
+        variant: "destructive"
       });
       return;
     }
-
-    setIsProcessing(true);
+    
+    setActiveTask(task);
+    setProcessingStatus('processing');
+    
+    // Simulate progress
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        const newValue = prev + Math.floor(Math.random() * 10);
+        if (newValue >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return newValue;
+      });
+    }, 300);
     
     try {
-      // Simulate document generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate API call
+      const result = await simulateApiCall(task);
+      setProcessingMessage(result);
+      
+      // Complete progress
+      setProgress(100);
+      setProcessingStatus('success');
       
       toast({
-        title: "Documento gerado",
-        description: `${documentType} para ${period} gerado com sucesso.`,
+        title: "Processamento concluído",
+        description: `A tarefa ${task} foi concluída com sucesso.`,
       });
-      
-      setDocumentType('');
-      setPeriod('');
     } catch (error) {
+      setProcessingStatus('error');
+      setProcessingMessage('Ocorreu um erro durante o processamento.');
+      
       toast({
         title: "Erro",
-        description: "Não foi possível gerar o documento.",
-        variant: "destructive",
+        description: "Ocorreu um erro durante o processamento da tarefa.",
+        variant: "destructive"
       });
     } finally {
-      setIsProcessing(false);
+      clearInterval(interval);
     }
   };
 
@@ -147,18 +135,27 @@ const AccountingRobot = () => {
     return (
       <Card className="w-full shadow-sm border-dashed border-2">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Bot className="h-5 w-5 text-muted-foreground" />
+          <CardTitle className="text-lg flex items-center gap-1">
+            <Bot className="h-5 w-5" />
             Robô Contábil
           </CardTitle>
           <CardDescription>
-            Conecte-se a um segmento de negócio para utilizar o robô contábil.
+            Seu assistente para tarefas contábeis
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center py-8">
-          <p className="text-sm text-muted-foreground">
-            Configure um segmento nas preferências para acessar esta funcionalidade.
-          </p>
+        <CardContent>
+          <Alert variant="warning" className="my-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Segmento não configurado</AlertTitle>
+            <AlertDescription>
+              Para utilizar o Robô Contábil, selecione um segmento nas configurações.
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-center mt-4">
+            <Button onClick={() => window.location.href = '/settings'}>
+              Configurar Segmento
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -167,240 +164,365 @@ const AccountingRobot = () => {
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
+        <CardTitle className="text-lg flex items-center gap-1">
+          <Bot className="h-5 w-5" />
           Robô Contábil
         </CardTitle>
         <CardDescription>
-          Automatize tarefas contábeis como busca de documentos, geração de guias e processamento de arquivos
+          Seu assistente para tarefas contábeis
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col gap-2"
-                onClick={() => setActiveTask('search')}
-              >
-                <Search className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Buscar Documentos</p>
-                  <p className="text-xs text-muted-foreground">
-                    Notas fiscais, recibos, etc.
-                  </p>
-                </div>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Buscar Documentos</DialogTitle>
-                <DialogDescription>
-                  Pesquise e encontre documentos contábeis arquivados no sistema
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="document-search">Buscar por</Label>
-                  <Input
-                    id="document-search"
-                    placeholder="Número da NF, CNPJ, descrição..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="document-type">Tipo de documento</Label>
-                    <Select>
-                      <SelectTrigger id="document-type">
-                        <SelectValue placeholder="Todos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="invoice">Notas Fiscais</SelectItem>
-                        <SelectItem value="receipt">Recibos</SelectItem>
-                        <SelectItem value="guide">Guias</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="period">Período</Label>
-                    <Select>
-                      <SelectTrigger id="period">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="current-month">Mês atual</SelectItem>
-                        <SelectItem value="last-month">Mês anterior</SelectItem>
-                        <SelectItem value="current-year">Ano atual</SelectItem>
-                        <SelectItem value="custom">Personalizado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleSearch} disabled={isProcessing}>
-                  {isProcessing ? "Buscando..." : "Buscar"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col gap-2"
-                onClick={() => setActiveTask('upload')}
-              >
-                <FileUp className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Processar Arquivo</p>
-                  <p className="text-xs text-muted-foreground">
-                    Boletos, notas fiscais digitais
-                  </p>
-                </div>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Processar Arquivo</DialogTitle>
-                <DialogDescription>
-                  Faça upload de arquivos PDF ou XML para processamento automático
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="file-upload">Arquivo</Label>
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept=".pdf,.xml,.jpg,.png"
-                    onChange={handleFileChange}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Formatos aceitos: PDF, XML, JPG, PNG
-                  </p>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="document-category">Categoria</Label>
-                  <Select>
-                    <SelectTrigger id="document-category">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="invoice">Nota Fiscal</SelectItem>
-                      <SelectItem value="receipt">Recibo</SelectItem>
-                      <SelectItem value="guide">Guia</SelectItem>
-                      <SelectItem value="slip">Boleto</SelectItem>
-                      <SelectItem value="other">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleFileUpload} disabled={!uploadFile || isProcessing}>
-                  {isProcessing ? "Processando..." : "Processar"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col gap-2"
-                onClick={() => setActiveTask('generate')}
-              >
-                <FileText className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Gerar Documentos</p>
-                  <p className="text-xs text-muted-foreground">
-                    Guias, relatórios, DARFs
-                  </p>
-                </div>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Gerar Documentos</DialogTitle>
-                <DialogDescription>
-                  Gere guias de pagamento, relatórios e outros documentos contábeis
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="document-type">Tipo de documento</Label>
-                  <Select value={documentType} onValueChange={setDocumentType}>
-                    <SelectTrigger id="document-type">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="darf">DARF</SelectItem>
-                      <SelectItem value="das">DAS (Simples Nacional)</SelectItem>
-                      <SelectItem value="gps">GPS (INSS)</SelectItem>
-                      <SelectItem value="monthly-report">Relatório Mensal</SelectItem>
-                      <SelectItem value="annual-report">Relatório Anual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="period-select">Período</Label>
-                  <Select value={period} onValueChange={setPeriod}>
-                    <SelectTrigger id="period-select">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="jan-2023">Janeiro/2023</SelectItem>
-                      <SelectItem value="feb-2023">Fevereiro/2023</SelectItem>
-                      <SelectItem value="mar-2023">Março/2023</SelectItem>
-                      <SelectItem value="apr-2023">Abril/2023</SelectItem>
-                      <SelectItem value="may-2023">Maio/2023</SelectItem>
-                      <SelectItem value="jun-2023">Junho/2023</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleGenerate} disabled={isProcessing}>
-                  {isProcessing ? "Gerando..." : "Gerar"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <Button variant="outline" className="h-16 flex justify-start px-4 gap-3">
-            <FileCheck className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <p className="font-medium">Validar Documentos</p>
-              <p className="text-xs text-muted-foreground">
-                Verificar autenticidade de NF e outros documentos
-              </p>
-            </div>
-          </Button>
+        <Tabs defaultValue="interpreter">
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="interpreter" onClick={() => setActiveTask(null)}>
+              <Receipt className="h-4 w-4 mr-2" />
+              Interpretação
+            </TabsTrigger>
+            <TabsTrigger value="reports" onClick={() => setActiveTask(null)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Relatórios
+            </TabsTrigger>
+            <TabsTrigger value="taxes" onClick={() => setActiveTask(null)}>
+              <Calculator className="h-4 w-4 mr-2" />
+              Impostos
+            </TabsTrigger>
+          </TabsList>
           
-          <Button variant="outline" className="h-16 flex justify-start px-4 gap-3">
-            <Receipt className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <p className="font-medium">Conciliação Bancária</p>
-              <p className="text-xs text-muted-foreground">
-                Importar extratos e conciliar automaticamente
-              </p>
-            </div>
-          </Button>
-        </div>
+          {/* Interpretação de Documentos */}
+          <TabsContent value="interpreter">
+            {activeTask ? (
+              <div className="space-y-4 p-4 border rounded-md">
+                <div className="text-center">
+                  <h3 className="text-lg font-medium mb-2">Processando Documento</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    {processingStatus === 'processing' ? 'Analisando o documento...' : 
+                     processingStatus === 'success' ? 'Análise concluída!' : 
+                     processingStatus === 'error' ? 'Erro durante a análise' : ''}
+                  </p>
+                  
+                  <Progress value={progress} className="mb-4" />
+                  
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    {processingStatus === 'processing' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    ) : processingStatus === 'success' ? (
+                      <Check className="h-5 w-5 text-green-500" />
+                    ) : processingStatus === 'error' ? (
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                    ) : null}
+                    <span className="text-sm">
+                      {processingStatus === 'processing' ? 'Processando...' : 
+                       processingStatus === 'success' ? 'Concluído' : 
+                       processingStatus === 'error' ? 'Erro' : ''}
+                    </span>
+                  </div>
+                  
+                  {processingMessage && (
+                    <div className="my-4 p-4 bg-muted rounded-md">
+                      <p className="text-sm">{processingMessage}</p>
+                    </div>
+                  )}
+                  
+                  {processingStatus !== 'processing' && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => setActiveTask(null)}
+                    >
+                      Voltar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="document-type">Tipo de Documento</Label>
+                  <Select value={documentType} onValueChange={setDocumentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de documento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nfe">Nota Fiscal Eletrônica (NF-e)</SelectItem>
+                      <SelectItem value="nfce">Nota Fiscal de Consumidor (NFC-e)</SelectItem>
+                      <SelectItem value="nfse">Nota Fiscal de Serviço (NFS-e)</SelectItem>
+                      <SelectItem value="receipt">Recibo</SelectItem>
+                      <SelectItem value="invoice">Fatura</SelectItem>
+                      <SelectItem value="bank">Extrato Bancário</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload">Enviar Documento</Label>
+                  <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center">
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Arraste arquivos ou clique para selecionar
+                    </p>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                    >
+                      Selecionar Arquivo
+                    </Button>
+                    {file && (
+                      <p className="mt-2 text-sm">{file.name}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => resetForm()}
+                  >
+                    Limpar
+                  </Button>
+                  <Button 
+                    className="w-full"
+                    disabled={!documentType || !file}
+                    onClick={() => handleProcess('interpret')}
+                  >
+                    Interpretar
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+          
+          {/* Relatórios */}
+          <TabsContent value="reports">
+            {activeTask ? (
+              <div className="space-y-4 p-4 border rounded-md">
+                <div className="text-center">
+                  <h3 className="text-lg font-medium mb-2">Gerando Relatório</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    {processingStatus === 'processing' ? 'Processando dados...' : 
+                     processingStatus === 'success' ? 'Relatório gerado!' : 
+                     processingStatus === 'error' ? 'Erro durante a geração' : ''}
+                  </p>
+                  
+                  <Progress value={progress} className="mb-4" />
+                  
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    {processingStatus === 'processing' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    ) : processingStatus === 'success' ? (
+                      <Check className="h-5 w-5 text-green-500" />
+                    ) : processingStatus === 'error' ? (
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                    ) : null}
+                    <span className="text-sm">
+                      {processingStatus === 'processing' ? 'Processando...' : 
+                       processingStatus === 'success' ? 'Concluído' : 
+                       processingStatus === 'error' ? 'Erro' : ''}
+                    </span>
+                  </div>
+                  
+                  {processingMessage && (
+                    <div className="my-4 p-4 bg-muted rounded-md">
+                      <p className="text-sm">{processingMessage}</p>
+                    </div>
+                  )}
+                  
+                  {processingStatus === 'success' && (
+                    <Button className="mt-4">
+                      Baixar Relatório
+                    </Button>
+                  )}
+                  
+                  {processingStatus !== 'processing' && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 ml-2"
+                      onClick={() => setActiveTask(null)}
+                    >
+                      Voltar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="report-type">Tipo de Relatório</Label>
+                  <Select value={documentType} onValueChange={setDocumentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de relatório" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dre">Demonstração do Resultado do Exercício (DRE)</SelectItem>
+                      <SelectItem value="balance">Balanço Patrimonial</SelectItem>
+                      <SelectItem value="cashflow">Fluxo de Caixa</SelectItem>
+                      <SelectItem value="invoices">Contas a Pagar/Receber</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="period">Período</Label>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o período" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="current-month">Mês atual</SelectItem>
+                      <SelectItem value="previous-month">Mês anterior</SelectItem>
+                      <SelectItem value="current-quarter">Trimestre atual</SelectItem>
+                      <SelectItem value="year-to-date">Ano até o momento</SelectItem>
+                      <SelectItem value="last-year">Último ano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Observações (opcional)</Label>
+                  <Textarea 
+                    placeholder="Adicione informações ou filtros específicos para o relatório"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => resetForm()}
+                  >
+                    Limpar
+                  </Button>
+                  <Button 
+                    className="w-full"
+                    disabled={!documentType || !period}
+                    onClick={() => handleProcess('dre')}
+                  >
+                    Gerar Relatório
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+          
+          {/* Impostos */}
+          <TabsContent value="taxes">
+            {activeTask ? (
+              <div className="space-y-4 p-4 border rounded-md">
+                <div className="text-center">
+                  <h3 className="text-lg font-medium mb-2">Calculando Impostos</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    {processingStatus === 'processing' ? 'Processando cálculos...' : 
+                     processingStatus === 'success' ? 'Cálculos concluídos!' : 
+                     processingStatus === 'error' ? 'Erro durante o cálculo' : ''}
+                  </p>
+                  
+                  <Progress value={progress} className="mb-4" />
+                  
+                  <div className="flex items-center justify-center space-x-2 mb-4">
+                    {processingStatus === 'processing' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    ) : processingStatus === 'success' ? (
+                      <Check className="h-5 w-5 text-green-500" />
+                    ) : processingStatus === 'error' ? (
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                    ) : null}
+                    <span className="text-sm">
+                      {processingStatus === 'processing' ? 'Processando...' : 
+                       processingStatus === 'success' ? 'Concluído' : 
+                       processingStatus === 'error' ? 'Erro' : ''}
+                    </span>
+                  </div>
+                  
+                  {processingMessage && (
+                    <div className="my-4 p-4 bg-muted rounded-md">
+                      <p className="text-sm">{processingMessage}</p>
+                    </div>
+                  )}
+                  
+                  {processingStatus === 'success' && (
+                    <Button className="mt-4">
+                      Baixar Relatório de Impostos
+                    </Button>
+                  )}
+                  
+                  {processingStatus !== 'processing' && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 ml-2"
+                      onClick={() => setActiveTask(null)}
+                    >
+                      Voltar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tax-type">Tipo de Imposto</Label>
+                  <Select value={documentType} onValueChange={setDocumentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de imposto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="simples">Simples Nacional</SelectItem>
+                      <SelectItem value="irpj">IRPJ</SelectItem>
+                      <SelectItem value="csll">CSLL</SelectItem>
+                      <SelectItem value="pis">PIS</SelectItem>
+                      <SelectItem value="cofins">COFINS</SelectItem>
+                      <SelectItem value="icms">ICMS</SelectItem>
+                      <SelectItem value="iss">ISS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="tax-period">Período de Apuração</Label>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o período" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="jan-2023">Janeiro 2023</SelectItem>
+                      <SelectItem value="feb-2023">Fevereiro 2023</SelectItem>
+                      <SelectItem value="mar-2023">Março 2023</SelectItem>
+                      <SelectItem value="apr-2023">Abril 2023</SelectItem>
+                      <SelectItem value="may-2023">Maio 2023</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => resetForm()}
+                  >
+                    Limpar
+                  </Button>
+                  <Button 
+                    className="w-full"
+                    disabled={!documentType || !period}
+                    onClick={() => handleProcess('taxes')}
+                  >
+                    Calcular
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      <CardFooter className="border-t pt-4 pb-2">
-        <p className="text-xs text-muted-foreground">
-          Robô contábil atualizado em 09/05/2025. Segmento atual: <span className="font-medium">{currentSegment}</span>
-        </p>
-      </CardFooter>
     </Card>
   );
 };
