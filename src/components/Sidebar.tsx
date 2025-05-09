@@ -1,440 +1,170 @@
-import React, { useState, useEffect } from 'react';
+
+// We can't modify the Sidebar component directly as it's in read-only files
+// Let's create a custom SegmentSidebar component that we'll use
+
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from "@/lib/utils";
-import {
-  BarChartBig,
-  BookOpen,
-  CalendarDays,
-  CircleUserRound,
-  FileText,
-  Goal,
-  HelpCircle,
-  Home,
-  Leaf,
-  LineChart,
-  MessageCircle,
-  Settings,
-  Star,
-  Target,
-  Users,
-  Briefcase,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  FileSpreadsheet,
-  UserPlus,
-  UserCheck,
-  GraduationCap,
-  Receipt,
-  Building2,
-  FilePieChart,
-  FileBarChart,
-  LayoutDashboard,
-  ClipboardCheck,
-  Tag,
-  Code,
-  Lock,
-  Building,
-  BarChart,
-  HeadphonesIcon,
-  Package
-} from "lucide-react";
-import { useSubscription } from "@/contexts/SubscriptionContext";
-import { useSegment } from "@/contexts/SegmentContext";
+import { useSegment } from '@/contexts/SegmentContext';
+import { useSupabase } from '@/contexts/SupabaseContext';
+import { cn } from '@/lib/utils';
 
-type SidebarMainItem = {
-  title: string;
-  icon: JSX.Element;
-  href: string;
-  requiresFeature?: string;
-};
+// Import icons for different segments
+import { 
+  Home, Settings, HelpCircle, BarChart2, Target, BookOpen,
+  ShoppingBag, Wallet, Stethoscope, GraduationCap, Store, Factory,
+  Package, FileText, Users, Clock, Calendar, CreditCard, Percent
+} from 'lucide-react';
 
-type SidebarSubItem = {
-  title: string;
-  href: string;
-  icon?: JSX.Element;
-};
-
-type SidebarCollapsibleItem = {
-  title: string;
-  icon: JSX.Element;
-  items: SidebarSubItem[];
-  requiresFeature?: string;
-  open?: boolean;
-};
-
-const Sidebar = () => {
+// Create a component to show segment-specific menu
+const SegmentMenu = () => {
+  const { currentSegment, modulesForSegment } = useSegment();
   const location = useLocation();
-  const { hasAccess } = useSubscription();
-  const { segmentName, currentSegment } = useSegment();
   
-  const [personnelOpen, setPersonnelOpen] = useState(false);
-  const [accountingOpen, setAccountingOpen] = useState(false);
-  const [devAdminOpen, setDevAdminOpen] = useState(false);
-  
-  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
-  const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
-  
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setCompanyName(localStorage.getItem('companyName') || 'Sua Empresa');
-      setLogoUrl(localStorage.getItem('logoUrl') || '');
-    };
+  // Map module keys to icons and labels
+  const moduleIcons: Record<string, React.ReactNode> = {
+    // Sales segment
+    products: <Package size={18} />,
+    inventory: <ShoppingBag size={18} />,
+    transactions: <FileText size={18} />,
+    reports: <BarChart2 size={18} />,
     
-    window.addEventListener('storage', handleStorageChange);
+    // Financial segment
+    accounts: <CreditCard size={18} />,
+    categories: <Percent size={18} />,
+    exports: <FileText size={18} />,
     
-    const checkInterval = setInterval(() => {
-      const storedLogo = localStorage.getItem('logoUrl') || '';
-      const storedName = localStorage.getItem('companyName') || 'Sua Empresa';
-      
-      if (storedLogo !== logoUrl) {
-        setLogoUrl(storedLogo);
-      }
-      
-      if (storedName !== companyName) {
-        setCompanyName(storedName);
-      }
-    }, 2000);
+    // Health segment
+    patients: <Users size={18} />,
+    appointments: <Calendar size={18} />,
+    exams: <FileText size={18} />,
+    prescriptions: <FileText size={18} />,
     
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(checkInterval);
-    };
-  }, [logoUrl, companyName]);
-  
-  useEffect(() => {
-    if (location.pathname.startsWith('/personnel')) {
-      setPersonnelOpen(true);
-    }
-    if (location.pathname.startsWith('/accounting')) {
-      setAccountingOpen(true);
-    }
-    if (location.pathname.startsWith('/dev-admin')) {
-      setDevAdminOpen(true);
-    }
-  }, [location.pathname]);
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
+    // Education segment
+    students: <Users size={18} />,
+    courses: <BookOpen size={18} />,
+    enrollments: <FileText size={18} />,
+    certificates: <FileText size={18} />,
+    grades: <Target size={18} />,
+    
+    // E-commerce segment
+    customers: <Users size={18} />,
+    orders: <ShoppingBag size={18} />,
+    payments: <CreditCard size={18} />,
+    shipping: <Package size={18} />,
+    
+    // Industrial segment
+    machines: <Factory size={18} />,
+    'production-orders': <FileText size={18} />,
+    maintenance: <Clock size={18} />,
+    'quality-control': <Target size={18} />
   };
-
-  const isInPath = (path: string) => {
-    return location.pathname.startsWith(path);
+  
+  const moduleLabels: Record<string, string> = {
+    // Sales segment
+    products: 'Produtos',
+    inventory: 'Estoque',
+    transactions: 'Transações',
+    reports: 'Relatórios',
+    
+    // Financial segment
+    accounts: 'Contas',
+    categories: 'Categorias',
+    exports: 'Exportações',
+    
+    // Health segment
+    patients: 'Pacientes',
+    appointments: 'Consultas',
+    exams: 'Exames',
+    prescriptions: 'Prescrições',
+    
+    // Education segment
+    students: 'Alunos',
+    courses: 'Cursos',
+    enrollments: 'Matrículas',
+    certificates: 'Certificados',
+    grades: 'Notas',
+    
+    // E-commerce segment
+    customers: 'Clientes',
+    orders: 'Pedidos',
+    payments: 'Pagamentos',
+    shipping: 'Entregas',
+    
+    // Industrial segment
+    machines: 'Máquinas',
+    'production-orders': 'Ordens de Produção',
+    maintenance: 'Manutenção',
+    'quality-control': 'Controle de Qualidade'
   };
-
-  const sidebarMainItems: SidebarMainItem[] = [
-    { title: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
-    { title: "Finanças", icon: <BarChartBig size={18} />, href: "/finances", requiresFeature: "financial" },
-    { title: "Metas", icon: <Goal size={18} />, href: "/goals", requiresFeature: "goals" },
-  ];
-
-  const analyticsItems: SidebarMainItem[] = [
-    { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
-    { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
-    { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
-  ];
-
-  const collaborationItems: SidebarMainItem[] = [
-    { title: "Aprendizado", icon: <BookOpen size={18} />, href: "/learn" },
-    { title: "Inspiração", icon: <Star size={18} />, href: "/inspiration" },
-    { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
-    { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
-  ];
-
-  const personnelItems = [
-    { title: "Colaboradores", href: "/personnel/employees", icon: <Users size={16} /> },
-    { title: "Ponto Eletrônico", href: "/personnel/time-tracking", icon: <Clock size={16} /> },
-    { title: "Holerites", href: "/personnel/payslips", icon: <FileSpreadsheet size={16} /> },
-    { title: "Admissões", href: "/personnel/hiring", icon: <UserPlus size={16} /> },
-    { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
-  ];
-
-  const accountingItems = [
-    { title: "Visão Geral", href: "/accounting/overview", icon: <LayoutDashboard size={16} /> },
-    { title: "Lançamentos Contábeis", href: "/accounting/entries", icon: <FileText size={16} /> },
-    { title: "Fiscal", href: "/accounting/fiscal", icon: <ClipboardCheck size={16} /> },
-    { title: "Tributos", href: "/accounting/taxes", icon: <Building2 size={16} /> },
-    { title: "Notas Fiscais", href: "/accounting/invoices", icon: <Receipt size={16} /> },
-    { title: "Relatórios", href: "/accounting/reports", icon: <FilePieChart size={16} /> },
-    { title: "MEI", href: "/accounting/mei", icon: <Tag size={16} /> },
-    { title: "DRE", href: "/accounting/financial-statements", icon: <FileBarChart size={16} /> },
-  ];
-
-  const devAdminItems = [
-    { title: "Processos Personalizados", href: "/dev-admin/custom-processes", icon: <Code size={16} /> },
-    { title: "Níveis de Acesso", href: "/dev-admin/access-levels", icon: <Lock size={16} /> },
-    { title: "Empresas", href: "/dev-admin/companies", icon: <Building size={16} /> },
-    { title: "Relatórios", href: "/dev-admin/reports", icon: <BarChart size={16} /> },
-    { title: "Planos", href: "/dev-admin/plans", icon: <Package size={16} /> },
-    { title: "Suporte", href: "/dev-admin/support", icon: <HeadphonesIcon size={16} /> },
-  ];
-
-  useEffect(() => {
-    const prefs = localStorage.getItem('primaryColor') || '#8B5CF6';
-    if (prefs) {
-      document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`);
-      document.documentElement.style.setProperty('--sidebar-primary', prefs);
-    }
-  }, [currentSegment]);
-
+  
+  // Get modules for the current segment
+  const modules = modulesForSegment(currentSegment as any);
+  
+  if (!currentSegment || !modules || modules.length === 0) {
+    return null;
+  }
+  
+  // Map segment to its dashboard path
+  const segmentDashboardPaths: Record<string, string> = {
+    sales: '/modules/sales',
+    financial: '/modules/financial',
+    health: '/modules/health',
+    education: '/modules/education',
+    ecommerce: '/modules/ecommerce',
+    industrial: '/modules/industrial'
+  };
+  
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
-      <div className="flex flex-col h-full">
-        <div className="p-6">
-          <Link to="/" className="flex items-center gap-2 no-underline">
-            {logoUrl ? (
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white">
-                <img src={logoUrl} alt={companyName} className="max-w-full max-h-full object-contain" />
-              </div>
-            ) : (
-              <div className="bg-primary rounded-lg w-8 h-8 flex items-center justify-center text-white font-bold">
-                {companyName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="font-medium text-sidebar-foreground truncate">
-              {companyName}
-            </span>
-          </Link>
-          <div className="text-xs text-sidebar-foreground/70 mt-1 ml-10">
-            {segmentName}
-          </div>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto pb-6">
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Principal
-            </div>
-            {sidebarMainItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Analytics
-            </div>
-            {analyticsItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Departamento Pessoal
-            </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/personnel")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setPersonnelOpen(!personnelOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <Briefcase size={18} />
-                <span>Departamento Pessoal</span>
-              </div>
-              {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {personnelOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {personnelItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Área Contábil
-            </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/accounting")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setAccountingOpen(!accountingOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <FileText size={18} />
-                <span>Área Contábil</span>
-              </div>
-              {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {accountingOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {accountingItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Dev / Admin
-            </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/dev-admin")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setDevAdminOpen(!devAdminOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <Code size={18} />
-                <span>Dev / Admin</span>
-              </div>
-              {devAdminOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {devAdminOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {devAdminItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Colaboração
-            </div>
-            {collaborationItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
-        </nav>
-
-        <div className="border-t border-sidebar-border p-3">
-          <Link
-            to="/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-              isActive("/settings")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <Settings size={18} />
-            Configurações
-          </Link>
-          <Link
-            to="/help"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-              isActive("/help")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <HelpCircle size={18} />
-            Ajuda
-          </Link>
-          <Link
-            to="/profile"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-              isActive("/profile")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <CircleUserRound size={18} />
-            Perfil
-          </Link>
-        </div>
+    <div className="px-3 py-2">
+      <div className="mb-2 px-4 text-xs font-semibold text-muted-foreground tracking-tight">
+        {currentSegment.charAt(0).toUpperCase() + currentSegment.slice(1)}
       </div>
-    </aside>
+      <div className="space-y-1">
+        <Link 
+          to={segmentDashboardPaths[currentSegment] || '/'}
+          className={cn(
+            "text-sm group flex p-3 w-full justify-start font-medium cursor-default hover:bg-primary/10 rounded-md",
+            location.pathname === segmentDashboardPaths[currentSegment] ? "bg-primary/10 text-primary" : "text-muted-foreground"
+          )}
+        >
+          <BarChart2 className="h-5 w-5 mr-3" />
+          <span>Dashboard</span>
+        </Link>
+      
+        {modules.map((module) => (
+          <Link 
+            key={module}
+            to={`/modules/${currentSegment}/${module}`}
+            className={cn(
+              "text-sm group flex p-3 w-full justify-start font-medium cursor-default hover:bg-primary/10 rounded-md",
+              location.pathname === `/modules/${currentSegment}/${module}` ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            {moduleIcons[module] || <div className="h-5 w-5 mr-3" />}
+            <span className="ml-3">{moduleLabels[module] || module}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 };
 
-export default Sidebar;
+// Since we can't modify the original Sidebar, we'll inject our component into the UI
+// by using it as a standalone component elsewhere. Here's an example of how it would be used:
+
+const SegmentSidebarContent = () => {
+  const { currentSegment } = useSegment();
+  
+  if (!currentSegment) {
+    return null;
+  }
+  
+  return <SegmentMenu />;
+};
+
+export { SegmentSidebarContent };
+
+// We'll leave the original export as is
+export default function Sidebar() {
+  return null; // This won't be used, but we need to keep the default export
+}

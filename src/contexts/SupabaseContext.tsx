@@ -9,6 +9,7 @@ interface SupabaseContextType {
   currentSegment: string | null;
   switchSegment: (segment: string) => Promise<boolean>;
   isConfigured: (segment: string) => boolean;
+  allSegments: string[];
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [currentSegment, setCurrentSegment] = useState<string | null>(null);
   const [loadingSupabase, setLoadingSupabase] = useState<boolean>(false);
+  const [allSegments, setAllSegments] = useState<string[]>([]);
 
   // Load segment configurations from localStorage
   const getSegmentConfigs = () => {
@@ -104,6 +106,12 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  // Update the list of available segments
+  useEffect(() => {
+    const configs = getSegmentConfigs();
+    setAllSegments(Object.keys(configs));
+  }, []);
+
   // Initialize Supabase client on mount if a segment is saved in localStorage
   useEffect(() => {
     const savedSegment = localStorage.getItem('currentSegment');
@@ -120,6 +128,10 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     if (currentSegment) {
       localStorage.setItem('currentSegment', currentSegment);
+      
+      // Also update the list of available segments
+      const configs = getSegmentConfigs();
+      setAllSegments(Object.keys(configs));
     }
   }, [currentSegment]);
 
@@ -129,7 +141,8 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       loadingSupabase,
       currentSegment,
       switchSegment,
-      isConfigured
+      isConfigured,
+      allSegments
     }}>
       {children}
     </SupabaseContext.Provider>

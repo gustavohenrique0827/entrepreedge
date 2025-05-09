@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -46,6 +47,9 @@ import Companies from "./pages/dev-admin/Companies";
 import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
+
+// Import module dashboard components
+import FinancialDashboard from "./modules/financial/FinancialDashboard";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +147,8 @@ const App = () => {
                       <Index />
                     </ProtectedRoute>
                   } />
+                  
+                  {/* General Routes */}
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <Dashboard />
@@ -218,6 +224,7 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
+                  {/* Personnel Routes */}
                   <Route path="/personnel" element={
                     <ProtectedRoute>
                       <EmployeeManagement />
@@ -249,6 +256,7 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
+                  {/* Accounting Routes */}
                   <Route path="/accounting" element={
                     <ProtectedRoute>
                       <AccountingDashboard />
@@ -300,6 +308,7 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
+                  {/* Admin Routes */}
                   <Route path="/dev-admin/custom-processes" element={
                     <ProtectedRoute>
                       <CustomProcesses />
@@ -328,6 +337,15 @@ const App = () => {
                   <Route path="/dev-admin/support" element={
                     <ProtectedRoute>
                       <SupportManagement />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Module-specific Routes */}
+                  
+                  {/* Financial Module */}
+                  <Route path="/modules/financial" element={
+                    <ProtectedRoute>
+                      <FinancialDashboard />
                     </ProtectedRoute>
                   } />
                   

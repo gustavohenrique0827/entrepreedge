@@ -1,15 +1,18 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import FinanceTracker from '@/components/FinanceTracker';
 import GoalTracker from '@/components/GoalTracker';
 import LearnSection from '@/components/LearnSection';
+import { SegmentSelector } from '@/components/SegmentSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, BarChart2, Target, BookOpen, CheckCircle, BookOpenCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSupabase } from '@/contexts/SupabaseContext';
 
 const Index = () => {
   // Get company data from localStorage
@@ -17,6 +20,7 @@ const Index = () => {
   const businessType = localStorage.getItem('businessType') || '';
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   const { applyThemeColors } = useTheme();
+  const { currentSegment, allSegments } = useSupabase();
   
   // Apply theme colors on component mount
   useEffect(() => {
@@ -25,6 +29,69 @@ const Index = () => {
     // Update document title
     document.title = `${companyName} - Painel Principal`;
   }, []);
+  
+  // Check if any segments are configured
+  const hasConfiguredSegments = allSegments && allSegments.length > 0;
+  
+  // If no segment is configured or selected, show the segment selector
+  if (!currentSegment && hasConfiguredSegments) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <SegmentSelector />
+      </div>
+    );
+  }
+  
+  // If no segments are configured, suggest configuring one
+  if (!hasConfiguredSegments) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <Sidebar />
+        
+        <div className="flex-1 ml-[240px] transition-all duration-300">
+          <Navbar />
+          
+          <div className="container px-4 py-6">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold mb-1">Bem-vindo(a), {companyName}</h1>
+              <p className="text-sm text-muted-foreground">
+                Configure seu primeiro segmento para começar
+              </p>
+            </div>
+            
+            <Alert className="mb-6 border-amber-500/20 bg-amber-500/5">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-sm font-medium">Configuração necessária</AlertTitle>
+              <AlertDescription className="text-xs">
+                Para aproveitar todas as funcionalidades, configure pelo menos um segmento de negócio.
+                <Link to="/settings">
+                  <Button variant="link" className="h-auto p-0 ml-2 text-xs text-amber-500">
+                    Configurar agora
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+            
+            <div className="max-w-md mx-auto mt-12">
+              <Card>
+                <CardHeader className="text-center">
+                  <CardTitle>Sistema Multi-Segmentos</CardTitle>
+                  <CardDescription>
+                    Cada segmento possui seu próprio banco de dados e funcionalidades específicas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link to="/settings">
+                    <Button className="w-full">Configurar Segmento</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background flex">

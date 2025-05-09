@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,9 @@ import { useSupabase } from '@/contexts/SupabaseContext';
 
 const PreferencesSettings = () => {
   const { toast } = useToast();
-  const { setCurrentSegment } = useSegment();
+  const { setCurrentSegment, applySegmentVisuals } = useSegment();
   const { switchSegment } = useSupabase();
+  
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'pt-BR');
   const [currency, setCurrency] = useState(localStorage.getItem('currency') || 'BRL');
@@ -21,6 +22,15 @@ const PreferencesSettings = () => {
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
   const [logoPreview, setLogoPreview] = useState(localStorage.getItem('logoUrl') || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [needsReload, setNeedsReload] = useState(false);
+
+  // Check if settings have changed when component mounts
+  useEffect(() => {
+    const savedSegment = localStorage.getItem('segment');
+    if (savedSegment !== segment) {
+      setNeedsReload(true);
+    }
+  }, []);
 
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompanyName(e.target.value);
@@ -64,14 +74,21 @@ const PreferencesSettings = () => {
       setCurrentSegment(segment as any);
       
       // Try to switch to the selected segment's Supabase connection
-      await switchSegment(segment);
+      const success = await switchSegment(segment);
       
       toast({
         title: "Configurações salvas",
         description: "Suas preferências foram atualizadas com sucesso.",
       });
       
-      if (language !== localStorage.getItem('language')) {
+      // Check if we need to reload the page
+      const shouldReload = language !== localStorage.getItem('language') || needsReload;
+      if (shouldReload) {
+        toast({
+          title: "Recarregando",
+          description: "A página será recarregada para aplicar as novas configurações.",
+        });
+        
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -89,11 +106,7 @@ const PreferencesSettings = () => {
   };
 
   const handleApplySegmentRecommendations = () => {
-    // Implementation remains the same
-    toast({
-      title: "Recomendações aplicadas",
-      description: "Cores do segmento aplicadas com sucesso.",
-    });
+    applySegmentVisuals();
   };
 
   return (
@@ -124,7 +137,7 @@ const PreferencesSettings = () => {
           <AlertCircle size={16} className="mt-0.5" />
           <p>
             Alterações nas configurações serão aplicadas em todo o sistema.
-            Se você alterar o idioma, a página será recarregada.
+            Se você alterar o idioma ou segmento, a página será recarregada.
           </p>
         </div>
 
