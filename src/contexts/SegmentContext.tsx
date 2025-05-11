@@ -24,6 +24,9 @@ interface SegmentContextType {
   segmentName: string;
   segmentColor: string;
   modulesForSegment: (segment: BusinessSegmentType) => string[];
+  // Add the missing properties/methods
+  getVisualPreferences: () => { primaryColor: string; secondaryColor: string; };
+  applySegmentVisuals: () => void;
 }
 
 // Create the context with a default value
@@ -123,6 +126,40 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
     return modules[segment] || [];
   };
 
+  // Add the missing methods
+  const getVisualPreferences = () => {
+    const segment = currentSegment || 'generic';
+    
+    // Define color schemes for each segment
+    const colorSchemes: Record<BusinessSegmentType, { primaryColor: string; secondaryColor: string }> = {
+      generic: { primaryColor: '#3B82F6', secondaryColor: '#8B5CF6' },
+      sales: { primaryColor: '#F97316', secondaryColor: '#EA580C' },
+      financial: { primaryColor: '#0EA5E9', secondaryColor: '#0284C7' },
+      health: { primaryColor: '#14B8A6', secondaryColor: '#0D9488' },
+      education: { primaryColor: '#A855F7', secondaryColor: '#9333EA' },
+      ecommerce: { primaryColor: '#F59E0B', secondaryColor: '#D97706' },
+      industrial: { primaryColor: '#64748B', secondaryColor: '#475569' },
+      agro: { primaryColor: '#22C55E', secondaryColor: '#16A34A' },
+      fashion: { primaryColor: '#EC4899', secondaryColor: '#DB2777' },
+      services: { primaryColor: '#6366F1', secondaryColor: '#4F46E5' },
+      tech: { primaryColor: '#3B82F6', secondaryColor: '#2563EB' },
+      legal: { primaryColor: '#71717A', secondaryColor: '#52525B' },
+      manufacturing: { primaryColor: '#78716C', secondaryColor: '#57534E' }
+    };
+    
+    return colorSchemes[segment];
+  };
+  
+  const applySegmentVisuals = () => {
+    const prefs = getVisualPreferences();
+    
+    // Apply theme colors to CSS variables
+    document.documentElement.style.setProperty('--color-primary', prefs.primaryColor);
+    document.documentElement.style.setProperty('--color-secondary', prefs.secondaryColor);
+    
+    return prefs;
+  };
+
   return (
     <SegmentContext.Provider
       value={{
@@ -130,7 +167,9 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
         setCurrentSegment,
         segmentName: getSegmentName(currentSegment),
         segmentColor: getSegmentColor(currentSegment),
-        modulesForSegment
+        modulesForSegment,
+        getVisualPreferences,
+        applySegmentVisuals
       }}
     >
       {children}

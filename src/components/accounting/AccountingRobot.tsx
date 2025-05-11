@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,7 +143,7 @@ const AccountingRobot = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert variant="warning" className="my-4">
+          <Alert variant="destructive" className="my-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Segmento não configurado</AlertTitle>
             <AlertDescription>
