@@ -5,6 +5,7 @@ import { useSupabase } from '@/contexts/SupabaseContext';
 import { useSegment } from '@/contexts/SegmentContext';
 import { BusinessSegmentType } from '@/contexts/SegmentContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getUserProfile } from '@/lib/database';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -32,14 +33,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
             
             // If no segment in metadata, try to get from custom table
             if (!segment) {
-              const { data: userData, error } = await supabase
-                .from('user_profiles')
-                .select('segment')
-                .eq('user_id', session.user.id)
-                .single();
-                
-              if (userData && !error) {
-                segment = userData.segment;
+              const userProfile = await getUserProfile(session.user.id);
+              
+              if (userProfile?.segment) {
+                segment = userProfile.segment;
               }
             }
             

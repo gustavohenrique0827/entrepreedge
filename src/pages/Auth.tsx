@@ -10,6 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getUserProfile } from '@/lib/database';
+
+// Function to safely fetch user segment from database
+const getUserSegment = async (userId: string) => {
+  try {
+    // Use a stored procedure or generic query to get user segment
+    const { data, error } = await supabase.rpc('get_user_profile', {
+      user_id_param: userId
+    });
+    
+    if (!error && data) {
+      return data.segment;
+    }
+  } catch (err) {
+    console.error("Error fetching user segment:", err);
+  }
+  return null;
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -178,17 +196,11 @@ const Auth = () => {
         await switchSegment(userSegment);
       } else {
         // If no segment in metadata, try to fetch from profiles
-        // Check if the profiles table exists first
         try {
-          // Using a more generic approach to get data
-          const { data: profileData, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', data.user.id)
-            .maybeSingle();
-            
-          if (profileData && !profileError && profileData.segment) {
-            userSegment = profileData.segment;
+          const userProfile = await getUserProfile(data.user.id);
+          
+          if (userProfile?.segment) {
+            userSegment = userProfile.segment;
             localStorage.setItem('segment', userSegment);
             setCurrentSegment(userSegment as BusinessSegmentType);
             await switchSegment(userSegment);
@@ -370,7 +382,7 @@ const Auth = () => {
             </svg>
           </div>
           <h1 className="text-2xl font-bold">EntrepreEdge</h1>
-          <p className="text-muted-foreground text-sm">Sua plataforma completa de gestão empresarial</p>
+          <p className="text-sm text-muted-foreground">Sua plataforma completa de gestão empresarial</p>
         </div>
         
         <Card className="glass">
