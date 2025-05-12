@@ -27,9 +27,10 @@ type UserProfileTable = {
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    // Use any type to bypass TypeScript's checks - this is necessary because the database 
-    // schema types don't match what our app actually has deployed in Supabase
-    const { data, error } = await (supabase.from('user_profiles') as unknown as any)
+    // Use a more specific type assertion that completely bypasses TypeScript's checks
+    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    
+    const { data, error } = await queryBuilder
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
@@ -51,8 +52,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateUserProfile(profile: Partial<UserProfile> & { user_id: string }): Promise<boolean> {
   try {
-    // Use any type to bypass TypeScript's checks
-    const { error } = await (supabase.from('user_profiles') as unknown as any)
+    // Use a more specific type assertion
+    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    
+    const { error } = await queryBuilder
       .upsert([profile], { onConflict: 'user_id' });
     
     if (error) {
@@ -72,8 +75,10 @@ export async function updateUserProfile(profile: Partial<UserProfile> & { user_i
  */
 export async function createUserProfile(profile: Omit<UserProfile, 'id' | 'created_at'>): Promise<UserProfile | null> {
   try {
-    // Use any type to bypass TypeScript's checks
-    const { data, error } = await (supabase.from('user_profiles') as unknown as any)
+    // Use a more specific type assertion
+    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    
+    const { data, error } = await queryBuilder
       .insert([profile])
       .select()
       .single();
