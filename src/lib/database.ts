@@ -11,17 +11,25 @@ export interface UserProfile {
   created_at?: string;
 }
 
+// Type for the Supabase user_profiles table
+type UserProfileTable = {
+  id: string;
+  user_id: string;
+  segment: string | null;
+  company_name: string | null;
+  company_cnpj: string | null;
+  created_at: string;
+}
+
 /**
  * Safely retrieves a user's profile by user ID
  * This function is a workaround for TypeScript errors related to unknown database schema
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    // Using type assertions to work around TypeScript errors
-    const query = supabase
-      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
-    
-    const { data, error } = await query
+    // Using a more specific type assertion for the table
+    const { data, error } = await (supabase
+      .from('user_profiles') as any)
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
@@ -43,11 +51,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateUserProfile(profile: Partial<UserProfile> & { user_id: string }): Promise<boolean> {
   try {
-    // Using type assertions to work around TypeScript errors
-    const query = supabase
-      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
-    
-    const { error } = await query
+    // Using a more direct type assertion approach
+    const { error } = await (supabase
+      .from('user_profiles') as any)
       .upsert([profile], { onConflict: 'user_id' });
     
     if (error) {
@@ -67,11 +73,9 @@ export async function updateUserProfile(profile: Partial<UserProfile> & { user_i
  */
 export async function createUserProfile(profile: Omit<UserProfile, 'id' | 'created_at'>): Promise<UserProfile | null> {
   try {
-    // Using type assertions to work around TypeScript errors
-    const query = supabase
-      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
-    
-    const { data, error } = await query
+    // Using a more direct type assertion approach
+    const { data, error } = await (supabase
+      .from('user_profiles') as any)
       .insert([profile])
       .select()
       .single();
