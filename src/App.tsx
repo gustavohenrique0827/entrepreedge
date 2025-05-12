@@ -26,6 +26,8 @@ import ESGIndicators from "./pages/ESGIndicators";
 import Calendar from "./pages/Calendar";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SegmentProvider } from "./contexts/SegmentContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./components/ui/theme-provider";
 import EmployeeManagement from "./pages/personnel/EmployeeManagement";
 import TimeTracking from "./pages/personnel/TimeTracking";
 import Payslips from "./pages/personnel/Payslips";
@@ -45,7 +47,6 @@ import Companies from "./pages/dev-admin/Companies";
 import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
-import AutoSegmentConfig from './components/segment/AutoSegmentConfig';
 import SegmentTestPage from './pages/SegmentTestPage';
 
 const queryClient = new QueryClient();
@@ -127,215 +128,221 @@ const App = () => {
 
   return (
     <div className="app">
-      <SubscriptionProvider>
-        <SegmentProvider>
-          <HelmetProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
+      <ThemeProvider defaultTheme="system" storageKey="entrepreedge-theme">
+        <QueryClientProvider client={queryClient}>
+          <SubscriptionProvider>
+            <SegmentProvider>
               <BrowserRouter>
-                <Routes>
-                  <Route path="/auth" element={
-                    isAuthenticated ? <Navigate to="/" replace /> : <Auth />
-                  } />
-                  
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/finances" element={
-                    <ProtectedRoute>
-                      <Finances />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/goals" element={
-                    <ProtectedRoute>
-                      <Goals />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/learn" element={
-                    <ProtectedRoute>
-                      <Learn />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/course/:courseId" element={
-                    <ProtectedRoute>
-                      <CourseDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/settings" element={
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/help" element={
-                    <ProtectedRoute>
-                      <Help />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/onboarding" element={
-                    isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
-                  } />
-                  <Route path="/contact" element={
-                    <ProtectedRoute>
-                      <Contact />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/calendar" element={
-                    <ProtectedRoute>
-                      <Calendar />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/benchmarking" element={
-                    <ProtectedRoute>
-                      <Benchmarking />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/simulator" element={
-                    <ProtectedRoute>
-                      <Simulator />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/inspiration" element={
-                    <ProtectedRoute>
-                      <Inspiration />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/esg" element={
-                    <ProtectedRoute>
-                      <ESGIndicators />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/personnel" element={
-                    <ProtectedRoute>
-                      <EmployeeManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/personnel/employees" element={
-                    <ProtectedRoute>
-                      <EmployeeManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/personnel/time-tracking" element={
-                    <ProtectedRoute>
-                      <TimeTracking />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/personnel/payslips" element={
-                    <ProtectedRoute>
-                      <Payslips />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/personnel/hiring" element={
-                    <ProtectedRoute>
-                      <Hiring />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/personnel/processes" element={
-                    <ProtectedRoute>
-                      <HRProcesses />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/accounting/overview" element={
-                    <ProtectedRoute>
-                      <Overview />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting" element={
-                    <ProtectedRoute>
-                      <Overview />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/entries" element={
-                    <ProtectedRoute>
-                      <Entries />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/fiscal" element={
-                    <ProtectedRoute>
-                      <Fiscal />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/taxes" element={
-                    <ProtectedRoute>
-                      <Taxes />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/invoices" element={
-                    <ProtectedRoute>
-                      <Invoices />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/reports" element={
-                    <ProtectedRoute>
-                      <Reports />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/mei" element={
-                    <ProtectedRoute>
-                      <MEI />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/accounting/financial-statements" element={
-                    <ProtectedRoute>
-                      <FinancialStatements />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dev-admin/custom-processes" element={
-                    <ProtectedRoute>
-                      <CustomProcesses />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dev-admin/access-levels" element={
-                    <ProtectedRoute>
-                      <AccessLevels />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dev-admin/companies" element={
-                    <ProtectedRoute>
-                      <Companies />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dev-admin/reports" element={
-                    <ProtectedRoute>
-                      <ReportsManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dev-admin/plans" element={
-                    <ProtectedRoute>
-                      <PlansManagement />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dev-admin/support" element={
-                    <ProtectedRoute>
-                      <SupportManagement />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/segment-test" element={<SegmentTestPage />} />
-                  
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <AuthProvider>
+                  <HelmetProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <Routes>
+                        <Route path="/auth" element={
+                          isAuthenticated ? <Navigate to="/" replace /> : <Auth />
+                        } />
+                        
+                        <Route path="/" element={
+                          <ProtectedRoute>
+                            <Index />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard" element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/finances" element={
+                          <ProtectedRoute>
+                            <Finances />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/goals" element={
+                          <ProtectedRoute>
+                            <Goals />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/learn" element={
+                          <ProtectedRoute>
+                            <Learn />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/course/:courseId" element={
+                          <ProtectedRoute>
+                            <CourseDetail />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/profile" element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/settings" element={
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/help" element={
+                          <ProtectedRoute>
+                            <Help />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/onboarding" element={
+                          isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
+                        } />
+                        <Route path="/contact" element={
+                          <ProtectedRoute>
+                            <Contact />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/calendar" element={
+                          <ProtectedRoute>
+                            <Calendar />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/benchmarking" element={
+                          <ProtectedRoute>
+                            <Benchmarking />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/simulator" element={
+                          <ProtectedRoute>
+                            <Simulator />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/inspiration" element={
+                          <ProtectedRoute>
+                            <Inspiration />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/esg" element={
+                          <ProtectedRoute>
+                            <ESGIndicators />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/personnel" element={
+                          <ProtectedRoute>
+                            <EmployeeManagement />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/personnel/employees" element={
+                          <ProtectedRoute>
+                            <EmployeeManagement />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/personnel/time-tracking" element={
+                          <ProtectedRoute>
+                            <TimeTracking />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/personnel/payslips" element={
+                          <ProtectedRoute>
+                            <Payslips />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/personnel/hiring" element={
+                          <ProtectedRoute>
+                            <Hiring />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/personnel/processes" element={
+                          <ProtectedRoute>
+                            <HRProcesses />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/accounting/overview" element={
+                          <ProtectedRoute>
+                            <Overview />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting" element={
+                          <ProtectedRoute>
+                            <Overview />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/entries" element={
+                          <ProtectedRoute>
+                            <Entries />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/fiscal" element={
+                          <ProtectedRoute>
+                            <Fiscal />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/taxes" element={
+                          <ProtectedRoute>
+                            <Taxes />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/invoices" element={
+                          <ProtectedRoute>
+                            <Invoices />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/reports" element={
+                          <ProtectedRoute>
+                            <Reports />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/mei" element={
+                          <ProtectedRoute>
+                            <MEI />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/accounting/financial-statements" element={
+                          <ProtectedRoute>
+                            <FinancialStatements />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/dev-admin/custom-processes" element={
+                          <ProtectedRoute>
+                            <CustomProcesses />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dev-admin/access-levels" element={
+                          <ProtectedRoute>
+                            <AccessLevels />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dev-admin/companies" element={
+                          <ProtectedRoute>
+                            <Companies />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dev-admin/reports" element={
+                          <ProtectedRoute>
+                            <ReportsManagement />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dev-admin/plans" element={
+                          <ProtectedRoute>
+                            <PlansManagement />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dev-admin/support" element={
+                          <ProtectedRoute>
+                            <SupportManagement />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/segment-test" element={<SegmentTestPage />} />
+                        
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </TooltipProvider>
+                  </HelmetProvider>
+                </AuthProvider>
               </BrowserRouter>
-            </TooltipProvider>
-          </HelmetProvider>
-        </SegmentProvider>
-      </SubscriptionProvider>
+            </SegmentProvider>
+          </SubscriptionProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </div>
   );
 };

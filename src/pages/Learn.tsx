@@ -9,35 +9,12 @@ import { BookOpen, Home, BarChart2, Target } from 'lucide-react';
 const Learn = () => {
   const businessType = localStorage.getItem('businessType') || '';
   
-  const navItems = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: <Home size={18} />
-    },
-    {
-      name: 'Finanças',
-      href: '/finances',
-      icon: <BarChart2 size={18} />
-    },
-    {
-      name: 'Metas',
-      href: '/goals',
-      icon: <Target size={18} />
-    },
-    {
-      name: 'Aprendizado',
-      href: '/learn',
-      icon: <BookOpen size={18} />
-    },
-  ];
-  
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar items={navItems} />
+        <Navbar />
         
         <div className="container px-4 py-6">
           <div className="mb-6">

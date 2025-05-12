@@ -1,14 +1,25 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSegment } from '@/contexts/SegmentContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
-import { useTheme } from "@/components/ui/theme-provider"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useTheme } from "@/components/ui/theme-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const Navbar = () => {
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+interface NavbarProps {
+  items?: NavItem[];
+}
+
+const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const { currentSegment, segmentName } = useSegment();
   const { logout } = useAuth();
   const { toast } = useToast();
@@ -69,7 +80,7 @@ const Navbar = () => {
             </>
           )}
 
-          <button className="p-1 rounded-full" onClick={() => setTheme(theme => theme === "light" ? "dark" : "light")}>
+          <button className="p-1 rounded-full relative" onClick={() => setTheme(theme => theme === "light" ? "dark" : "light")}>
             <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
