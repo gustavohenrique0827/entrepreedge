@@ -4,6 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { useSegment } from '@/contexts/SegmentContext';
 import { BusinessSegmentType } from '@/contexts/SegmentContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,8 +14,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   const location = useLocation();
-  const { supabase } = useSupabase();
   const { setCurrentSegment } = useSegment();
+  const { supabaseForSegment } = useSupabase();
   const [isLoading, setIsLoading] = useState(true);
   
   // Load user segment on component mount
@@ -67,7 +68,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     };
     
     loadUserData();
-  }, [isLoggedIn, supabase, setCurrentSegment]);
+  }, [isLoggedIn, setCurrentSegment]);
   
   // Show loading state
   if (isLoading) {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,17 +178,24 @@ const Auth = () => {
         await switchSegment(userSegment);
       } else {
         // If no segment in metadata, try to fetch from profiles
-        const { data: userData, error: userError } = await supabase
-          .from('user_profiles')
-          .select('segment')
-          .eq('user_id', data.user.id)
-          .single();
-          
-        if (userData && !userError && userData.segment) {
-          userSegment = userData.segment;
-          localStorage.setItem('segment', userSegment);
-          setCurrentSegment(userSegment as BusinessSegmentType);
-          await switchSegment(userSegment);
+        // Check if the profiles table exists first
+        try {
+          // Using a more generic approach to get data
+          const { data: profileData, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', data.user.id)
+            .maybeSingle();
+            
+          if (profileData && !profileError && profileData.segment) {
+            userSegment = profileData.segment;
+            localStorage.setItem('segment', userSegment);
+            setCurrentSegment(userSegment as BusinessSegmentType);
+            await switchSegment(userSegment);
+          }
+        } catch (profileQueryError) {
+          console.error("Error querying profile data:", profileQueryError);
+          // Continue with login flow even if profile query fails
         }
       }
       

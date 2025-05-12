@@ -5,14 +5,15 @@ import AccountingRobot from '@/components/accounting/AccountingRobot';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Receipt, Calculator, Clock, PieChart, CreditCard } from 'lucide-react';
+import { BusinessSegmentType } from '@/contexts/SegmentContext';
 
 interface ModuleDashboardProps {
-  segmentId: string;
+  segmentId: BusinessSegmentType;
   features: string[];
 }
 
 const AccountingDashboard: React.FC<ModuleDashboardProps> = ({ 
-  segmentId = 'financial',
+  segmentId = 'financial' as BusinessSegmentType,
   features = [] 
 }) => {
   return (
