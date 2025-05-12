@@ -158,4 +158,5 @@ export const useSegment = () => {
   return context;
 };
 
-export { segmentNames, BusinessSegmentType };
+export { segmentNames };
+export type { BusinessSegmentType };
