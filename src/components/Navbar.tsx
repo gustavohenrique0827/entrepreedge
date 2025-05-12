@@ -24,7 +24,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -37,6 +37,11 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const isAuthPage = location.pathname === '/auth';
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const userEmail = localStorage.getItem('userEmail') || 'N/A';
+
+  // Function to toggle the theme
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
 
   return (
     <nav className="bg-background border-b sticky top-0 z-50">
@@ -80,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
             </>
           )}
 
-          <button className="p-1 rounded-full relative" onClick={() => setTheme(theme => theme === "light" ? "dark" : "light")}>
+          <button className="p-1 rounded-full relative" onClick={toggleTheme}>
             <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
