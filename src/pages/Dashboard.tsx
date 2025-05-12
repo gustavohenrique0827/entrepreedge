@@ -2,37 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import FinanceTracker from '@/components/FinanceTracker';
+import GoalTracker from '@/components/GoalTracker';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Home, 
+  AlertCircle, 
   BarChart2, 
   Target, 
-  BookOpen, 
+  TrendingUp, 
   Activity, 
   Calendar, 
   DollarSign, 
   ShoppingCart,
   Users,
-  Briefcase,
-  AlertCircle,
-  TrendingUp,
-  Palette, 
-  Bell, 
-  Shield, 
-  Sliders, 
-  Settings as SettingsIcon
+  Briefcase
 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import FinanceTracker from '@/components/FinanceTracker';
-import GoalTracker from '@/components/GoalTracker';
 import StatCard from '@/components/StatCard';
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useToast } from "@/hooks/use-toast";
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { useSegment } from '@/contexts/SegmentContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useSegment } from "@/contexts/SegmentContext";
 import api from '@/services/dbService';
 
 const financialData = [
@@ -75,16 +67,19 @@ const salesData = [
 const Dashboard = () => {
   const [timePeriod, setTimePeriod] = useState('year');
   const [chartType, setChartType] = useState('area');
+  const [customTheme, setCustomTheme] = useState({
+    primaryColor: '#3b82f6',
+    secondaryColor: '#10b981',
+    logoUrl: null
+  });
   const { currentPlan, hasAccess } = useSubscription();
   const { toast } = useToast();
   const { getVisualPreferences } = useSegment();
-  const { primaryColor, secondaryColor, applyThemeColors } = useTheme();
   
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
   const annualRevenue = localStorage.getItem('annualRevenue') || '0';
   const targetRevenue = localStorage.getItem('targetRevenue') || '0';
-  const logoUrl = localStorage.getItem('logoUrl') || '';
   
   const currentRevenueValue = parseInt(annualRevenue) || 0;
   const targetRevenueValue = parseInt(targetRevenue) || 0;
@@ -94,48 +89,45 @@ const Dashboard = () => {
     : 0;
 
   useEffect(() => {
-    applyThemeColors();
+    const fetchUserSettings = async () => {
+      try {
+        // Get theme colors from the segment visual preferences
+        const segmentPrefs = getVisualPreferences();
+        
+        const settings = {
+          theme_primary_color: localStorage.getItem('primaryColor') || segmentPrefs.primaryColor,
+          theme_secondary_color: localStorage.getItem('secondaryColor') || segmentPrefs.secondaryColor,
+          logo_url: localStorage.getItem('logoUrl') || null
+        };
+        
+        setCustomTheme({
+          primaryColor: settings.theme_primary_color,
+          secondaryColor: settings.theme_secondary_color,
+          logoUrl: settings.logo_url
+        });
+        
+        // Apply the colors immediately when dashboard is loaded
+        document.documentElement.style.setProperty('--primary', settings.theme_primary_color);
+        document.documentElement.style.setProperty('--secondary', settings.theme_secondary_color);
+      } catch (error) {
+        console.error('Error fetching user theme settings:', error);
+      }
+    };
     
-    document.title = `${companyName} - Dashboard`;
-  }, []);
+    fetchUserSettings();
+  }, [getVisualPreferences]);
 
   const navItems = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: <Home size={18} />
-    },
-    {
-      name: 'Finanças',
-      href: '/finances',
-      icon: <BarChart2 size={18} />
-    },
-    {
-      name: 'Metas',
-      href: '/goals',
-      icon: <Target size={18} />
-    },
-    {
-      name: 'Benchmarking',
-      href: '/benchmarking',
-      icon: <BarChart2 size={18} />
-    },
-    {
-      name: 'Aprendizado',
-      href: '/learn',
-      icon: <BookOpen size={18} />
-    },
+    { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Metas', href: '/goals', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Aprendizados', href: '/learn', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> }
   ];
 
-  const tabIcons = {
-    subscription: <SettingsIcon size={16} />,
-    appearance: <Palette size={16} />,
-    notifications: <Bell size={16} />,
-    security: <Shield size={16} />,
-    preferences: <Sliders size={16} />
-  };
-
   const renderFinancialChart = () => {
+    const primaryColor = customTheme.primaryColor;
+    const secondaryColor = customTheme.secondaryColor;
+    
     switch (chartType) {
       case 'area':
         return (
@@ -226,10 +218,10 @@ const Dashboard = () => {
               </p>
             </div>
             
-            {logoUrl && (
+            {customTheme.logoUrl && (
               <div className="hidden md:block">
                 <img 
-                  src={logoUrl} 
+                  src={customTheme.logoUrl} 
                   alt={`${companyName} Logo`} 
                   className="h-16 w-auto object-contain" 
                 />
@@ -350,8 +342,8 @@ const Dashboard = () => {
                             <Pie
                               data={categoryData.map(item => ({
                                 ...item,
-                                fill: item.name === 'Marketing' ? primaryColor :
-                                      item.name === 'Vendas' ? secondaryColor :
+                                fill: item.name === 'Marketing' ? customTheme.primaryColor :
+                                      item.name === 'Vendas' ? customTheme.secondaryColor :
                                       item.name === 'Produtos' ? '#36B37E' : '#00B8D9'
                               }))}
                               cx="50%"
@@ -392,7 +384,7 @@ const Dashboard = () => {
                             <XAxis dataKey="name" />
                             <YAxis />
                             <Tooltip formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`} />
-                            <Bar dataKey="sales" name="Vendas" fill={primaryColor} />
+                            <Bar dataKey="sales" name="Vendas" fill={customTheme.primaryColor} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -552,7 +544,7 @@ const Dashboard = () => {
                                 type="monotone" 
                                 dataKey="eficiencia" 
                                 name="Eficiência" 
-                                stroke={primaryColor} 
+                                stroke={customTheme.primaryColor} 
                                 activeDot={{ r: 8 }} 
                               />
                             </LineChart>
@@ -610,15 +602,15 @@ const Dashboard = () => {
                       <Legend />
                       <defs>
                         <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={primaryColor} stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor={primaryColor} stopOpacity={0}/>
+                          <stop offset="5%" stopColor={customTheme.primaryColor} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={customTheme.primaryColor} stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <Area 
                         type="monotone" 
                         dataKey="receita" 
                         name="Receita (Atual)" 
-                        stroke={primaryColor} 
+                        stroke={customTheme.primaryColor} 
                         fillOpacity={1} 
                         fill="url(#colorReceita)"
                         connectNulls
@@ -628,7 +620,7 @@ const Dashboard = () => {
                         type="monotone" 
                         dataKey="receita" 
                         name="Receita (Projeção)" 
-                        stroke={primaryColor}
+                        stroke={customTheme.primaryColor}
                         strokeDasharray="5 5" 
                         fillOpacity={0.3} 
                         fill="url(#colorReceita)"
@@ -644,7 +636,7 @@ const Dashboard = () => {
                         type="monotone" 
                         dataKey="despesas" 
                         name="Despesas (Atual)" 
-                        stroke={secondaryColor} 
+                        stroke={customTheme.secondaryColor} 
                         fillOpacity={0.3}
                         connectNulls
                         data={[...financialData]}
@@ -653,7 +645,7 @@ const Dashboard = () => {
                         type="monotone" 
                         dataKey="despesas" 
                         name="Despesas (Projeção)" 
-                        stroke={secondaryColor}
+                        stroke={customTheme.secondaryColor}
                         strokeDasharray="5 5" 
                         fillOpacity={0.1}
                         connectNulls

@@ -11,7 +11,6 @@ export interface Event {
   category: string;
   participants: string[];
   reminder: string;
-  repeat?: boolean;
 }
 
 export interface EventFormData {
@@ -23,7 +22,6 @@ export interface EventFormData {
   category: string;
   participants: string;
   reminder: string;
-  repeat?: boolean;
 }
 
 export interface CalendarViewProps {
@@ -65,6 +63,6 @@ export interface EventFormProps {
 
 export interface SidebarComponentProps {
   events: Event[];
-  categories?: Category[];
+  categories: Category[];
   onEventClick?: (event: Event) => void;
 }

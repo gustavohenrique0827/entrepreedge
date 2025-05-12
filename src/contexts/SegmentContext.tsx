@@ -1,238 +1,234 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
-// Define business segment types
-export type BusinessSegmentType = 
-  | 'generic' 
-  | 'sales' 
-  | 'financial' 
-  | 'health'
-  | 'education'
-  | 'ecommerce'
-  | 'industrial'
-  | 'agro'
-  | 'fashion'
-  | 'services'
-  | 'tech'
-  | 'legal'
-  | 'manufacturing';
+// Define segment types
+export type BusinessSegmentType = 'generic' | 'agro' | 'ecommerce' | 'health' | 'fashion' | 'services' | 'tech' | 'legal' | 'education' | 'manufacturing';
 
-// Define directory mappings for segments
-export type SegmentDirectoryMapping = {
-  [key in BusinessSegmentType]?: string;
-};
-
-// Define the shape of the segment context
-interface SegmentContextType {
-  currentSegment: BusinessSegmentType | null;
-  setCurrentSegment: (segment: BusinessSegmentType) => void;
-  segmentName: string;
-  segmentColor: string;
-  modulesForSegment: (segment: BusinessSegmentType) => string[];
-  getVisualPreferences: () => { primaryColor: string; secondaryColor: string; };
-  applySegmentVisuals: () => void;
-  getDirectoryPath: () => string | null;
-  isGlobalPage: (path: string) => boolean;
+// Visual preferences for each segment
+export interface SegmentVisualPreferences {
+  primaryColor: string;
+  secondaryColor: string;
+  typography: 'serif' | 'sans-serif' | 'handwritten';
+  iconStyle: 'outlined' | 'filled' | 'duotone';
+  layoutPriorities: string[];
 }
 
-// Create the context with a default value
+interface SegmentContextType {
+  currentSegment: BusinessSegmentType;
+  setCurrentSegment: (segment: BusinessSegmentType) => void;
+  getVisualPreferences: () => SegmentVisualPreferences;
+  applySegmentVisuals: () => void;
+  segmentName: string;
+}
+
+// Default visual preferences for each segment
+const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPreferences> = {
+  generic: {
+    primaryColor: '#8B5CF6', // Purple
+    secondaryColor: '#D946EF', // Pink
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['dashboard', 'finances', 'goals']
+  },
+  agro: {
+    primaryColor: '#84cc16', // Earth green
+    secondaryColor: '#ca8a04', // Wheat/Earth brown
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'weather', 'finances']
+  },
+  ecommerce: {
+    primaryColor: '#f97316', // Orange
+    secondaryColor: '#6554C0', // Purple
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['products', 'sales', 'marketing']
+  },
+  health: {
+    primaryColor: '#00A3C4', // Teal
+    secondaryColor: '#00875A', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['patients', 'appointments', 'finances']
+  },
+  fashion: {
+    primaryColor: '#EC4899', // Pink
+    secondaryColor: '#8B5CF6', // Purple
+    typography: 'handwritten',
+    iconStyle: 'duotone',
+    layoutPriorities: ['collections', 'sales', 'trends']
+  },
+  services: {
+    primaryColor: '#3B82F6', // Blue
+    secondaryColor: '#10B981', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['clients', 'projects', 'invoices']
+  },
+  tech: {
+    primaryColor: '#6366F1', // Indigo
+    secondaryColor: '#14B8A6', // Teal
+    typography: 'sans-serif',
+    iconStyle: 'duotone',
+    layoutPriorities: ['projects', 'development', 'clients']
+  },
+  legal: {
+    primaryColor: '#0F172A', // Dark navy
+    secondaryColor: '#475569', // Slate
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['cases', 'documents', 'clients']
+  },
+  education: {
+    primaryColor: '#6554C0', // Purple
+    secondaryColor: '#00B8D9', // Blue
+    typography: 'serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['courses', 'students', 'schedule']
+  },
+  manufacturing: {
+    primaryColor: '#505F79', // Steel blue
+    secondaryColor: '#0052CC', // Blue
+    typography: 'sans-serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'inventory', 'orders']
+  }
+};
+
+// Segment display names
+const segmentNames: Record<BusinessSegmentType, string> = {
+  generic: 'Genérico',
+  agro: 'Agronegócio',
+  ecommerce: 'E-Commerce',
+  health: 'Saúde',
+  fashion: 'Moda',
+  services: 'Serviços',
+  tech: 'Tecnologia',
+  legal: 'Jurídico',
+  education: 'Educação',
+  manufacturing: 'Indústria'
+};
+
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
 
-// Segment provider component
 export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Get initial segment from localStorage or default to null
-  const initialSegment = localStorage.getItem('segment') as BusinessSegmentType | null;
-  const [currentSegment, setCurrentSegment] = useState<BusinessSegmentType | null>(initialSegment);
+  const { toast } = useToast();
+  const [currentSegment, setCurrentSegment] = useState<BusinessSegmentType>('generic');
 
-  // Update localStorage when segment changes
+  // Initialize from localStorage on component mount
   useEffect(() => {
-    if (currentSegment) {
-      localStorage.setItem('segment', currentSegment);
+    const savedSegment = localStorage.getItem('segment') as BusinessSegmentType;
+    if (savedSegment && visualPreferencesBySegment[savedSegment]) {
+      setCurrentSegment(savedSegment);
+      
+      // Apply the visual preferences when loading the app
+      setTimeout(() => {
+        const prefs = visualPreferencesBySegment[savedSegment];
+        applyVisualPreferences(prefs);
+      }, 100);
     }
-  }, [currentSegment]);
+  }, []);
 
-  // Get segment name based on segment id
-  const getSegmentName = (segment: BusinessSegmentType | null): string => {
-    if (!segment) return 'Genérico';
+  // Apply visual preferences function
+  const applyVisualPreferences = (preferences: SegmentVisualPreferences) => {
+    // Apply colors to CSS variables
+    document.documentElement.style.setProperty('--primary-color', preferences.primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', preferences.secondaryColor);
     
-    const segmentNames: Record<BusinessSegmentType, string> = {
-      generic: 'Sistema Genérico',
-      sales: 'Sistema de Vendas',
-      financial: 'Sistema Financeiro',
-      health: 'Sistema para Saúde',
-      education: 'Sistema Educacional',
-      ecommerce: 'Sistema de E-commerce',
-      industrial: 'Sistema Industrial',
-      agro: 'Sistema de Agronegócio',
-      fashion: 'Sistema de Moda',
-      services: 'Sistema de Serviços',
-      tech: 'Sistema de Tecnologia',
-      legal: 'Sistema Jurídico',
-      manufacturing: 'Sistema de Manufatura'
-    };
+    // Apply to Tailwind variables
+    document.documentElement.style.setProperty('--primary', `hsl(${hexToHSL(preferences.primaryColor).h} ${hexToHSL(preferences.primaryColor).s}% ${hexToHSL(preferences.primaryColor).l}%)`);
+    document.documentElement.style.setProperty('--secondary', `hsl(${hexToHSL(preferences.secondaryColor).h} ${hexToHSL(preferences.secondaryColor).s}% ${hexToHSL(preferences.secondaryColor).l}%)`);
     
-    return segmentNames[segment] || 'Sistema Genérico';
-  };
-  
-  // Get segment color based on segment id
-  const getSegmentColor = (segment: BusinessSegmentType | null): string => {
-    if (!segment) return 'blue';
+    // Apply typography
+    const rootElement = document.documentElement;
+    rootElement.classList.remove('font-serif', 'font-sans', 'font-handwritten');
     
-    const segmentColors: Record<BusinessSegmentType, string> = {
-      generic: 'blue',
-      sales: 'orange',
-      financial: 'sky', 
-      health: 'teal',
-      education: 'purple',
-      ecommerce: 'amber',
-      industrial: 'slate',
-      agro: 'green',
-      fashion: 'pink',
-      services: 'indigo',
-      tech: 'blue',
-      legal: 'gray',
-      manufacturing: 'stone'
-    };
-    
-    return segmentColors[segment] || 'blue';
-  };
-  
-  // Get modules for a specific segment
-  const modulesForSegment = (segment: BusinessSegmentType): string[] => {
-    if (!segment) return [];
-    
-    const modules: Record<BusinessSegmentType, string[]> = {
-      generic: ['dashboard', 'finances', 'accounting'],
-      
-      sales: ['dashboard', 'products', 'inventory', 'customers', 'transactions', 'reports', 'accounting'],
-      
-      financial: ['dashboard', 'accounts', 'categories', 'transactions', 'reports', 'exports', 'accounting'],
-      
-      health: ['dashboard', 'patients', 'appointments', 'exams', 'prescriptions', 'accounting'],
-      
-      education: ['dashboard', 'students', 'courses', 'enrollments', 'certificates', 'grades', 'accounting'],
-      
-      ecommerce: ['dashboard', 'products', 'customers', 'orders', 'payments', 'shipping', 'accounting'],
-      
-      industrial: ['dashboard', 'machines', 'production-orders', 'maintenance', 'quality-control', 'accounting'],
-      
-      agro: ['dashboard', 'crops', 'livestock', 'machinery', 'weather', 'soil', 'accounting'],
-      
-      fashion: ['dashboard', 'collections', 'products', 'inventory', 'trends', 'suppliers', 'accounting'],
-      
-      services: ['dashboard', 'clients', 'scheduling', 'billing', 'feedback', 'accounting'],
-      
-      tech: ['dashboard', 'projects', 'clients', 'resources', 'development', 'support', 'accounting'],
-      
-      legal: ['dashboard', 'clients', 'cases', 'documents', 'billing', 'accounting'],
-      
-      manufacturing: ['dashboard', 'production', 'inventory', 'machinery', 'quality', 'accounting']
-    };
-    
-    return modules[segment] || [];
+    if (preferences.typography === 'serif') {
+      rootElement.classList.add('font-serif');
+    } else if (preferences.typography === 'handwritten') {
+      rootElement.classList.add('font-handwritten');
+    } else {
+      rootElement.classList.add('font-sans');
+    }
+
+    // Save color preferences to localStorage for other components
+    localStorage.setItem('primaryColor', preferences.primaryColor);
+    localStorage.setItem('secondaryColor', preferences.secondaryColor);
   };
 
-  // Directory mappings for each segment
-  const directoryMappings: SegmentDirectoryMapping = {
-    generic: 'generic',
-    sales: 'vendas',
-    financial: 'financial',
-    health: 'saude',
-    education: 'educacao',
-    ecommerce: 'ecommerce',
-    industrial: 'industrial',
-    agro: 'agro',
-    fashion: 'fashion',
-    services: 'servicos',
-    tech: 'tech',
-    legal: 'legal',
-    manufacturing: 'manufacturing',
-  };
-  
-  // Global pages that are available across all segments
-  const globalPages = [
-    '/',
-    '/dashboard',
-    '/finances',
-    '/goals',
-    '/learn',
-    '/profile',
-    '/settings',
-    '/help',
-    '/contact',
-    '/calendar',
-    '/benchmarking',
-    '/simulator',
-    '/inspiration',
-    '/esg',
-    '/accounting'
-  ];
+  // Helper function to convert hex to HSL
+  const hexToHSL = (hex: string) => {
+    // Remove the # from the beginning
+    hex = hex.replace(/^#/, '');
 
-  // Get directory path for the current segment
-  const getDirectoryPath = (): string | null => {
-    if (!currentSegment) return null;
-    return directoryMappings[currentSegment] || null;
+    // Parse the hex values
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    // Find max and min values to calculate the lightness
+    let max = Math.max(r, g, b);
+    let min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    // Calculate hue and saturation
+    if (max !== min) {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else if (max === b) h = (r - g) / d + 4;
+      h *= 60;
+    }
+
+    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
   };
 
-  // Check if a path is a global page
-  const isGlobalPage = (path: string): boolean => {
-    return globalPages.some(page => path === page || path.startsWith(`${page}/`));
+  // Get current segment visual preferences
+  const getVisualPreferences = (): SegmentVisualPreferences => {
+    return visualPreferencesBySegment[currentSegment];
   };
 
-  // Get visual preferences for theming
-  const getVisualPreferences = () => {
-    const segment = currentSegment || 'generic';
+  // Update segment and save to localStorage
+  const updateSegment = (segment: BusinessSegmentType) => {
+    setCurrentSegment(segment);
+    localStorage.setItem('segment', segment);
     
-    // Define color schemes for each segment
-    const colorSchemes: Record<BusinessSegmentType, { primaryColor: string; secondaryColor: string }> = {
-      generic: { primaryColor: '#3B82F6', secondaryColor: '#8B5CF6' },
-      sales: { primaryColor: '#F97316', secondaryColor: '#EA580C' },
-      financial: { primaryColor: '#0EA5E9', secondaryColor: '#0284C7' },
-      health: { primaryColor: '#14B8A6', secondaryColor: '#0D9488' },
-      education: { primaryColor: '#A855F7', secondaryColor: '#9333EA' },
-      ecommerce: { primaryColor: '#F59E0B', secondaryColor: '#D97706' },
-      industrial: { primaryColor: '#64748B', secondaryColor: '#475569' },
-      agro: { primaryColor: '#22C55E', secondaryColor: '#16A34A' },
-      fashion: { primaryColor: '#EC4899', secondaryColor: '#DB2777' },
-      services: { primaryColor: '#6366F1', secondaryColor: '#4F46E5' },
-      tech: { primaryColor: '#3B82F6', secondaryColor: '#2563EB' },
-      legal: { primaryColor: '#71717A', secondaryColor: '#52525B' },
-      manufacturing: { primaryColor: '#78716C', secondaryColor: '#57534E' }
-    };
+    // Apply the visual preferences immediately
+    const prefs = visualPreferencesBySegment[segment];
+    applyVisualPreferences(prefs);
     
-    return colorSchemes[segment];
+    toast({
+      title: "Segmento atualizado",
+      description: `Sua empresa agora está configurada como: ${segmentNames[segment]}`,
+    });
   };
-  
+
+  // Apply visual preferences to the app
   const applySegmentVisuals = () => {
-    const prefs = getVisualPreferences();
+    const preferences = getVisualPreferences();
+    applyVisualPreferences(preferences);
     
-    // Apply theme colors to CSS variables
-    document.documentElement.style.setProperty('--color-primary', prefs.primaryColor);
-    document.documentElement.style.setProperty('--color-secondary', prefs.secondaryColor);
-    
-    return prefs;
+    toast({
+      title: "Estilo visual atualizado",
+      description: `Estilo visual para ${segmentNames[currentSegment]} aplicado com sucesso`,
+    });
   };
 
   return (
-    <SegmentContext.Provider
-      value={{
-        currentSegment,
-        setCurrentSegment,
-        segmentName: getSegmentName(currentSegment),
-        segmentColor: getSegmentColor(currentSegment),
-        modulesForSegment,
-        getVisualPreferences,
-        applySegmentVisuals,
-        getDirectoryPath,
-        isGlobalPage
-      }}
-    >
+    <SegmentContext.Provider value={{ 
+      currentSegment,
+      setCurrentSegment: updateSegment,
+      getVisualPreferences,
+      applySegmentVisuals,
+      segmentName: segmentNames[currentSegment]
+    }}>
       {children}
     </SegmentContext.Provider>
   );
 };
 
-// Custom hook to use segment context
 export const useSegment = () => {
   const context = useContext(SegmentContext);
   if (context === undefined) {

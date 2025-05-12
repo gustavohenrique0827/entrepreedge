@@ -2,47 +2,100 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Sliders } from 'lucide-react';
+import { Home, BarChart2, Target, BookOpen, Settings as SettingsIcon, Bell, Shield, Palette, Sliders } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubscriptionPlans from '@/components/settings/SubscriptionPlans';
-import IntegratedSettings from '@/components/settings/IntegratedSettings';
+import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import PreferencesSettings from '@/components/settings/PreferencesSettings';
+import VisualizationSettings from '@/components/settings/VisualizationSettings';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSegment } from '@/contexts/SegmentContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import { Card, CardContent } from "@/components/ui/card";
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Settings = () => {
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const { currentPlan } = useSubscription();
   const { segmentName } = useSegment();
-  const { applyThemeColors } = useTheme();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('userRole') === 'admin');
-
-  // Salvar tab ativa no localStorage sempre que mudar
+  const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
+  const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
+  
+  // Save active tab to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('settingsTab', activeTab);
   }, [activeTab]);
 
-  // Aplicar tema apenas na montagem do componente
+  // Apply any stored settings on page load
   useEffect(() => {
-    // Apply theme colors once - no repetição por atualização
-    try {
-      applyThemeColors();
-    } catch (error) {
-      console.error("Erro ao aplicar tema:", error);
+    // Apply dark mode
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
+    
+    // Apply font size
+    const fontSize = localStorage.getItem('fontSize') || 'medium';
+    document.documentElement.setAttribute('data-font-size', fontSize);
+    
+    // Reset body classes
+    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
+    
+    // Apply appropriate font size class
+    if (fontSize === 'small') {
+      document.documentElement.classList.add('text-sm');
+    } else if (fontSize === 'medium') {
+      document.documentElement.classList.add('text-base');
+    } else if (fontSize === 'large') {
+      document.documentElement.classList.add('text-lg');
+    }
+    
+    // Apply theme colors
+    document.documentElement.style.setProperty('--primary-color', primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    
+    // Convert to HSL for Tailwind variables
+    const hexToHSL = (hex: string) => {
+      // Remove the # from the beginning
+      hex = hex.replace(/^#/, '');
 
-    // Atualize titulo da página
+      // Parse the hex values
+      let r = parseInt(hex.substring(0, 2), 16) / 255;
+      let g = parseInt(hex.substring(2, 4), 16) / 255;
+      let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+      // Find max and min values to calculate the lightness
+      let max = Math.max(r, g, b);
+      let min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+
+      // Calculate hue and saturation
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+
+      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+    };
+    
+    const primaryHSL = hexToHSL(primaryColor);
+    const secondaryHSL = hexToHSL(secondaryColor);
+    
+    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+    
+    // Update document title
     document.title = `${companyName} - Configurações`;
-  }, [companyName, applyThemeColors]);
-
+  }, [companyName, primaryColor, secondaryColor]);
+  
   const navItems = [
     {
       name: 'Dashboard',
@@ -69,32 +122,27 @@ const Settings = () => {
       href: '/learn',
       icon: <BookOpen size={18} />
     },
-    // Mostrar opção de admin apenas para usuários administradores
-    ...(isAdmin ? [{
-      name: 'Admin',
-      href: '/dev-admin',
-      icon: <SettingsIcon size={18} />
-    }] : [])
   ];
 
   const tabIcons = {
     subscription: <SettingsIcon size={16} />,
-    integrated: <Sliders size={16} />,
+    appearance: <Palette size={16} />,
     notifications: <Bell size={16} />,
-    security: <Shield size={16} />
+    security: <Shield size={16} />,
+    preferences: <Sliders size={16} />
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
-      <div className="flex-1 ml-0 md:ml-[240px] transition-all duration-300">
+      <div className="flex-1 ml-[240px] transition-all duration-300">
         <Navbar items={navItems} />
         
         <div className="container px-4 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1">Configurações do Sistema</h1>
-            <p className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
               Gerencie as configurações para {companyName} - Segmento: {segmentName}
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                 Plano {currentPlan === 'free' ? 'Gratuito' : 
@@ -107,7 +155,7 @@ const Settings = () => {
           <Card className="mb-6 overflow-hidden border-none shadow-sm">
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className={`w-full ${isMobile ? 'grid grid-cols-2' : 'grid grid-cols-4'} rounded-none h-auto p-0`}>
+                <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 rounded-none h-auto p-0">
                   {Object.entries(tabIcons).map(([key, icon]) => (
                     <TabsTrigger 
                       key={key} 
@@ -118,8 +166,9 @@ const Settings = () => {
                         {icon}
                         <span>
                           {key === 'subscription' ? 'Assinatura' :
-                           key === 'integrated' ? 'Aparência & Preferências' :
-                           key === 'notifications' ? 'Notificações' : 'Segurança'}
+                           key === 'appearance' ? 'Aparência' :
+                           key === 'notifications' ? 'Notificações' :
+                           key === 'security' ? 'Segurança' : 'Preferências'}
                         </span>
                       </div>
                     </TabsTrigger>
@@ -130,8 +179,10 @@ const Settings = () => {
                   <SubscriptionPlans />
                 </TabsContent>
                 
-                <TabsContent value="integrated" className="mt-0 p-4">
-                  <IntegratedSettings />
+                <TabsContent value="appearance" className="mt-0 p-4">
+                  <AppearanceSettings />
+                  <div className="h-6"></div>
+                  <VisualizationSettings />
                 </TabsContent>
                 
                 <TabsContent value="notifications" className="mt-0">
@@ -140,6 +191,10 @@ const Settings = () => {
                 
                 <TabsContent value="security" className="mt-0">
                   <SecuritySettings />
+                </TabsContent>
+                
+                <TabsContent value="preferences" className="mt-0">
+                  <PreferencesSettings />
                 </TabsContent>
               </Tabs>
             </CardContent>

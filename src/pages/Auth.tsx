@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,32 +9,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
-import { useSupabase } from '@/contexts/SupabaseContext';
-import { supabase } from '@/integrations/supabase/client';
-import { getUserProfile } from '@/lib/database';
-
-// Function to safely fetch user segment from database
-const getUserSegment = async (userId: string) => {
-  try {
-    const userProfile = await getUserProfile(userId);
-    return userProfile?.segment || null;
-  } catch (err) {
-    console.error("Error fetching user segment:", err);
-    return null;
-  }
-};
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setCurrentSegment } = useSegment();
-  const { switchSegment } = useSupabase();
   const [activeTab, setActiveTab] = useState('login');
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   
   // Register form state
   const [companyName, setCompanyName] = useState('');
@@ -43,190 +28,82 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [segment, setSegment] = useState<BusinessSegmentType | ''>('');
   
-  // Check if user is already logged in
+  // Create test user on component mount if it doesn't exist
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/dashboard');
-      }
-    };
-    
-    checkAuth();
-  }, [navigate]);
-  
-  // Create test users on component mount if they don't exist
-  useEffect(() => {
-    // Check if test users already exist
-    if (!localStorage.getItem('testUsersCreated')) {
-      // Define test users for different segments
-      const testUsers = [
-        { email: 'vendas@empresa.com', password: 'senha123', segment: 'sales', company: 'Empresa de Vendas LTDA' },
-        { email: 'financeiro@empresa.com', password: 'senha123', segment: 'financial', company: 'Empresa Financeira LTDA' },
-        { email: 'saude@empresa.com', password: 'senha123', segment: 'health', company: 'Clínica Médica LTDA' },
-        { email: 'educacao@empresa.com', password: 'senha123', segment: 'education', company: 'Escola ABC LTDA' },
-        { email: 'ecommerce@empresa.com', password: 'senha123', segment: 'ecommerce', company: 'Loja Virtual LTDA' },
-        { email: 'industrial@empresa.com', password: 'senha123', segment: 'industrial', company: 'Indústria XYZ LTDA' },
-        { email: 'agro@empresa.com', password: 'senha123', segment: 'agro', company: 'Agropecuária ABC LTDA' },
-        { email: 'moda@empresa.com', password: 'senha123', segment: 'fashion', company: 'Moda Fashion LTDA' },
-        { email: 'servicos@empresa.com', password: 'senha123', segment: 'services', company: 'Serviços Gerais LTDA' },
-        { email: 'tech@empresa.com', password: 'senha123', segment: 'tech', company: 'Tecnologia LTDA' },
-        { email: 'juridico@empresa.com', password: 'senha123', segment: 'legal', company: 'Escritório de Advocacia' },
-        { email: 'fabrica@empresa.com', password: 'senha123', segment: 'manufacturing', company: 'Manufatura Industrial LTDA' },
-        { email: 'teste@empresa.com', password: 'senha123', segment: 'generic', company: 'Empresa Teste LTDA' },
-      ];
+    // Check if test user already exists
+    if (!localStorage.getItem('testUserCreated')) {
+      // Create test user credentials
+      localStorage.setItem('testEmail', 'teste@empresa.com');
+      localStorage.setItem('testPassword', 'senha123');
+      localStorage.setItem('testCompanyName', 'Empresa Teste LTDA');
+      localStorage.setItem('testCompanyCnpj', '12.345.678/0001-90');
+      localStorage.setItem('testUserCreated', 'true');
       
-      // Save test user credentials in localStorage for demo purposes
-      testUsers.forEach(user => {
-        localStorage.setItem(`test_${user.segment}_email`, user.email);
-        localStorage.setItem(`test_${user.segment}_password`, user.password);
-        localStorage.setItem(`test_${user.segment}_company`, user.company);
-        localStorage.setItem(`test_${user.segment}_segment`, user.segment);
-      });
-      
-      localStorage.setItem('testUsersCreated', 'true');
-      
-      // Set first test user credentials in the form for easy access
-      setLoginEmail(testUsers[0].email);
-      setLoginPassword(testUsers[0].password);
+      // Set test credentials in the form for easy access
+      setLoginEmail('teste@empresa.com');
+      setLoginPassword('senha123');
       
       toast({
-        title: "Usuários de teste criados",
-        description: "Use os botões de usuário de teste para acessar os diferentes segmentos.",
+        title: "Usuário de teste criado",
+        description: "Email: teste@empresa.com | Senha: senha123",
       });
     }
   }, [toast]);
   
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    try {
-      // Validate form
-      if (!loginEmail || !loginPassword) {
-        toast({
-          title: "Erro de validação",
-          description: "Por favor, preencha todos os campos.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // For test users, we'll simulate the login process 
-      // to ensure segment is correctly loaded
-      const isTestUser = Object.keys(localStorage)
-        .filter(key => key.startsWith('test_') && key.endsWith('_email'))
-        .some(key => localStorage.getItem(key) === loginEmail);
-      
-      if (isTestUser) {
-        // Find the segment for this test user
-        const segmentKey = Object.keys(localStorage)
-          .filter(key => key.startsWith('test_') && key.endsWith('_email'))
-          .find(key => localStorage.getItem(key) === loginEmail);
-          
-        if (segmentKey) {
-          const segmentName = segmentKey.replace('test_', '').replace('_email', '');
-          const company = localStorage.getItem(`test_${segmentName}_company`) || '';
-          
-          // Try to log in with Supabase (for future real implementation)
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: loginEmail,
-            password: loginPassword
-          });
-          
-          if (error) {
-            // For demo purposes, we'll proceed even if there's an auth error
-            console.log("Supabase auth error, but proceeding with demo login:", error);
-          }
-          
-          // Set logged in user data
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userEmail', loginEmail);
-          localStorage.setItem('companyName', company);
-          localStorage.setItem('segment', segmentName);
-          localStorage.setItem('onboardingCompleted', 'true'); // Skip onboarding for test users
-          
-          // Update segment context
-          setCurrentSegment(segmentName as BusinessSegmentType);
-          await switchSegment(segmentName);
-          
-          toast({
-            title: "Login bem-sucedido",
-            description: `Bem-vindo ao segmento ${segmentName}!`,
-          });
-          
-          navigate('/dashboard');
-          return;
-        }
-      }
-      
-      // Real Supabase authentication for non-test users
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
+    // Simulate login validation
+    if (!loginEmail || !loginPassword) {
+      toast({
+        title: "Erro de validação",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive"
       });
-      
-      if (error) {
-        toast({
-          title: "Erro de autenticação",
-          description: error.message,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // User successfully logged in
+      return;
+    }
+    
+    // Check if it's the test user
+    const isTestUser = loginEmail === localStorage.getItem('testEmail') && 
+                       loginPassword === localStorage.getItem('testPassword');
+                       
+    if (isTestUser) {
+      // Set logged in user data
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', loginEmail);
+      localStorage.setItem('companyName', localStorage.getItem('testCompanyName') || '');
+      localStorage.setItem('companyCnpj', localStorage.getItem('testCompanyCnpj') || '');
+      localStorage.setItem('onboardingCompleted', 'true'); // Skip onboarding for test user
       
-      // Try to get user segment from metadata
-      let userSegment = null;
-      if (data.user?.user_metadata?.segment) {
-        userSegment = data.user.user_metadata.segment;
-        localStorage.setItem('segment', userSegment);
-        setCurrentSegment(userSegment as BusinessSegmentType);
-        await switchSegment(userSegment);
-      } else {
-        // If no segment in metadata, try to fetch from profiles
-        try {
-          const userProfile = await getUserProfile(data.user.id);
-          
-          if (userProfile?.segment) {
-            userSegment = userProfile.segment;
-            localStorage.setItem('segment', userSegment);
-            setCurrentSegment(userSegment as BusinessSegmentType);
-            await switchSegment(userSegment);
-          }
-        } catch (profileQueryError) {
-          console.error("Error querying profile data:", profileQueryError);
-          // Continue with login flow even if profile query fails
-        }
-      }
+      // Carregar o segmento armazenado ou definir um padrão
+      const savedSegment = localStorage.getItem('segment') as BusinessSegmentType || 'generic';
+      setCurrentSegment(savedSegment);
       
       toast({
         title: "Login bem-sucedido",
-        description: "Redirecionando para o dashboard...",
+        description: "Bem-vindo ao sistema de teste!",
       });
       
-      // Check if onboarding completed
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-      
-      if (onboardingCompleted === 'true') {
-        navigate('/dashboard');
-      } else {
-        navigate('/onboarding');
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      toast({
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro durante o processo de login.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      navigate('/');
+      return;
+    }
+    
+    // Continue with normal login flow
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userEmail', loginEmail);
+    
+    toast({
+      title: "Login bem-sucedido",
+      description: "Redirecionando para o questionário inicial...",
+    });
+    
+    // Check if onboarding completed
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    
+    if (onboardingCompleted === 'true') {
+      navigate('/');
+    } else {
+      navigate('/onboarding');
     }
   };
   
@@ -249,119 +126,73 @@ const Auth = () => {
     setCompanyCnpj(formattedCnpj);
   };
   
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    try {
-      // Validate register form
-      if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword || !segment) {
-        toast({
-          title: "Erro de validação",
-          description: "Por favor, preencha todos os campos, incluindo o segmento da empresa.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Basic CNPJ validation (should have 14 digits)
-      const cnpjDigits = companyCnpj.replace(/\D/g, '');
-      if (cnpjDigits.length !== 14) {
-        toast({
-          title: "Erro de validação",
-          description: "CNPJ inválido. Por favor, verifique o número informado.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      if (registerPassword !== confirmPassword) {
-        toast({
-          title: "Erro de validação",
-          description: "As senhas não coincidem.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Create user in Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email: registerEmail,
-        password: registerPassword,
-        options: {
-          data: {
-            segment: segment,
-            company_name: companyName,
-            company_cnpj: companyCnpj
-          }
-        }
-      });
-      
-      if (error) {
-        toast({
-          title: "Erro no cadastro",
-          description: error.message,
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Create company profile in database (future implementation)
-      // For now, we'll just simulate it with localStorage
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', registerEmail);
-      localStorage.setItem('companyName', companyName);
-      localStorage.setItem('companyCnpj', companyCnpj);
-      localStorage.setItem('segment', segment);
-      
-      // Aplicar o segmento escolhido
-      setCurrentSegment(segment as BusinessSegmentType);
-      await switchSegment(segment);
-      
+    // Validate register form
+    if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword || !segment) {
       toast({
-        title: "Cadastro realizado com sucesso",
-        description: "Redirecionando para o questionário inicial...",
-      });
-      
-      navigate('/onboarding');
-    } catch (err) {
-      console.error("Registration error:", err);
-      toast({
-        title: "Erro no cadastro",
-        description: "Ocorreu um erro durante o processo de cadastro.",
+        title: "Erro de validação",
+        description: "Por favor, preencha todos os campos, incluindo o segmento da empresa.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+    
+    // Basic CNPJ validation (should have 14 digits)
+    const cnpjDigits = companyCnpj.replace(/\D/g, '');
+    if (cnpjDigits.length !== 14) {
+      toast({
+        title: "Erro de validação",
+        description: "CNPJ inválido. Por favor, verifique o número informado.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (registerPassword !== confirmPassword) {
+      toast({
+        title: "Erro de validação",
+        description: "As senhas não coincidem.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Simulate successful registration
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userEmail', registerEmail);
+    localStorage.setItem('companyName', companyName);
+    localStorage.setItem('companyCnpj', companyCnpj);
+    localStorage.setItem('segment', segment);
+    
+    // Aplicar o segmento escolhido
+    setCurrentSegment(segment as BusinessSegmentType);
+    
+    toast({
+      title: "Cadastro realizado com sucesso",
+      description: "Redirecionando para o questionário inicial...",
+    });
+    
+    navigate('/onboarding');
   };
   
-  const fillTestCredentials = (segmentId: string) => {
-    const email = localStorage.getItem(`test_${segmentId}_email`) || '';
-    const password = localStorage.getItem(`test_${segmentId}_password`) || '';
-    
-    setLoginEmail(email);
-    setLoginPassword(password);
+  const fillTestCredentials = () => {
+    setLoginEmail(localStorage.getItem('testEmail') || 'teste@empresa.com');
+    setLoginPassword(localStorage.getItem('testPassword') || 'senha123');
   };
 
   const segments: {id: BusinessSegmentType, name: string}[] = [
-    { id: 'sales', name: 'Vendas' },
-    { id: 'financial', name: 'Financeiro' },
-    { id: 'health', name: 'Saúde' },
-    { id: 'education', name: 'Educação' },
-    { id: 'ecommerce', name: 'E-Commerce' },
-    { id: 'industrial', name: 'Industrial' },
+    { id: 'generic', name: 'Genérico' },
     { id: 'agro', name: 'Agronegócio' },
+    { id: 'ecommerce', name: 'E-Commerce' },
+    { id: 'health', name: 'Saúde' },
     { id: 'fashion', name: 'Moda' },
     { id: 'services', name: 'Serviços' },
     { id: 'tech', name: 'Tecnologia' },
     { id: 'legal', name: 'Jurídico' },
-    { id: 'manufacturing', name: 'Manufatura' },
-    { id: 'generic', name: 'Genérico' },
+    { id: 'education', name: 'Educação' },
+    { id: 'manufacturing', name: 'Indústria' }
   ];
   
   return (
@@ -376,7 +207,7 @@ const Auth = () => {
             </svg>
           </div>
           <h1 className="text-2xl font-bold">EntrepreEdge</h1>
-          <p className="text-sm text-muted-foreground">Sua plataforma completa de gestão empresarial</p>
+          <p className="text-muted-foreground text-sm">Sua plataforma completa de gestão empresarial</p>
         </div>
         
         <Card className="glass">
@@ -420,27 +251,15 @@ const Auth = () => {
                         onChange={(e) => setLoginPassword(e.target.value)}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Carregando..." : "Entrar"}
+                    <Button type="submit" className="w-full">Entrar</Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={fillTestCredentials}
+                    >
+                      Usar credenciais de teste
                     </Button>
-                    
-                    <div className="mt-4">
-                      <Label className="text-sm mb-2 block">Acessos para teste</Label>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        {segments.map((segment) => (
-                          <Button 
-                            key={segment.id}
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            className="text-xs"
-                            onClick={() => fillTestCredentials(segment.id)}
-                          >
-                            {segment.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </form>
               </TabsContent>
@@ -513,9 +332,7 @@ const Auth = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Carregando..." : "Cadastrar"}
-                    </Button>
+                    <Button type="submit" className="w-full">Cadastrar</Button>
                   </div>
                 </form>
               </TabsContent>

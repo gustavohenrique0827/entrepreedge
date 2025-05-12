@@ -6,8 +6,6 @@ import { Bell, Moon, Settings, User, Search, HelpCircle, LogOut } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Tooltip,
   TooltipContent,
@@ -29,8 +27,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { toggleDarkMode, darkMode } = useTheme();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,11 +37,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Close mobile menu when navigation happens
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userEmail');
@@ -55,10 +46,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
       description: "Você foi desconectado com sucesso.",
     });
     navigate('/auth');
-  };
-
-  const handleDarkModeToggle = () => {
-    toggleDarkMode(!darkMode);
   };
 
   const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
@@ -107,7 +94,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                     size="icon" 
                     className="rounded-full h-8 w-8"
                     onClick={handleHelpClick}
-                    type="button"
                   >
                     <HelpCircle size={16} />
                   </Button>
@@ -119,12 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    type="button"
-                  >
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                     <Bell size={16} />
                   </Button>
                 </TooltipTrigger>
@@ -135,18 +116,12 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8"
-                    onClick={handleDarkModeToggle}
-                    type="button"
-                  >
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                     <Moon size={16} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{darkMode ? 'Modo Claro' : 'Modo Escuro'}</p>
+                  <p>Tema</p>
                 </TooltipContent>
               </Tooltip>
               
@@ -157,7 +132,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                     size="icon" 
                     className="rounded-full h-8 w-8"
                     onClick={() => navigate('/settings')}
-                    type="button"
                   >
                     <Settings size={16} />
                   </Button>
@@ -174,7 +148,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                     size="icon" 
                     className="rounded-full ml-1 bg-primary/10 h-8 w-8"
                     onClick={handleProfileClick}
-                    type="button"
                   >
                     <User size={16} className="text-primary" />
                   </Button>
@@ -191,7 +164,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
                     size="icon" 
                     className="rounded-full h-8 w-8 text-red-500 hover:bg-red-50"
                     onClick={handleLogout}
-                    type="button"
                   >
                     <LogOut size={16} />
                   </Button>
@@ -207,7 +179,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-foreground focus:outline-none"
-            type="button"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               {mobileMenuOpen ? (
@@ -249,7 +220,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               variant="ghost" 
               className="flex items-center justify-start p-2 rounded-md hover:bg-red-50 text-red-500 text-sm"
               onClick={handleLogout}
-              type="button"
             >
               <LogOut size={16} className="mr-3" />
               <span>Sair</span>

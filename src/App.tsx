@@ -13,7 +13,6 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./components/Layout";
 import Finances from "./pages/Finances";
 import Goals from "./pages/Goals";
 import Learn from "./pages/Learn";
@@ -27,30 +26,47 @@ import Inspiration from "./pages/Inspiration";
 import ESGIndicators from "./pages/ESGIndicators";
 import Calendar from "./pages/Calendar";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
-import { SegmentProvider, useSegment } from "./contexts/SegmentContext";
-import { SupabaseProvider } from "./contexts/SupabaseContext";
-
-// Dynamic segment loading component to avoid having to import all modules
-const SegmentModule = React.lazy(() => import('./components/SegmentModuleLoader'));
+import { SegmentProvider } from "./contexts/SegmentContext";
+// Import Personnel pages
+import EmployeeManagement from "./pages/personnel/EmployeeManagement";
+import TimeTracking from "./pages/personnel/TimeTracking";
+import Payslips from "./pages/personnel/Payslips";
+import Hiring from "./pages/personnel/Hiring";
+import HRProcesses from "./pages/personnel/HRProcesses";
+// Import Accounting pages
+import Overview from "./pages/accounting/Overview";
+import Entries from "./pages/accounting/Entries";
+import Fiscal from "./pages/accounting/Fiscal";
+import Taxes from "./pages/accounting/Taxes";
+import Invoices from "./pages/accounting/Invoices";
+import Reports from "./pages/accounting/Reports";
+import MEI from "./pages/accounting/MEI";
+import FinancialStatements from "./pages/accounting/FinancialStatements";
 
 const queryClient = new QueryClient();
 
+// Initialize global settings
 const initializeSettings = () => {
+  // Apply dark mode
   if (localStorage.getItem('darkMode') === 'true') {
     document.documentElement.classList.add('dark');
   } else {
     document.documentElement.classList.remove('dark');
   }
   
+  // Apply font size
   const fontSize = localStorage.getItem('fontSize') || 'medium';
   document.documentElement.setAttribute('data-font-size', fontSize);
   
+  // Apply language
   const language = localStorage.getItem('language') || 'pt-BR';
   document.documentElement.lang = language.split('-')[0];
   
+  // Apply company name to document title
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   document.title = `${companyName} - Sistema`;
   
+  // Initialize global currency formatter
   const currency = localStorage.getItem('currency') || 'BRL';
   if (currency === 'BRL') {
     window.currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -60,19 +76,28 @@ const initializeSettings = () => {
     window.currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
   }
   
+  // Apply theme colors - IMPORTANT: must be applied on app mount to ensure persistence
   const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
   const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
   document.documentElement.style.setProperty('--primary-color', primaryColor);
   document.documentElement.style.setProperty('--secondary-color', secondaryColor);
   
+  // Convert to HSL for Tailwind variables
   const hexToHSL = (hex: string) => {
+    // Remove the # from the beginning
     hex = hex.replace(/^#/, '');
+
+    // Parse the hex values
     let r = parseInt(hex.substring(0, 2), 16) / 255;
     let g = parseInt(hex.substring(2, 4), 16) / 255;
     let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    // Find max and min values to calculate the lightness
     let max = Math.max(r, g, b);
     let min = Math.min(r, g, b);
     let h = 0, s = 0, l = (max + min) / 2;
+
+    // Calculate hue and saturation
     if (max !== min) {
       let d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -81,6 +106,7 @@ const initializeSettings = () => {
       else if (max === b) h = (r - g) / d + 4;
       h *= 60;
     }
+
     return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
   };
   
@@ -90,18 +116,22 @@ const initializeSettings = () => {
   document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   
+  // Apply sidebar accent
   document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`);
   document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
 };
 
-// Define the main App component
-const AppRoutes = () => {
+// Initialize settings right away
+initializeSettings();
+
+const App = () => {
   const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
-  const { currentSegment, getDirectoryPath } = useSegment();
   
+  // Re-apply settings when app component mounts
   useEffect(() => {
     initializeSettings();
     
+    // Listen for storage changes from other tabs
     const handleStorageChange = () => {
       initializeSettings();
     };
@@ -111,77 +141,189 @@ const AppRoutes = () => {
   }, []);
 
   return (
-    <Routes>
-      <Route path="/auth" element={
-        isAuthenticated ? <Navigate to="/" replace /> : <Auth />
-      } />
-      
-      <Route path="/onboarding" element={
-        isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
-      } />
-      
-      {/* Protected routes with layout */}
-      <Route element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route path="/" element={<Index />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/finances" element={<Finances />} />
-        <Route path="/goals" element={<Goals />} />
-        <Route path="/learn" element={<Learn />} />
-        <Route path="/course/:courseId" element={<CourseDetail />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/benchmarking" element={<Benchmarking />} />
-        <Route path="/simulator" element={<Simulator />} />
-        <Route path="/inspiration" element={<Inspiration />} />
-        <Route path="/esg" element={<ESGIndicators />} />
-        
-        {/* Dynamic segment-specific routes */}
-        {currentSegment && getDirectoryPath() && (
-          <Route 
-            path={`/${getDirectoryPath()}/*`} 
-            element={
-              <React.Suspense fallback={
-                <div className="flex h-full items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                </div>
-              }>
-                <SegmentModule segmentId={currentSegment} />
-              </React.Suspense>
-            } 
-          />
-        )}
-      </Route>
-      
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
-const App = () => {
-  return (
     <QueryClientProvider client={queryClient}>
-      <SupabaseProvider>
-        <SubscriptionProvider>
-          <SegmentProvider>
-            <HelmetProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </HelmetProvider>
-          </SegmentProvider>
-        </SubscriptionProvider>
-      </SupabaseProvider>
+      <SubscriptionProvider>
+        <SegmentProvider>
+          <HelmetProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/auth" element={
+                    isAuthenticated ? <Navigate to="/" replace /> : <Auth />
+                  } />
+                  
+                  {/* Protected routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/finances" element={
+                    <ProtectedRoute>
+                      <Finances />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/goals" element={
+                    <ProtectedRoute>
+                      <Goals />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/learn" element={
+                    <ProtectedRoute>
+                      <Learn />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/course/:courseId" element={
+                    <ProtectedRoute>
+                      <CourseDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/help" element={
+                    <ProtectedRoute>
+                      <Help />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/onboarding" element={
+                    isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
+                  } />
+                  <Route path="/contact" element={
+                    <ProtectedRoute>
+                      <Contact />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Analytics and other feature routes */}
+                  <Route path="/benchmarking" element={
+                    <ProtectedRoute>
+                      <Benchmarking />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/simulator" element={
+                    <ProtectedRoute>
+                      <Simulator />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/inspiration" element={
+                    <ProtectedRoute>
+                      <Inspiration />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/esg" element={
+                    <ProtectedRoute>
+                      <ESGIndicators />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Personnel module routes */}
+                  <Route path="/personnel" element={
+                    <ProtectedRoute>
+                      <EmployeeManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/employees" element={
+                    <ProtectedRoute>
+                      <EmployeeManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/time-tracking" element={
+                    <ProtectedRoute>
+                      <TimeTracking />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/payslips" element={
+                    <ProtectedRoute>
+                      <Payslips />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/hiring" element={
+                    <ProtectedRoute>
+                      <Hiring />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/personnel/processes" element={
+                    <ProtectedRoute>
+                      <HRProcesses />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Accounting module routes */}
+                  <Route path="/accounting/overview" element={
+                    <ProtectedRoute>
+                      <Overview />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting" element={
+                    <ProtectedRoute>
+                      <Overview />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/entries" element={
+                    <ProtectedRoute>
+                      <Entries />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/fiscal" element={
+                    <ProtectedRoute>
+                      <Fiscal />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/taxes" element={
+                    <ProtectedRoute>
+                      <Taxes />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/invoices" element={
+                    <ProtectedRoute>
+                      <Invoices />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/reports" element={
+                    <ProtectedRoute>
+                      <Reports />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/mei" element={
+                    <ProtectedRoute>
+                      <MEI />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/accounting/financial-statements" element={
+                    <ProtectedRoute>
+                      <FinancialStatements />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </HelmetProvider>
+        </SegmentProvider>
+      </SubscriptionProvider>
     </QueryClientProvider>
   );
 };

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { format, addDays } from 'date-fns';
+
+import React, { useState } from 'react';
+import { format, addDays, parseISO } from 'date-fns';
 import { Card, CardContent } from "@/components/ui/card";
+import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
-import { Home, BarChart2, Target, BookOpen } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
+// Import refactored components
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarView from '@/components/calendar/CalendarView';
 import EventForm from '@/components/calendar/EventForm';
@@ -16,14 +16,12 @@ import EventDetails from '@/components/calendar/EventDetails';
 import { UpcomingEvents, CalendarCategories, Reminders } from '@/components/calendar/SidebarComponents';
 import { EVENT_CATEGORIES, INITIAL_EVENTS } from '@/components/calendar/constants';
 import { Event, EventFormData } from '@/components/calendar/types';
-import AddEventDialog from '@/components/calendar/AddEventDialog';
 
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState<boolean>(false);
-  const [isAddEventOpen, setIsAddEventOpen] = useState<boolean>(false);
   const [newEvent, setNewEvent] = useState<EventFormData>({
     title: '',
     description: '',
@@ -32,17 +30,11 @@ const CalendarPage = () => {
     location: '',
     category: 'internal',
     participants: '',
-    reminder: '30min',
-    repeat: false
+    reminder: '30min'
   });
   const [view, setView] = useState<'month' | 'week' | 'day'>('week');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
-  const { applyThemeColors } = useTheme();
-  
-  useEffect(() => {
-    applyThemeColors();
-  }, []);
   
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -72,7 +64,6 @@ const CalendarPage = () => {
     
     setEvents([...events, createdEvent]);
     setIsCreatingEvent(false);
-    setIsAddEventOpen(false);
     setNewEvent({
       title: '',
       description: '',
@@ -81,8 +72,7 @@ const CalendarPage = () => {
       location: '',
       category: 'internal',
       participants: '',
-      reminder: '30min',
-      repeat: false
+      reminder: '30min'
     });
     
     toast({
@@ -100,105 +90,59 @@ const CalendarPage = () => {
       description: "O evento foi excluído com sucesso.",
     });
   };
-
-  const handleAddEvent = () => {
-    setIsAddEventOpen(true);
-  };
-
-  const navItems = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: <Home size={18} />
-    },
-    {
-      name: 'Finanças',
-      href: '/finances',
-      icon: <BarChart2 size={18} />
-    },
-    {
-      name: 'Metas',
-      href: '/goals',
-      icon: <Target size={18} />
-    },
-    {
-      name: 'Aprendizado',
-      href: '/learn',
-      icon: <BookOpen size={18} />
-    },
-  ];
   
   return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
+    <PageContainer>
+      <PageHeader 
+        title="Agenda" 
+        description="Gerencie seus compromissos e reuniões"
+      />
       
-      <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar items={navItems} />
+      <div className="space-y-6">
+        <CalendarHeader 
+          currentDate={currentDate}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          setCurrentDate={setCurrentDate}
+          view={view}
+          setView={setView}
+          onNewEvent={() => setIsCreatingEvent(true)}
+        />
         
-        <PageContainer>
-          <PageHeader 
-            title="Agenda" 
-            description="Gerencie seus compromissos e reuniões"
-          />
-          
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <CalendarHeader 
-                currentDate={currentDate}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                setCurrentDate={setCurrentDate}
-                view={view}
-                setView={setView}
-                onNewEvent={handleAddEvent}
-              />
-            </div>
-            
-            <Card>
-              <CardContent className="p-4">
-                <CalendarView 
-                  currentDate={currentDate}
-                  events={events}
-                  view={view}
-                  onEventClick={handleEventClick}
-                />
-              </CardContent>
-            </Card>
-            
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <UpcomingEvents events={events} onEventClick={handleEventClick} />
-              <CalendarCategories categories={EVENT_CATEGORIES} />
-              <Reminders events={events} />
-            </div>
-            
-            <EventForm 
-              isOpen={isCreatingEvent}
-              setIsOpen={setIsCreatingEvent}
-              newEvent={newEvent}
-              setNewEvent={setNewEvent}
-              handleCreateEvent={handleCreateEvent}
-              categories={EVENT_CATEGORIES}
+        <Card>
+          <CardContent className="p-4">
+            <CalendarView 
+              currentDate={currentDate}
+              events={events}
+              view={view}
+              onEventClick={handleEventClick}
             />
-            
-            <EventDetails 
-              event={selectedEvent}
-              onClose={handleCloseEventDetails}
-              onDelete={handleDeleteEvent}
-              categories={EVENT_CATEGORIES}
-            />
-
-            <AddEventDialog
-              isOpen={isAddEventOpen}
-              onClose={() => setIsAddEventOpen(false)}
-              onSave={handleCreateEvent}
-              event={newEvent}
-              setEvent={setNewEvent}
-              categories={EVENT_CATEGORIES}
-            />
-          </div>
-        </PageContainer>
+          </CardContent>
+        </Card>
+        
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <UpcomingEvents events={events} onEventClick={handleEventClick} />
+          <CalendarCategories categories={EVENT_CATEGORIES} />
+          <Reminders events={events} />
+        </div>
+        
+        <EventForm 
+          isOpen={isCreatingEvent}
+          setIsOpen={setIsCreatingEvent}
+          newEvent={newEvent}
+          setNewEvent={setNewEvent}
+          handleCreateEvent={handleCreateEvent}
+          categories={EVENT_CATEGORIES}
+        />
+        
+        <EventDetails 
+          event={selectedEvent}
+          onClose={handleCloseEventDetails}
+          onDelete={handleDeleteEvent}
+          categories={EVENT_CATEGORIES}
+        />
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
