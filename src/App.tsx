@@ -45,6 +45,7 @@ import Companies from "./pages/dev-admin/Companies";
 import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
+import AutoSegmentConfig from './components/segment/AutoSegmentConfig';
 
 const queryClient = new QueryClient();
 
@@ -124,7 +125,7 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <div className="app">
       <SubscriptionProvider>
         <SegmentProvider>
           <HelmetProvider>
@@ -332,7 +333,7 @@ const App = () => {
           </HelmetProvider>
         </SegmentProvider>
       </SubscriptionProvider>
-    </QueryClientProvider>
+    </div>
   );
 };
 

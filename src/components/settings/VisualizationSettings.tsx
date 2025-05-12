@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Palette, Check, Sparkles } from 'lucide-react';
+import { AlertCircle, Palette, Check, Sparkles, LayoutDashboard } from 'lucide-react';
 import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
+import { segmentNames } from '@/data/segments-config';
+import useSegmentConfig from '@/hooks/useSegmentConfig';
+import { Badge } from '@/components/ui/badge';
 
 const VisualizationSettings = () => {
   const { toast } = useToast();
   const { currentSegment, setCurrentSegment, applySegmentVisuals, getVisualPreferences } = useSegment();
+  const { applySegmentConfig, isConfigApplied } = useSegmentConfig();
   
   // Local state for color pickers
   const [primaryColor, setPrimaryColor] = useState(getVisualPreferences().primaryColor);
@@ -57,9 +61,14 @@ const VisualizationSettings = () => {
     setPrimaryColor(prefs.primaryColor);
     setSecondaryColor(prefs.secondaryColor);
     
+    // Aplicar automaticamente a configuração do novo segmento
+    setTimeout(() => {
+      applySegmentConfig();
+    }, 100);
+    
     toast({
       title: "Segmento atualizado",
-      description: `Visual atualizado para o segmento: ${segments.find(s => s.id === value)?.name}`,
+      description: `Visual e estrutura atualizados para o segmento: ${segments.find(s => s.id === value)?.name}`,
     });
   };
 
@@ -188,17 +197,39 @@ const VisualizationSettings = () => {
     });
   };
 
+  // Aplicar a configuração completa do segmento (visual + módulos)
+  const handleApplyFullConfig = () => {
+    // Primeiro aplicar as configurações visuais
+    applySegmentVisuals();
+    
+    // Em seguida, aplicar as configurações de módulos
+    const success = applySegmentConfig();
+    
+    if (success) {
+      toast({
+        title: "Configuração completa aplicada",
+        description: `O sistema está agora configurado para o segmento ${segmentNames[currentSegment]}`,
+        variant: "success",
+      });
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Personalização Visual por Segmento</CardTitle>
+        <CardTitle>Personalização por Segmento</CardTitle>
         <CardDescription>
-          Personalize a aparência do sistema com base no seu segmento de negócio
+          Personalize a aparência e estrutura do sistema com base no seu segmento de negócio
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="segment-select">Segmento da Empresa</Label>
+          <Label htmlFor="segment-select" className="flex items-center gap-2">
+            Segmento da Empresa
+            <Badge variant={isConfigApplied ? "success" : "outline"}>
+              {isConfigApplied ? "Configurado" : "Pendente"}
+            </Badge>
+          </Label>
           <Select value={currentSegment} onValueChange={handleSegmentChange}>
             <SelectTrigger id="segment-select">
               <SelectValue placeholder="Selecione o segmento" />
@@ -212,8 +243,13 @@ const VisualizationSettings = () => {
             </SelectContent>
           </Select>
           <p className="text-sm text-muted-foreground">
-            Escolha o segmento que melhor representa sua empresa para personalização visual automática
+            Escolha o segmento que melhor representa sua empresa para personalização visual e estrutural automática
           </p>
+          
+          <Button onClick={handleApplyFullConfig} className="mt-4 w-full" size="sm">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Aplicar configuração completa para {segmentNames[currentSegment]}
+          </Button>
         </div>
 
         <Separator />
@@ -313,8 +349,9 @@ const VisualizationSettings = () => {
         <div className="p-3 border rounded-md bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200 mt-3 text-sm flex items-start gap-2">
           <AlertCircle size={16} className="mt-0.5" />
           <p>
-            As configurações de visualização específicas para o segmento <strong>{segments.find(s => s.id === currentSegment)?.name}</strong> serão aplicadas 
-            automaticamente em todo o sistema para melhor experiência de uso. As prioridades de layout são independentes das cores do tema.
+            As configurações específicas para o segmento <strong>{segments.find(s => s.id === currentSegment)?.name}</strong> incluem 
+            cores personalizadas, módulos específicos, permissões por perfil e organização do dashboard.
+            Essas configurações são aplicadas automaticamente quando você troca de segmento.
           </p>
         </div>
       </CardContent>
