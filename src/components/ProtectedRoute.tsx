@@ -16,7 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   const location = useLocation();
   const { setCurrentSegment } = useSegment();
-  const { supabaseForSegment } = useSupabase();
+  const { switchSegment } = useSupabase();
   const [isLoading, setIsLoading] = useState(true);
   
   // Load user segment on component mount
@@ -45,12 +45,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
               setCurrentSegment(segment as BusinessSegmentType);
               localStorage.setItem('segment', segment);
               console.log('Segment loaded from Supabase:', segment);
+              
+              // Switch to the loaded segment
+              await switchSegment(segment);
             } else {
               // If no segment found in Supabase, check localStorage as fallback
               const localSegment = localStorage.getItem('segment');
               if (localSegment) {
                 setCurrentSegment(localSegment as BusinessSegmentType);
                 console.log('Segment loaded from localStorage:', localSegment);
+                
+                // Switch to the loaded segment
+                await switchSegment(localSegment);
               } else {
                 console.warn('No segment found for user');
               }
@@ -65,7 +71,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     };
     
     loadUserData();
-  }, [isLoggedIn, setCurrentSegment]);
+  }, [isLoggedIn, setCurrentSegment, switchSegment]);
   
   // Show loading state
   if (isLoading) {

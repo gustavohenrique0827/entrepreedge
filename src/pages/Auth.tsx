@@ -15,18 +15,12 @@ import { getUserProfile } from '@/lib/database';
 // Function to safely fetch user segment from database
 const getUserSegment = async (userId: string) => {
   try {
-    // Use a stored procedure or generic query to get user segment
-    const { data, error } = await supabase.rpc('get_user_profile', {
-      user_id_param: userId
-    });
-    
-    if (!error && data) {
-      return data.segment;
-    }
+    const userProfile = await getUserProfile(userId);
+    return userProfile?.segment || null;
   } catch (err) {
     console.error("Error fetching user segment:", err);
+    return null;
   }
-  return null;
 };
 
 const Auth = () => {
