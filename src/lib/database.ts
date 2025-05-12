@@ -27,8 +27,9 @@ type UserProfileTable = {
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    // Using a more aggressive type casting approach to work around TypeScript errors
-    const { data, error } = await (supabase.from('user_profiles') as any)
+    // Use any type to bypass TypeScript's checks - this is necessary because the database 
+    // schema types don't match what our app actually has deployed in Supabase
+    const { data, error } = await (supabase.from('user_profiles') as unknown as any)
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
@@ -50,8 +51,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateUserProfile(profile: Partial<UserProfile> & { user_id: string }): Promise<boolean> {
   try {
-    // Using a more aggressive type casting approach
-    const { error } = await (supabase.from('user_profiles') as any)
+    // Use any type to bypass TypeScript's checks
+    const { error } = await (supabase.from('user_profiles') as unknown as any)
       .upsert([profile], { onConflict: 'user_id' });
     
     if (error) {
@@ -71,8 +72,8 @@ export async function updateUserProfile(profile: Partial<UserProfile> & { user_i
  */
 export async function createUserProfile(profile: Omit<UserProfile, 'id' | 'created_at'>): Promise<UserProfile | null> {
   try {
-    // Using a more aggressive type casting approach
-    const { data, error } = await (supabase.from('user_profiles') as any)
+    // Use any type to bypass TypeScript's checks
+    const { data, error } = await (supabase.from('user_profiles') as unknown as any)
       .insert([profile])
       .select()
       .single();
