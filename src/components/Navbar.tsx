@@ -19,7 +19,7 @@ interface NavbarProps {
   items?: NavItem[];
 }
 
-const Navbar: React.FC<NavbarProps> = ({ items }) => {
+const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
   const { currentSegment, segmentName } = useSegment();
   const { logout } = useAuth();
   const { toast } = useToast();
@@ -51,6 +51,23 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
         </Link>
 
         <div className="flex items-center gap-4">
+          {!isAuthPage && items && items.length > 0 && (
+            <div className="hidden md:flex items-center space-x-4 mr-4">
+              {items.map((item, index) => (
+                <Link 
+                  key={index} 
+                  to={item.href}
+                  className={`flex items-center gap-1 text-sm hover:text-primary transition-colors ${
+                    location.pathname === item.href ? 'text-primary font-medium' : 'text-muted-foreground'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+          
           {!isAuthPage && isLoggedIn && (
             <>
               <Link to="/segment-test" className="nav-link">

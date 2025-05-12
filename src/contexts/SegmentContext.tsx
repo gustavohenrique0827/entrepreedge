@@ -24,13 +24,17 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Apply the visual preferences when loading the app
       setTimeout(() => {
         const prefs = visualPreferencesBySegment[savedSegment];
-        applyVisualPreferences(prefs);
+        if (prefs) {
+          applyVisualPreferences(prefs);
+        }
       }, 100);
     }
   }, []);
 
   // Apply visual preferences function
   const applyVisualPreferences = (preferences: SegmentVisualPreferences) => {
+    if (!preferences) return;
+    
     // Apply colors to CSS variables
     document.documentElement.style.setProperty('--primary-color', preferences.primaryColor);
     document.documentElement.style.setProperty('--secondary-color', preferences.secondaryColor);
@@ -86,22 +90,25 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // Get current segment visual preferences
   const getVisualPreferences = (): SegmentVisualPreferences => {
-    return visualPreferencesBySegment[currentSegment];
+    return visualPreferencesBySegment[currentSegment] || visualPreferencesBySegment.generic;
   };
 
   // Get current segment module configuration
   const getModuleConfig = (): SegmentModuleConfig => {
-    return moduleConfigBySegment[currentSegment];
+    return moduleConfigBySegment[currentSegment] || moduleConfigBySegment.generic;
   };
 
   // Update segment and save to localStorage
   const updateSegment = (segment: BusinessSegmentType) => {
     setCurrentSegment(segment);
     localStorage.setItem('segment', segment);
+    localStorage.setItem('businessType', segmentNames[segment]);
     
     // Apply the visual preferences immediately
     const prefs = visualPreferencesBySegment[segment];
-    applyVisualPreferences(prefs);
+    if (prefs) {
+      applyVisualPreferences(prefs);
+    }
     
     toast({
       title: "Segmento atualizado",
