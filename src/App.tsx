@@ -46,6 +46,7 @@ import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
 import AutoSegmentConfig from './components/segment/AutoSegmentConfig';
+import SegmentTestPage from './pages/SegmentTestPage';
 
 const queryClient = new QueryClient();
 
@@ -325,6 +326,8 @@ const App = () => {
                       <SupportManagement />
                     </ProtectedRoute>
                   } />
+                  
+                  <Route path="/segment-test" element={<SegmentTestPage />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

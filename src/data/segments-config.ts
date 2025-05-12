@@ -1,4 +1,3 @@
-
 import { BusinessSegmentType, SegmentModuleConfig, SegmentVisualPreferences } from "@/types/segment-types";
 import { 
   User, Calendar, BarChart, FileText, Building2, GraduationCap, Leaf, 
@@ -9,6 +8,12 @@ import {
   ShoppingBag, Shirt, PackageCheck, Database, TrendingUp, ArrowRightLeft,
   Store, Palette
 } from "lucide-react";
+
+// Import specific segment configurations
+import { servicesModuleConfig } from "./segment-configurations/services-config";
+import { techModuleConfig } from "./segment-configurations/tech-config";
+import { legalModuleConfig } from "./segment-configurations/legal-config";
+import { manufacturingModuleConfig } from "./segment-configurations/manufacturing-config";
 
 // Preferências visuais por segmento de negócio
 export const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPreferences> = {
