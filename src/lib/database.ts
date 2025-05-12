@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 export interface UserProfile {
   id: string;
@@ -16,9 +17,11 @@ export interface UserProfile {
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    // Using a generic query approach to safely fetch data
-    const { data, error } = await supabase
-      .from('user_profiles')
+    // Using type assertions to work around TypeScript errors
+    const query = supabase
+      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
+    
+    const { data, error } = await query
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
@@ -40,8 +43,11 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateUserProfile(profile: Partial<UserProfile> & { user_id: string }): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('user_profiles')
+    // Using type assertions to work around TypeScript errors
+    const query = supabase
+      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
+    
+    const { error } = await query
       .upsert([profile], { onConflict: 'user_id' });
     
     if (error) {
@@ -61,8 +67,11 @@ export async function updateUserProfile(profile: Partial<UserProfile> & { user_i
  */
 export async function createUserProfile(profile: Omit<UserProfile, 'id' | 'created_at'>): Promise<UserProfile | null> {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
+    // Using type assertions to work around TypeScript errors
+    const query = supabase
+      .from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, any>;
+    
+    const { data, error } = await query
       .insert([profile])
       .select()
       .single();
