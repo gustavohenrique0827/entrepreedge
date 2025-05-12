@@ -17,6 +17,11 @@ export type BusinessSegmentType =
   | 'legal'
   | 'manufacturing';
 
+// Define directory mappings for segments
+export type SegmentDirectoryMapping = {
+  [key in BusinessSegmentType]?: string;
+};
+
 // Define the shape of the segment context
 interface SegmentContextType {
   currentSegment: BusinessSegmentType | null;
@@ -24,9 +29,10 @@ interface SegmentContextType {
   segmentName: string;
   segmentColor: string;
   modulesForSegment: (segment: BusinessSegmentType) => string[];
-  // Add the missing properties/methods
   getVisualPreferences: () => { primaryColor: string; secondaryColor: string; };
   applySegmentVisuals: () => void;
+  getDirectoryPath: () => string | null;
+  isGlobalPage: (path: string) => boolean;
 }
 
 // Create the context with a default value
@@ -126,7 +132,54 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
     return modules[segment] || [];
   };
 
-  // Add the missing methods
+  // Directory mappings for each segment
+  const directoryMappings: SegmentDirectoryMapping = {
+    generic: 'generic',
+    sales: 'vendas',
+    financial: 'financial',
+    health: 'saude',
+    education: 'educacao',
+    ecommerce: 'ecommerce',
+    industrial: 'industrial',
+    agro: 'agro',
+    fashion: 'fashion',
+    services: 'servicos',
+    tech: 'tech',
+    legal: 'legal',
+    manufacturing: 'manufacturing',
+  };
+  
+  // Global pages that are available across all segments
+  const globalPages = [
+    '/',
+    '/dashboard',
+    '/finances',
+    '/goals',
+    '/learn',
+    '/profile',
+    '/settings',
+    '/help',
+    '/contact',
+    '/calendar',
+    '/benchmarking',
+    '/simulator',
+    '/inspiration',
+    '/esg',
+    '/accounting'
+  ];
+
+  // Get directory path for the current segment
+  const getDirectoryPath = (): string | null => {
+    if (!currentSegment) return null;
+    return directoryMappings[currentSegment] || null;
+  };
+
+  // Check if a path is a global page
+  const isGlobalPage = (path: string): boolean => {
+    return globalPages.some(page => path === page || path.startsWith(`${page}/`));
+  };
+
+  // Get visual preferences for theming
   const getVisualPreferences = () => {
     const segment = currentSegment || 'generic';
     
@@ -169,7 +222,9 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
         segmentColor: getSegmentColor(currentSegment),
         modulesForSegment,
         getVisualPreferences,
-        applySegmentVisuals
+        applySegmentVisuals,
+        getDirectoryPath,
+        isGlobalPage
       }}
     >
       {children}

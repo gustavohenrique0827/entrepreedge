@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -26,22 +27,11 @@ import Inspiration from "./pages/Inspiration";
 import ESGIndicators from "./pages/ESGIndicators";
 import Calendar from "./pages/Calendar";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
-import { SegmentProvider } from "./contexts/SegmentContext";
+import { SegmentProvider, useSegment } from "./contexts/SegmentContext";
 import { SupabaseProvider } from "./contexts/SupabaseContext";
 
-// Import segment-specific modules
-import FinancialDashboard from "./modules/financial/FinancialDashboard";
-import VendaDashboard from "./modules/vendas/VendaDashboard";
-import SaudeDashboard from "./modules/saude/SaudeDashboard";
-import EducacaoDashboard from "./modules/educacao/EducacaoDashboard";
-import EcommerceDashboard from "./modules/ecommerce/EcommerceDashboard";
-import IndustrialDashboard from "./modules/industrial/IndustrialDashboard";
-import AgroDashboard from "./modules/agro/AgroDashboard";
-import FashionDashboard from "./modules/fashion/FashionDashboard";
-import ServicosDashboard from "./modules/servicos/ServicosDashboard";
-import TechDashboard from "./modules/tech/TechDashboard";
-import LegalDashboard from "./modules/legal/LegalDashboard";
-import ManufacturingDashboard from "./modules/manufacturing/ManufacturingDashboard";
+// Dynamic segment loading component to avoid having to import all modules
+const SegmentModule = React.lazy(() => import('./components/SegmentModuleLoader'));
 
 const queryClient = new QueryClient();
 
@@ -104,10 +94,10 @@ const initializeSettings = () => {
   document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
 };
 
-initializeSettings();
-
-const App = () => {
+// Define the main App component
+const AppRoutes = () => {
   const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
+  const { currentSegment, getDirectoryPath } = useSegment();
   
   useEffect(() => {
     initializeSettings();
@@ -121,6 +111,61 @@ const App = () => {
   }, []);
 
   return (
+    <Routes>
+      <Route path="/auth" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <Auth />
+      } />
+      
+      <Route path="/onboarding" element={
+        isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
+      } />
+      
+      {/* Protected routes with layout */}
+      <Route element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route path="/" element={<Index />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/finances" element={<Finances />} />
+        <Route path="/goals" element={<Goals />} />
+        <Route path="/learn" element={<Learn />} />
+        <Route path="/course/:courseId" element={<CourseDetail />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/benchmarking" element={<Benchmarking />} />
+        <Route path="/simulator" element={<Simulator />} />
+        <Route path="/inspiration" element={<Inspiration />} />
+        <Route path="/esg" element={<ESGIndicators />} />
+        
+        {/* Dynamic segment-specific routes */}
+        {currentSegment && getDirectoryPath() && (
+          <Route 
+            path={`/${getDirectoryPath()}/*`} 
+            element={
+              <React.Suspense fallback={
+                <div className="flex h-full items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                </div>
+              }>
+                <SegmentModule segmentId={currentSegment} />
+              </React.Suspense>
+            } 
+          />
+        )}
+      </Route>
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <SupabaseProvider>
         <SubscriptionProvider>
@@ -130,54 +175,7 @@ const App = () => {
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
-                  <Routes>
-                    <Route path="/auth" element={
-                      isAuthenticated ? <Navigate to="/" replace /> : <Auth />
-                    } />
-                    
-                    <Route path="/onboarding" element={
-                      isAuthenticated ? <Onboarding /> : <Navigate to="/auth" replace />
-                    } />
-                    
-                    {/* Protected routes with layout */}
-                    <Route element={
-                      <ProtectedRoute>
-                        <Layout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/finances" element={<Finances />} />
-                      <Route path="/goals" element={<Goals />} />
-                      <Route path="/learn" element={<Learn />} />
-                      <Route path="/course/:courseId" element={<CourseDetail />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/help" element={<Help />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/calendar" element={<Calendar />} />
-                      <Route path="/benchmarking" element={<Benchmarking />} />
-                      <Route path="/simulator" element={<Simulator />} />
-                      <Route path="/inspiration" element={<Inspiration />} />
-                      <Route path="/esg" element={<ESGIndicators />} />
-                      
-                      {/* Segment-specific module routes */}
-                      <Route path="/modules/financial/*" element={<FinancialDashboard />} />
-                      <Route path="/modules/sales/*" element={<VendaDashboard />} />
-                      <Route path="/modules/health/*" element={<SaudeDashboard />} />
-                      <Route path="/modules/education/*" element={<EducacaoDashboard />} />
-                      <Route path="/modules/ecommerce/*" element={<EcommerceDashboard />} />
-                      <Route path="/modules/industrial/*" element={<IndustrialDashboard />} />
-                      <Route path="/modules/agro/*" element={<AgroDashboard />} />
-                      <Route path="/modules/fashion/*" element={<FashionDashboard />} />
-                      <Route path="/modules/services/*" element={<ServicosDashboard />} />
-                      <Route path="/modules/tech/*" element={<TechDashboard />} />
-                      <Route path="/modules/legal/*" element={<LegalDashboard />} />
-                      <Route path="/modules/manufacturing/*" element={<ManufacturingDashboard />} />
-                    </Route>
-                    
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <AppRoutes />
                 </BrowserRouter>
               </TooltipProvider>
             </HelmetProvider>

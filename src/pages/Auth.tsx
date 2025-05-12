@@ -177,6 +177,20 @@ const Auth = () => {
         localStorage.setItem('segment', userSegment);
         setCurrentSegment(userSegment as BusinessSegmentType);
         await switchSegment(userSegment);
+      } else {
+        // If no segment in metadata, try to fetch from profiles
+        const { data: userData, error: userError } = await supabase
+          .from('user_profiles')
+          .select('segment')
+          .eq('user_id', data.user.id)
+          .single();
+          
+        if (userData && !userError && userData.segment) {
+          userSegment = userData.segment;
+          localStorage.setItem('segment', userSegment);
+          setCurrentSegment(userSegment as BusinessSegmentType);
+          await switchSegment(userSegment);
+        }
       }
       
       toast({
@@ -284,7 +298,8 @@ const Auth = () => {
         return;
       }
       
-      // Simulate successful registration for demo purposes
+      // Create company profile in database (future implementation)
+      // For now, we'll just simulate it with localStorage
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', registerEmail);
       localStorage.setItem('companyName', companyName);

@@ -2,11 +2,11 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { useSegment } from '@/contexts/SegmentContext';
+import { useSegment, BusinessSegmentType } from '@/contexts/SegmentContext';
 import { useSupabase } from '@/contexts/SupabaseContext';
 
 interface ModuleContainerProps {
-  requiredSegment: string;
+  requiredSegment: BusinessSegmentType;
   children?: React.ReactNode;
 }
 

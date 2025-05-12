@@ -5,6 +5,7 @@ import { useSegment } from '@/contexts/SegmentContext';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
+import fs from 'fs';
 
 import {
   BarChart2,
@@ -31,6 +32,7 @@ import {
   Code,
   Scale,
   HardDrive,
+  Folder,
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -38,9 +40,10 @@ interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
   isActive: boolean;
+  isCollapsed: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, isCollapsed }) => {
   return (
     <Link
       to={to}
@@ -50,17 +53,31 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive }) 
       )}
     >
       <div className="mr-3">{icon}</div>
-      <span>{label}</span>
+      {!isCollapsed && <span>{label}</span>}
     </Link>
   );
 };
 
+interface SegmentModule {
+  path: string;
+  name: string;
+  icon: React.ReactNode;
+}
+
 export const SegmentSidebar: React.FC = () => {
-  const { currentSegment, modulesForSegment, segmentName } = useSegment();
+  const { currentSegment, segmentName, getDirectoryPath, isGlobalPage } = useSegment();
   const { isConfigured } = useSupabase();
   const location = useLocation();
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(localStorage.getItem('sidebarCollapsed') === 'true');
+  const [segmentModules, setSegmentModules] = useState<SegmentModule[]>([]);
+
+  // Toggle sidebar collapse state
+  const toggleCollapse = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', String(newState));
+  };
 
   // Segment-specific menu icons
   const moduleIcons: Record<string, React.ReactNode> = {
@@ -165,11 +182,15 @@ export const SegmentSidebar: React.FC = () => {
     documents: 'Documentos',
     production: 'Produção',
     quality: 'Qualidade',
-    accounting: 'Contabilidade'
+    accounting: 'Contabilidade',
+    crm: 'CRM & Comercial',
+    financial: 'Financeiro',
+    fiscal: 'Fiscal & Contábil',
+    personnel: 'Recursos Humanos',
+    admin: 'Administração',
+    training: 'Treinamento',
+    esg: 'ESG'
   };
-
-  // Get modules for current segment
-  const modules = currentSegment ? modulesForSegment(currentSegment) : [];
 
   // Get segment icon for header
   const getSegmentIcon = () => {
@@ -190,6 +211,119 @@ export const SegmentSidebar: React.FC = () => {
     }
   };
 
+  // Define segment-specific module structures based on user description
+  const segmentModuleStructure: Record<string, SegmentModule[]> = {
+    sales: [
+      { path: "/crm", name: "CRM & Comercial", icon: <Users size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/fiscal", name: "Fiscal & Contábil", icon: <FileText size={18} /> },
+      { path: "/personnel", name: "Recursos Humanos", icon: <Users size={18} /> },
+      { path: "/admin", name: "Administração & Gestão", icon: <Briefcase size={18} /> },
+      { path: "/training", name: "Treinamento & Educação", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    health: [
+      { path: "/patients", name: "Atendimento & Gestão de Pacientes", icon: <Users size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/fiscal", name: "Fiscal & Contábil", icon: <FileText size={18} /> },
+      { path: "/personnel", name: "Recursos Humanos", icon: <Users size={18} /> },
+      { path: "/admin", name: "Administração & Gestão", icon: <Briefcase size={18} /> },
+      { path: "/training", name: "Treinamento & Educação", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    agro: [
+      { path: "/production", name: "Produção & Operações", icon: <Factory size={18} /> },
+      { path: "/crm", name: "CRM & Comercial", icon: <Users size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/fiscal", name: "Fiscal & Contábil", icon: <FileText size={18} /> },
+      { path: "/personnel", name: "Recursos Humanos", icon: <Users size={18} /> },
+      { path: "/admin", name: "Administração & Gestão", icon: <Briefcase size={18} /> },
+      { path: "/training", name: "Treinamento & Educação", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    education: [
+      { path: "/academic", name: "Acadêmico & Pedagógico", icon: <BookOpen size={18} /> },
+      { path: "/secretary", name: "Secretaria & Atendimento", icon: <FileText size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/fiscal", name: "Fiscal & Contábil", icon: <FileText size={18} /> },
+      { path: "/personnel", name: "Recursos Humanos", icon: <Users size={18} /> },
+      { path: "/admin", name: "Administração & Gestão", icon: <Briefcase size={18} /> },
+      { path: "/training", name: "EAD & Treinamento", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    ecommerce: [
+      { path: "/products", name: "Produtos & Estoque", icon: <Package size={18} /> },
+      { path: "/orders", name: "Pedidos & Entregas", icon: <Box size={18} /> },
+      { path: "/customers", name: "Clientes & CRM", icon: <Users size={18} /> },
+      { path: "/financial", name: "Pagamentos & Financeiro", icon: <Wallet size={18} /> },
+      { path: "/marketing", name: "Vendas & Marketing", icon: <BarChart2 size={18} /> },
+      { path: "/fiscal", name: "Fiscal & Nota Fiscal", icon: <FileText size={18} /> },
+      { path: "/support", name: "Suporte & Atendimento", icon: <Briefcase size={18} /> },
+      { path: "/admin", name: "Configurações & Administração", icon: <Settings size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    fashion: [
+      { path: "/collections", name: "Coleções & Produtos", icon: <Scissors size={18} /> },
+      { path: "/sales", name: "Vendas & Canais", icon: <ShoppingBag size={18} /> },
+      { path: "/inventory", name: "Estoque & Logística", icon: <Box size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/customers", name: "Clientes & CRM", icon: <Users size={18} /> },
+      { path: "/production", name: "Produção & Fornecedores", icon: <Factory size={18} /> },
+      { path: "/marketing", name: "Marketing", icon: <BarChart2 size={18} /> },
+      { path: "/personnel", name: "Recursos Humanos", icon: <Users size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    services: [
+      { path: "/services", name: "Gestão de Serviços", icon: <Briefcase size={18} /> },
+      { path: "/customers", name: "Clientes & Atendimento", icon: <Users size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/personnel", name: "Equipes & Profissionais", icon: <Users size={18} /> },
+      { path: "/operations", name: "Operações & Execução", icon: <Settings size={18} /> },
+      { path: "/quality", name: "Indicadores & Qualidade", icon: <BarChart2 size={18} /> },
+      { path: "/training", name: "Treinamento & Capacitação", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    tech: [
+      { path: "/sales", name: "Comercial & Pré-venda", icon: <Briefcase size={18} /> },
+      { path: "/projects", name: "Projetos & Produtos", icon: <Package size={18} /> },
+      { path: "/support", name: "Suporte & Atendimento", icon: <Briefcase size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/personnel", name: "Equipe Técnica & RH", icon: <Users size={18} /> },
+      { path: "/security", name: "Segurança & Conformidade", icon: <Settings size={18} /> },
+      { path: "/training", name: "Treinamento & Inovação", icon: <GraduationCap size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    legal: [
+      { path: "/cases", name: "Gestão de Processos", icon: <Scale size={18} /> },
+      { path: "/documents", name: "Documentos & Contratos", icon: <FileText size={18} /> },
+      { path: "/customers", name: "Clientes & Atendimento", icon: <Users size={18} /> },
+      { path: "/financial", name: "Financeiro", icon: <Wallet size={18} /> },
+      { path: "/personnel", name: "Equipe & RH", icon: <Users size={18} /> },
+      { path: "/calendar", name: "Agenda & Prazos", icon: <Calendar size={18} /> },
+      { path: "/compliance", name: "Compliance & Governança", icon: <Settings size={18} /> },
+      { path: "/esg", name: "ESG", icon: <Leaf size={18} /> }
+    ],
+    manufacturing: [
+      { path: "/production", name: "Produção & Operações", icon: <Factory size={18} /> },
+      { path: "/inventory", name: "Estoque & Logística", icon: <Box size={18} /> },
+      { path: "/engineering", name: "Engenharia & Produtos", icon: <Settings size={18} /> },
+      { path: "/financial", name: "Custos & Financeiro", icon: <Wallet size={18} /> },
+      { path: "/quality", name: "Qualidade & Inspeções", icon: <FileText size={18} /> },
+      { path: "/personnel", name: "Equipe & Segurança", icon: <Users size={18} /> },
+      { path: "/sales", name: "Comercial & Planejamento", icon: <BarChart2 size={18} /> },
+      { path: "/esg", name: "ESG & Sustentabilidade", icon: <Leaf size={18} /> }
+    ]
+  };
+
+  // Load segment-specific modules
+  useEffect(() => {
+    if (currentSegment && segmentModuleStructure[currentSegment]) {
+      setSegmentModules(segmentModuleStructure[currentSegment]);
+    } else {
+      setSegmentModules([]);
+    }
+  }, [currentSegment]);
+
   // Check if the segment is configured
   const isSegmentConfigured = currentSegment ? isConfigured(currentSegment) : false;
 
@@ -206,7 +340,7 @@ export const SegmentSidebar: React.FC = () => {
             variant="ghost" 
             size="icon" 
             className="h-8 w-8" 
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggleCollapse}
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </Button>
@@ -229,6 +363,9 @@ export const SegmentSidebar: React.FC = () => {
     );
   }
 
+  // Get the segment's directory path
+  const dirPath = getDirectoryPath();
+
   return (
     <div className={cn(
       "h-full bg-muted/5 border-r transition-all duration-300 flex flex-col",
@@ -238,14 +375,14 @@ export const SegmentSidebar: React.FC = () => {
         {!collapsed && (
           <div className="flex items-center gap-2">
             {getSegmentIcon()}
-            <span className="font-semibold">{segmentName}</span>
+            <span className="font-semibold truncate">{segmentName}</span>
           </div>
         )}
         <Button 
           variant="ghost" 
           size="icon" 
           className="h-8 w-8" 
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggleCollapse}
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </Button>
@@ -257,35 +394,46 @@ export const SegmentSidebar: React.FC = () => {
           <SidebarItem 
             to="/" 
             icon={<Home size={18} />} 
-            label={!collapsed ? "Início" : ""} 
+            label="Início" 
             isActive={location.pathname === '/'}
+            isCollapsed={collapsed}
           />
 
           <SidebarItem 
             to="/dashboard" 
             icon={<BarChart2 size={18} />} 
-            label={!collapsed ? "Dashboard" : ""} 
+            label="Dashboard" 
             isActive={location.pathname === '/dashboard'}
+            isCollapsed={collapsed}
           />
-          
+
           {/* Accounting should be available for all segments */}
           <SidebarItem
             to="/accounting"
             icon={<FileText size={18} />}
-            label={!collapsed ? "Contabilidade" : ""}
+            label="Contabilidade"
             isActive={location.pathname.startsWith('/accounting')}
+            isCollapsed={collapsed}
           />
 
           {/* Segment-specific modules */}
-          {modules.map((module) => (
-            <SidebarItem
-              key={module}
-              to={`/modules/${currentSegment}/${module}`}
-              icon={moduleIcons[module] || <FileText size={18} />}
-              label={!collapsed ? moduleLabels[module] || module : ""}
-              isActive={location.pathname === `/modules/${currentSegment}/${module}`}
-            />
-          ))}
+          {dirPath && (
+            <div className={cn("mt-6", !collapsed && "mb-2")}>
+              {!collapsed && <div className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Módulos</div>}
+              <div className="mt-2">
+                {segmentModules.map((module) => (
+                  <SidebarItem
+                    key={module.path}
+                    to={`/${dirPath}${module.path}`}
+                    icon={module.icon}
+                    label={module.name}
+                    isActive={location.pathname.startsWith(`/${dirPath}${module.path}`)}
+                    isCollapsed={collapsed}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
       </div>
 
@@ -293,10 +441,13 @@ export const SegmentSidebar: React.FC = () => {
         <SidebarItem
           to="/settings"
           icon={<Settings size={18} />}
-          label={!collapsed ? "Configurações" : ''}
+          label="Configurações"
           isActive={location.pathname.startsWith('/settings')}
+          isCollapsed={collapsed}
         />
       </div>
     </div>
   );
 };
+
+export default SegmentSidebar;

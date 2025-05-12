@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { useSegment } from '@/contexts/SegmentContext';
+import { BusinessSegmentType } from '@/contexts/SegmentContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,26 +13,61 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   const location = useLocation();
-  const { loadUserSegment, currentSegment } = useSupabase();
+  const { supabase } = useSupabase();
   const { setCurrentSegment } = useSegment();
   const [isLoading, setIsLoading] = useState(true);
   
   // Load user segment on component mount
   useEffect(() => {
-    const loadSegment = async () => {
+    const loadUserData = async () => {
       if (isLoggedIn) {
-        // Try to load segment from Supabase
-        const segment = await loadUserSegment();
-        
-        if (segment) {
-          setCurrentSegment(segment as any);
+        try {
+          // Try to get current session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user) {
+            // First try to get segment from user metadata
+            let segment = session.user.user_metadata?.segment;
+            
+            // If no segment in metadata, try to get from custom table
+            if (!segment) {
+              const { data: userData, error } = await supabase
+                .from('user_profiles')
+                .select('segment')
+                .eq('user_id', session.user.id)
+                .single();
+                
+              if (userData && !error) {
+                segment = userData.segment;
+              }
+            }
+            
+            // If we found a segment, set it
+            if (segment) {
+              setCurrentSegment(segment as BusinessSegmentType);
+              localStorage.setItem('segment', segment);
+              console.log('Segment loaded from Supabase:', segment);
+            } else {
+              // If no segment found in Supabase, check localStorage as fallback
+              const localSegment = localStorage.getItem('segment');
+              if (localSegment) {
+                setCurrentSegment(localSegment as BusinessSegmentType);
+                console.log('Segment loaded from localStorage:', localSegment);
+              } else {
+                console.warn('No segment found for user');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
         }
       }
+      
       setIsLoading(false);
     };
     
-    loadSegment();
-  }, [isLoggedIn, loadUserSegment, setCurrentSegment]);
+    loadUserData();
+  }, [isLoggedIn, supabase, setCurrentSegment]);
   
   // Show loading state
   if (isLoading) {
