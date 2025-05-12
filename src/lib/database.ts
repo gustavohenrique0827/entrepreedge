@@ -27,8 +27,8 @@ type UserProfileTable = {
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    // Use a more specific type assertion that completely bypasses TypeScript's checks
-    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    // Cast directly to any to bypass TypeScript's checks completely
+    const queryBuilder = (supabase.from('user_profiles') as any);
     
     const { data, error } = await queryBuilder
       .select('*')
@@ -52,8 +52,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateUserProfile(profile: Partial<UserProfile> & { user_id: string }): Promise<boolean> {
   try {
-    // Use a more specific type assertion
-    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    // Cast directly to any
+    const queryBuilder = (supabase.from('user_profiles') as any);
     
     const { error } = await queryBuilder
       .upsert([profile], { onConflict: 'user_id' });
@@ -75,8 +75,8 @@ export async function updateUserProfile(profile: Partial<UserProfile> & { user_i
  */
 export async function createUserProfile(profile: Omit<UserProfile, 'id' | 'created_at'>): Promise<UserProfile | null> {
   try {
-    // Use a more specific type assertion
-    const queryBuilder = supabase.from('user_profiles') as unknown as PostgrestQueryBuilder<any, any, UserProfile>;
+    // Cast directly to any
+    const queryBuilder = (supabase.from('user_profiles') as any);
     
     const { data, error } = await queryBuilder
       .insert([profile])
