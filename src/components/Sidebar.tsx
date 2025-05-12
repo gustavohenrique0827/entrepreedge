@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -32,7 +31,13 @@ import {
   FileBarChart,
   LayoutDashboard,
   ClipboardCheck,
-  Tag
+  Tag,
+  Code,
+  Lock,
+  Building,
+  BarChart,
+  HeadphonesIcon,
+  Package
 } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useSegment } from "@/contexts/SegmentContext";
@@ -63,17 +68,49 @@ const Sidebar = () => {
   const { hasAccess } = useSubscription();
   const { segmentName, currentSegment } = useSegment();
   
-  // State for collapsible sections
   const [personnelOpen, setPersonnelOpen] = useState(false);
   const [accountingOpen, setAccountingOpen] = useState(false);
+  const [devAdminOpen, setDevAdminOpen] = useState(false);
   
-  // Auto expand sections based on current path
+  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
+  const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
+  
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCompanyName(localStorage.getItem('companyName') || 'Sua Empresa');
+      setLogoUrl(localStorage.getItem('logoUrl') || '');
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    const checkInterval = setInterval(() => {
+      const storedLogo = localStorage.getItem('logoUrl') || '';
+      const storedName = localStorage.getItem('companyName') || 'Sua Empresa';
+      
+      if (storedLogo !== logoUrl) {
+        setLogoUrl(storedLogo);
+      }
+      
+      if (storedName !== companyName) {
+        setCompanyName(storedName);
+      }
+    }, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(checkInterval);
+    };
+  }, [logoUrl, companyName]);
+  
   useEffect(() => {
     if (location.pathname.startsWith('/personnel')) {
       setPersonnelOpen(true);
     }
     if (location.pathname.startsWith('/accounting')) {
       setAccountingOpen(true);
+    }
+    if (location.pathname.startsWith('/dev-admin')) {
+      setDevAdminOpen(true);
     }
   }, [location.pathname]);
 
@@ -103,18 +140,16 @@ const Sidebar = () => {
     { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
     { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
   ];
-  
-  // Personnel module items
-  const personnelItems: SidebarSubItem[] = [
+
+  const personnelItems = [
     { title: "Colaboradores", href: "/personnel/employees", icon: <Users size={16} /> },
     { title: "Ponto Eletrônico", href: "/personnel/time-tracking", icon: <Clock size={16} /> },
     { title: "Holerites", href: "/personnel/payslips", icon: <FileSpreadsheet size={16} /> },
     { title: "Admissões", href: "/personnel/hiring", icon: <UserPlus size={16} /> },
     { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
   ];
-  
-  // Accounting module items - Updated with more options
-  const accountingItems: SidebarSubItem[] = [
+
+  const accountingItems = [
     { title: "Visão Geral", href: "/accounting/overview", icon: <LayoutDashboard size={16} /> },
     { title: "Lançamentos Contábeis", href: "/accounting/entries", icon: <FileText size={16} /> },
     { title: "Fiscal", href: "/accounting/fiscal", icon: <ClipboardCheck size={16} /> },
@@ -125,14 +160,19 @@ const Sidebar = () => {
     { title: "DRE", href: "/accounting/financial-statements", icon: <FileBarChart size={16} /> },
   ];
 
-  const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
-  
-  // Apply sidebar styles based on segment
+  const devAdminItems = [
+    { title: "Processos Personalizados", href: "/dev-admin/custom-processes", icon: <Code size={16} /> },
+    { title: "Níveis de Acesso", href: "/dev-admin/access-levels", icon: <Lock size={16} /> },
+    { title: "Empresas", href: "/dev-admin/companies", icon: <Building size={16} /> },
+    { title: "Relatórios", href: "/dev-admin/reports", icon: <BarChart size={16} /> },
+    { title: "Planos", href: "/dev-admin/plans", icon: <Package size={16} /> },
+    { title: "Suporte", href: "/dev-admin/support", icon: <HeadphonesIcon size={16} /> },
+  ];
+
   useEffect(() => {
     const prefs = localStorage.getItem('primaryColor') || '#8B5CF6';
     if (prefs) {
-      // Apply sidebar accent color
-      document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`); // 15% opacity for accent bg
+      document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`);
       document.documentElement.style.setProperty('--sidebar-primary', prefs);
     }
   }, [currentSegment]);
@@ -142,9 +182,15 @@ const Sidebar = () => {
       <div className="flex flex-col h-full">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-2 no-underline">
-            <div className="bg-primary rounded-lg w-8 h-8 flex items-center justify-center text-white font-bold">
-              {companyName.charAt(0).toUpperCase()}
-            </div>
+            {logoUrl ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white">
+                <img src={logoUrl} alt={companyName} className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : (
+              <div className="bg-primary rounded-lg w-8 h-8 flex items-center justify-center text-white font-bold">
+                {companyName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <span className="font-medium text-sidebar-foreground truncate">
               {companyName}
             </span>
@@ -201,7 +247,6 @@ const Sidebar = () => {
             ))}
           </div>
 
-          {/* Departamento Pessoal section - only show if user has access */}
           <div className="px-3 py-2">
             <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
               Departamento Pessoal
@@ -243,7 +288,6 @@ const Sidebar = () => {
             )}
           </div>
 
-          {/* Área Contábil section */}
           <div className="px-3 py-2">
             <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
               Área Contábil
@@ -267,6 +311,47 @@ const Sidebar = () => {
             {accountingOpen && (
               <div className="ml-9 space-y-1 mt-1">
                 {accountingItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Dev / Admin
+            </div>
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/dev-admin")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setDevAdminOpen(!devAdminOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <Code size={18} />
+                <span>Dev / Admin</span>
+              </div>
+              {devAdminOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {devAdminOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {devAdminItems.map((item) => (
                   <Link
                     key={item.href}
                     to={item.href}
