@@ -1,4 +1,3 @@
-
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Define our database schema
@@ -108,11 +107,67 @@ export const api = {
     update: updateGoal,
     delete: deleteGoal,
   },
-  transactions: {
-    getAll: getTransactions,
-    add: addTransaction,
-    update: updateTransaction,
-    delete: deleteTransaction,
+  
+  products: {
+    getAll: async () => {
+      // Mock data for products
+      return [
+        {
+          id: '1',
+          name: 'Cadeira de Escritório',
+          description: 'Cadeira ergonômica para escritório com apoio lombar',
+          price: 599.90,
+          stock: 15,
+          category: 'Móveis',
+          sku: 'CAD-001',
+          status: 'active',
+          createdAt: '2023-05-10T14:30:00Z',
+          updatedAt: '2023-05-10T14:30:00Z'
+        },
+        {
+          id: '2',
+          name: 'Monitor Ultrawide',
+          description: 'Monitor ultrawide de 34 polegadas com resolução 4K',
+          price: 2499.90,
+          stock: 5,
+          category: 'Eletrônicos',
+          sku: 'MON-002',
+          status: 'active',
+          createdAt: '2023-05-11T10:15:00Z',
+          updatedAt: '2023-05-11T10:15:00Z'
+        },
+        {
+          id: '3',
+          name: 'Teclado Mecânico',
+          description: 'Teclado mecânico com switches blue e iluminação RGB',
+          price: 299.90,
+          stock: 0,
+          category: 'Periféricos',
+          sku: 'TEC-003',
+          status: 'out_of_stock',
+          createdAt: '2023-05-12T09:45:00Z',
+          updatedAt: '2023-05-12T09:45:00Z'
+        }
+      ];
+    },
+
+    add: async (product) => {
+      // Mock API call
+      console.log('Adding product:', product);
+      return product;
+    },
+
+    update: async (product) => {
+      // Mock API call
+      console.log('Updating product:', product);
+      return product;
+    },
+
+    delete: async (id) => {
+      // Mock API call
+      console.log('Deleting product:', id);
+      return true;
+    }
   }
 };
 

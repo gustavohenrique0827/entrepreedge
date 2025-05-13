@@ -1,28 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSegment } from '@/contexts/SegmentContext';
 import api from '@/services/dbService';
 import { DataTable } from '@/components/ui/data-table';
-import { ProductColumn, columns } from '@/components/ecommerce/ProductColumn';
 import { Product } from '@/components/ecommerce/types';
+import { columns } from '@/components/ecommerce/ProductColumn';
 import AddProductDialog from '@/components/ecommerce/AddProductDialog';
 import EditProductDialog from '@/components/ecommerce/EditProductDialog';
 import DeleteProductDialog from '@/components/ecommerce/DeleteProductDialog';
@@ -180,16 +171,24 @@ const Products = () => {
 
           <Card>
             <CardContent className="p-0">
-              <DataTable columns={columns(
-                (product: Product) => {
+              <DataTable 
+                columns={columns(
+                  (product: Product) => {
+                    setSelectedProduct(product);
+                    setIsEditProductOpen(true);
+                  },
+                  (product: Product) => {
+                    setSelectedProduct(product);
+                    setIsDeleteProductOpen(true);
+                  }
+                )} 
+                data={filteredProducts}
+                onRowClick={(product) => {
                   setSelectedProduct(product);
                   setIsEditProductOpen(true);
-                },
-                (product: Product) => {
-                  setSelectedProduct(product);
-                  setIsDeleteProductOpen(true);
-                }
-              )} data={filteredProducts} />
+                }}
+                emptyMessage="Nenhum produto encontrado."
+              />
             </CardContent>
           </Card>
 

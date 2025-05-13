@@ -54,8 +54,8 @@ const getIconByName = (iconName: string, size: number = 18) => {
     : 'FileText';
 
   // Use the correct approach to render icons
-  const Icon = LucideIcons[IconName];
-  return Icon ? <Icon size={size} /> : <LucideIcons.FileText size={size} />;
+  const IconComponent = LucideIcons[IconName];
+  return IconComponent ? <IconComponent size={size} /> : <LucideIcons.FileText size={size} />;
 };
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({ 
