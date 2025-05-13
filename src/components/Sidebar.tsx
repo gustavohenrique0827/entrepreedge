@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import {
-  BarChart2, Target, BookOpen, Users, DollarSign, ShoppingBag, Calendar, 
-  Settings, HelpCircle, CircleUserRound, Home, FileText
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Settings, HelpCircle, CircleUserRound } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useSegment } from "@/contexts/SegmentContext";
 import { getNavItemsBySegment } from "@/utils/navigationUtils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -17,6 +15,9 @@ const Sidebar = () => {
   
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
+  
+  // State to track open menu sections
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   
   useEffect(() => {
     const handleStorageChange = () => {
@@ -54,14 +55,36 @@ const Sidebar = () => {
   }, [currentSegment]);
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
+  
+  // Toggle a collapsible section
+  const toggleSection = (sectionName: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName]
+    }));
+  };
+  
+  // Auto-expand sections that contain the current active route
+  useEffect(() => {
+    const navItems = getNavItemsBySegment(currentSegment);
+    
+    navItems.forEach(item => {
+      if (item.subItems && item.subItems.some(subItem => isActive(subItem.href))) {
+        setOpenSections(prev => ({
+          ...prev,
+          [item.name]: true
+        }));
+      }
+    });
+  }, [location.pathname, currentSegment]);
 
   // Get navigation items for current segment
   const navItems = getNavItemsBySegment(currentSegment);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
+    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20 overflow-y-auto">
       <div className="flex flex-col h-full">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-2 no-underline">
@@ -83,21 +106,61 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-2 no-underline",
-                isActive(item.href)
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          {navItems.map((item, index) => (
+            <div key={`${item.name}-${index}`} className="mb-2">
+              {item.subItems ? (
+                <Collapsible 
+                  open={openSections[item.name]} 
+                  onOpenChange={() => toggleSection(item.name)}
+                  className="w-full"
+                >
+                  <CollapsibleTrigger className="flex items-center justify-between w-full rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline text-sidebar-foreground/80">
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span>{item.name}</span>
+                    </div>
+                    {openSections[item.name] ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="ml-2 pl-3 border-l border-sidebar-border mt-1">
+                      {item.subItems.map((subItem, subIndex) => (
+                        <Link
+                          key={`${subItem.name}-${subIndex}`}
+                          to={subItem.href}
+                          className={cn(
+                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                            isActive(subItem.href)
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground/80"
+                          )}
+                        >
+                          {subItem.icon}
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : (
+                <Link
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-2 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.name}
+                </Link>
               )}
-            >
-              {item.icon}
-              {item.name}
-            </Link>
+            </div>
           ))}
         </nav>
 
@@ -113,6 +176,19 @@ const Sidebar = () => {
           >
             <Settings size={18} />
             Configurações
+          </Link>
+
+          <Link
+            to="/help"
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+              isActive("/help")
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80"
+            )}
+          >
+            <HelpCircle size={18} />
+            Ajuda
           </Link>
 
           <Link

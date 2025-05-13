@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Bell, 
   MessageSquare, 
-  Search, 
-  Menu,
+  Search,
   ChevronDown
 } from 'lucide-react';
 import {
@@ -23,18 +22,11 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from 'react-router-dom';
 import { useSegment } from '@/contexts/SegmentContext';
 
-// Define the interface for the navigation items
-interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
 interface NavbarProps {
-  items?: NavItem[];
+  items?: any[]; // Accept the items prop but we won't use it since the navbar is now fixed
 }
 
-const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
+const Navbar: React.FC<NavbarProps> = () => {
   const navigate = useNavigate();
   const { segmentName } = useSegment();
   
@@ -49,30 +41,22 @@ const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
   
   return (
     <header className="sticky top-0 z-30 bg-background border-b px-4 py-2 flex items-center justify-between">
-      <div className="flex items-center gap-2 md:hidden">
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </div>
-      
       <div className="flex-1 flex items-center gap-4 max-w-sm">
-        <div className="relative flex-1 hidden sm:block">
+        <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Pesquisar..." className="pl-8" />
         </div>
       </div>
       
       <div className="flex items-center gap-4">
-        <nav className="hidden md:flex items-center gap-1">
-          {items.map((item, index) => (
-            <Button key={index} variant="ghost" asChild>
-              <Link to={item.href} className="flex items-center gap-2">
-                {item.icon}
-                {item.name}
-              </Link>
-            </Button>
-          ))}
-        </nav>
+        <Button variant="outline" className="hidden sm:flex">
+          <MessageSquare className="h-5 w-5" />
+          <span className="ml-2">Bate-papo</span>
+        </Button>
+        
+        <Button variant="ghost" size="icon" className="sm:hidden">
+          <MessageSquare className="h-5 w-5" />
+        </Button>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -116,11 +100,6 @@ const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
         
         <Button variant="ghost" size="icon" className="sm:hidden">
           <Bell className="h-5 w-5" />
-        </Button>
-        
-        <Button variant="ghost" size="icon">
-          <MessageSquare className="h-5 w-5" />
-          <span className="sr-only">Mensagens</span>
         </Button>
         
         <DropdownMenu>
