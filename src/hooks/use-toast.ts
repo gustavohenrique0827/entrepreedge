@@ -1,15 +1,18 @@
-import * as React from "react";
-import { toast as sonnerToast } from "sonner";
 
-const TOAST_LIMIT = 20;
+import * as React from "react";
+import { type ToastProps, type ToastActionElement, ToastContainer } from "@/components/ui/toast";
+
+const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 1000000;
 
-type ToasterToast = {
+type ToastType = "default" | "destructive" | "success" | "warning" | "info";
+
+type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: React.ReactNode;
-  variant?: "default" | "destructive" | "success" | "warning" | "info";
+  variant?: ToastType;
+  action?: ToastActionElement;
 };
 
 const actionTypes = {
@@ -22,7 +25,7 @@ const actionTypes = {
 let count = 0;
 
 function genId() {
-  count = (count + 1) % Number.MAX_VALUE;
+  count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();
 }
 
@@ -87,8 +90,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action;
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {
@@ -103,11 +104,13 @@ export const reducer = (state: State, action: Action): State => {
           t.id === toastId || toastId === undefined
             ? {
                 ...t,
+                open: false,
               }
             : t
         ),
       };
     }
+    
     case "REMOVE_TOAST":
       if (action.toastId === undefined) {
         return {
@@ -135,14 +138,15 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">;
 
-function toast(props: Toast) {
+function toast({ ...props }: Toast) {
   const id = genId();
 
-  const update = (props: Toast) =>
+  const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     });
+  
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
   dispatch({
@@ -150,35 +154,15 @@ function toast(props: Toast) {
     toast: {
       ...props,
       id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss();
+      },
     },
   });
 
-  // Show toast using sonner
-  const variant = props.variant || "default";
-  if (variant === "destructive") {
-    sonnerToast.error(props.title as string, {
-      description: props.description as string,
-    });
-  } else if (variant === "success") {
-    sonnerToast.success(props.title as string, {
-      description: props.description as string,
-    });
-  } else if (variant === "warning") {
-    sonnerToast.warning(props.title as string, {
-      description: props.description as string,
-    });
-  } else if (variant === "info") {
-    sonnerToast.info(props.title as string, {
-      description: props.description as string,
-    });
-  } else {
-    sonnerToast(props.title as string, {
-      description: props.description as string,
-    });
-  }
-
   return {
-    id: id,
+    id,
     dismiss,
     update,
   };
