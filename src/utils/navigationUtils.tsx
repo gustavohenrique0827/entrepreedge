@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BusinessSegmentType } from '@/contexts/SegmentContext';
-import { Home, BarChart2, Target, BookOpen, Users, DollarSign, ShoppingBag, Calendar, PieChart, Settings, Package, FileText, Briefcase, Truck, Database, HeartPulse, Scissors } from 'lucide-react';
+import { Home, BarChart2, Target, BookOpen, Users, DollarSign, ShoppingBag, Calendar, PieChart, Settings, Package, FileText, Briefcase, Truck, Database, HeartPulse, Scissors, Cloud } from 'lucide-react';
 
 // Define the navigation items for different segments
 export const getNavItemsBySegment = (segment: BusinessSegmentType) => {
@@ -20,11 +20,6 @@ export const getNavItemsBySegment = (segment: BusinessSegmentType) => {
       name: 'Metas',
       href: '/goals',
       icon: <Target size={18} />
-    },
-    {
-      name: 'Calendário',
-      href: '/calendar',
-      icon: <Calendar size={18} />
     }
   ];
 
@@ -216,6 +211,3 @@ export const getNavItemsBySegment = (segment: BusinessSegmentType) => {
 
   return segmentItems[segment] || commonItems;
 };
-
-// Missing icon import
-import { Cloud } from 'lucide-react';

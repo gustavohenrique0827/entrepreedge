@@ -4,16 +4,13 @@ import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { useSegment } from '@/contexts/SegmentContext';
 import useSegmentConfig from '@/hooks/useSegmentConfig';
-import { getNavItemsBySegment } from '@/utils/navigationUtils';
 
 interface PageContainerProps {
   children: React.ReactNode;
-  navItems?: any[];
 }
 
 export const PageContainer: React.FC<PageContainerProps> = ({ 
-  children,
-  navItems = [] 
+  children
 }) => {
   const { currentSegment, getVisualPreferences, applySegmentVisuals } = useSegment();
   const { isConfigApplied, applySegmentConfig } = useSegmentConfig();
@@ -34,16 +31,13 @@ export const PageContainer: React.FC<PageContainerProps> = ({
       document.documentElement.style.setProperty('--secondary-color', prefs.secondaryColor || '#D946EF');
     }
   }, [currentSegment]);
-  
-  // Get segment-specific navigation items if none were provided
-  const segmentNavItems = navItems.length > 0 ? navItems : getNavItemsBySegment(currentSegment);
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar items={segmentNavItems} />
+        <Navbar />
         
         <div className="container px-4 py-6">
           {children}

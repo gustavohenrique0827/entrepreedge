@@ -9,6 +9,7 @@ const useSegmentConfig = () => {
   const { currentSegment, getModuleConfig } = useSegment();
   const { toast } = useToast();
   const [isConfigApplied, setIsConfigApplied] = useState(false);
+  const [activeModules, setActiveModules] = useState<string[]>([]);
 
   // Check if config is already applied
   useEffect(() => {
@@ -17,6 +18,16 @@ const useSegmentConfig = () => {
     
     if (configApplied && storedSegment === currentSegment) {
       setIsConfigApplied(true);
+      
+      // Load active modules
+      try {
+        const storedModules = localStorage.getItem('activeModules');
+        if (storedModules) {
+          setActiveModules(JSON.parse(storedModules));
+        }
+      } catch (e) {
+        console.error("Error loading active modules:", e);
+      }
     } else {
       setIsConfigApplied(false);
     }
@@ -26,6 +37,14 @@ const useSegmentConfig = () => {
   const applySegmentConfig = () => {
     try {
       const config = getModuleConfig();
+      
+      // Save active modules based on configuration
+      const enabledModules = config.modules
+        .filter(module => module.enabled)
+        .map(module => module.path);
+        
+      localStorage.setItem('activeModules', JSON.stringify(enabledModules));
+      setActiveModules(enabledModules);
       
       // Save config to localStorage
       localStorage.setItem('moduleConfig', JSON.stringify(config));
@@ -59,13 +78,6 @@ const useSegmentConfig = () => {
   
   // Internal function to apply module configuration
   const applyModuleConfiguration = (config: SegmentModuleConfig) => {
-    // Save active modules
-    if (config.modules) {
-      localStorage.setItem('activeModules', JSON.stringify(
-        config.modules.filter(m => m.enabled).map(m => m.name)
-      ));
-    }
-    
     // Save dashboard configuration
     if (config.dashboardConfig) {
       localStorage.setItem('dashboardWidgets', JSON.stringify(config.dashboardConfig.widgets));
@@ -82,9 +94,16 @@ const useSegmentConfig = () => {
     }
   };
 
+  // Check if a specific module is active
+  const isModuleActive = (modulePath: string) => {
+    return activeModules.includes(modulePath);
+  };
+
   return {
     isConfigApplied,
-    applySegmentConfig
+    applySegmentConfig,
+    isModuleActive,
+    activeModules
   };
 };
 
