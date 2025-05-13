@@ -22,9 +22,13 @@ const dataService = {
 // Mapeamento de páginas específicas implementadas
 const specificImplementations: Record<string, string> = {
   'online-sales': '/segment/ecommerce/online-sales',
+  'products': '/segment/ecommerce/products',
+  'checkout': '/segment/checkout',
   // Aqui você vai adicionar mais implementações específicas conforme criar:
-  // 'inventory': '/segment/ecommerce/inventory',
-  // 'products': '/segment/ecommerce/products',
+  // 'ecommerce-inventory': '/segment/ecommerce/inventory',
+  // 'payments': '/segment/ecommerce/payments',
+  // 'ecommerce-logistics': '/segment/ecommerce/logistics',
+  // 'marketing': '/segment/ecommerce/marketing',
   // etc.
 };
 

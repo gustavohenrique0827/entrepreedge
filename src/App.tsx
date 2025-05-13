@@ -49,6 +49,8 @@ import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
 import GenericSegmentPage from "./pages/segment/GenericSegmentPage";
 import OnlineSales from "./pages/segment/ecommerce/OnlineSales";
+import Products from "./pages/segment/ecommerce/Products";
+import Checkout from "./pages/segment/ecommerce/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -223,6 +225,12 @@ const App = () => {
                     } />
                     
                     {/* Segment-Specific Routes */}
+                    <Route path="/segment" element={
+                      <ProtectedRoute>
+                        <GenericSegmentPage />
+                      </ProtectedRoute>
+                    } />
+                    
                     <Route path="/segment/:pageId" element={
                       <ProtectedRoute>
                         <GenericSegmentPage />
@@ -233,6 +241,18 @@ const App = () => {
                     <Route path="/segment/ecommerce/online-sales" element={
                       <ProtectedRoute>
                         <OnlineSales />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/segment/ecommerce/products" element={
+                      <ProtectedRoute>
+                        <Products />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/segment/checkout" element={
+                      <ProtectedRoute>
+                        <Checkout />
                       </ProtectedRoute>
                     } />
                     
