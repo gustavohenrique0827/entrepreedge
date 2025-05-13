@@ -18,6 +18,17 @@ import Settings from '@/pages/Settings';
 import Profile from '@/pages/Profile';
 import Calendar from '@/pages/Calendar';
 
+// Aprendizado (Learning) pages
+const TechnicalTraining = React.lazy(() => import('@/pages/learn/TechnicalTraining'));
+
+// Personnel Department pages
+const Employees = React.lazy(() => import('@/pages/personnel/Employees'));
+const TimeTracking = React.lazy(() => import('@/pages/personnel/TimeTracking'));
+const Payslips = React.lazy(() => import('@/pages/personnel/Payslips'));
+
+// Accounting/Fiscal pages
+const BookkeepingAndTaxes = React.lazy(() => import('@/pages/accounting/BookkeepingAndTaxes'));
+
 // Lazy loaded segment specific pages
 const EcommerceProducts = React.lazy(() => import('@/pages/segments/ecommerce/Products'));
 const EcommerceSales = React.lazy(() => import('@/pages/segments/ecommerce/Sales'));
@@ -52,6 +63,37 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        
+        {/* Learning Routes */}
+        <Route path="/learn/technical" element={
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <TechnicalTraining />
+          </React.Suspense>
+        } />
+        
+        {/* Personnel Department Routes */}
+        <Route path="/personnel/employees" element={
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <Employees />
+          </React.Suspense>
+        } />
+        <Route path="/personnel/time-tracking" element={
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <TimeTracking />
+          </React.Suspense>
+        } />
+        <Route path="/personnel/payslips" element={
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <Payslips />
+          </React.Suspense>
+        } />
+        
+        {/* Accounting/Fiscal Routes */}
+        <Route path="/accounting/entries" element={
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <BookkeepingAndTaxes />
+          </React.Suspense>
+        } />
         
         {/* Segment-specific Routes */}
         {/* E-commerce */}
@@ -124,6 +166,7 @@ function App() {
         
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster />
     </>
   );
 }

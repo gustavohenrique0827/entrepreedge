@@ -2,262 +2,422 @@
 import React, { useState } from 'react';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Calendar as CalendarIcon, Clock, Plus, Filter, Search } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
+import { Clock, Calendar, Search, Check, FileText, Download } from 'lucide-react';
 
-// Mock data for time entries
-const mockTimeEntries = [
-  { id: 1, employeeName: 'João Silva', date: '2023-04-10', checkIn: '08:00', checkOut: '17:00', totalHours: '09:00', status: 'Aprovado' },
-  { id: 2, employeeName: 'Maria Souza', date: '2023-04-10', checkIn: '08:30', checkOut: '17:30', totalHours: '09:00', status: 'Aprovado' },
-  { id: 3, employeeName: 'Pedro Santos', date: '2023-04-10', checkIn: '09:00', checkOut: '18:00', totalHours: '09:00', status: 'Pendente' },
-  { id: 4, employeeName: 'Ana Oliveira', date: '2023-04-09', checkIn: '08:00', checkOut: '17:00', totalHours: '09:00', status: 'Aprovado' },
-  { id: 5, employeeName: 'Carlos Pereira', date: '2023-04-09', checkIn: '08:15', checkOut: '17:15', totalHours: '09:00', status: 'Rejeitado' },
+interface TimeEntry {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  date: string;
+  clockIn: string;
+  clockOut: string;
+  lunchStart: string;
+  lunchEnd: string;
+  totalHours: string;
+  status: 'Pendente' | 'Aprovado' | 'Rejeitado';
+}
+
+const mockTimeEntries: TimeEntry[] = [
+  {
+    id: 1,
+    employeeId: 1,
+    employeeName: 'João Silva',
+    date: '2023-05-15',
+    clockIn: '08:00',
+    clockOut: '17:00',
+    lunchStart: '12:00',
+    lunchEnd: '13:00',
+    totalHours: '8:00',
+    status: 'Aprovado'
+  },
+  {
+    id: 2,
+    employeeId: 1,
+    employeeName: 'João Silva',
+    date: '2023-05-16',
+    clockIn: '08:15',
+    clockOut: '17:30',
+    lunchStart: '12:00',
+    lunchEnd: '13:00',
+    totalHours: '8:15',
+    status: 'Aprovado'
+  },
+  {
+    id: 3,
+    employeeId: 2,
+    employeeName: 'Maria Oliveira',
+    date: '2023-05-15',
+    clockIn: '09:00',
+    clockOut: '18:00',
+    lunchStart: '12:30',
+    lunchEnd: '13:30',
+    totalHours: '8:00',
+    status: 'Aprovado'
+  },
+  {
+    id: 4,
+    employeeId: 2,
+    employeeName: 'Maria Oliveira',
+    date: '2023-05-16',
+    clockIn: '09:00',
+    clockOut: '18:00',
+    lunchStart: '12:30',
+    lunchEnd: '13:30',
+    totalHours: '8:00',
+    status: 'Pendente'
+  }
 ];
 
 const TimeTracking = () => {
-  const { toast } = useToast();
-  const [timeEntries, setTimeEntries] = useState(mockTimeEntries);
+  const [timeEntries] = useState<TimeEntry[]>(mockTimeEntries);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newTimeEntry, setNewTimeEntry] = useState({
-    employeeName: '',
-    date: '',
-    checkIn: '',
-    checkOut: '',
-    status: 'Pendente'
-  });
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const { toast } = useToast();
 
-  // Filter time entries based on search term
-  const filteredTimeEntries = timeEntries.filter(entry =>
-    entry.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.date.includes(searchTerm) ||
-    entry.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const currentDate = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // Filtrar entradas de ponto
+  const filteredEntries = timeEntries.filter(
+    (entry) => 
+      entry.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.date.includes(searchTerm) ||
+      entry.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddTimeEntry = () => {
-    if (!newTimeEntry.employeeName || !newTimeEntry.date || !newTimeEntry.checkIn) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Calculate total hours if both check-in and check-out are provided
-    let totalHours = '';
-    if (newTimeEntry.checkIn && newTimeEntry.checkOut) {
-      const checkIn = new Date(`2023-01-01T${newTimeEntry.checkIn}`);
-      const checkOut = new Date(`2023-01-01T${newTimeEntry.checkOut}`);
-      const diffMs = checkOut.getTime() - checkIn.getTime();
-      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      totalHours = `${diffHrs.toString().padStart(2, '0')}:${diffMins.toString().padStart(2, '0')}`;
-    }
-
-    const id = timeEntries.length > 0 ? Math.max(...timeEntries.map(e => e.id)) + 1 : 1;
-    const entryToAdd = {
-      id,
-      ...newTimeEntry,
-      totalHours
+  // Função para registrar ponto
+  const registerTimeEntry = (type: 'in' | 'out' | 'lunch_start' | 'lunch_end') => {
+    const actions = {
+      'in': 'Entrada registrada',
+      'out': 'Saída registrada',
+      'lunch_start': 'Saída para almoço registrada',
+      'lunch_end': 'Retorno do almoço registrado'
     };
-
-    setTimeEntries([...timeEntries, entryToAdd]);
-    setNewTimeEntry({
-      employeeName: '',
-      date: '',
-      checkIn: '',
-      checkOut: '',
-      status: 'Pendente'
-    });
-    setIsAddDialogOpen(false);
-
+    
     toast({
-      title: "Registro adicionado",
-      description: `Registro de ponto para ${entryToAdd.employeeName} foi adicionado com sucesso.`
+      title: actions[type],
+      description: `${currentTime} - ${currentDate}`,
+      variant: "success",
     });
   };
 
-  // Create the action button for the header
-  const actionButton = (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Registro
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Adicionar Registro de Ponto</DialogTitle>
-          <DialogDescription>
-            Registre a entrada ou saída de um colaborador.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="employeeName" className="text-right">Colaborador</Label>
-            <Input
-              id="employeeName"
-              value={newTimeEntry.employeeName}
-              onChange={(e) => setNewTimeEntry({...newTimeEntry, employeeName: e.target.value})}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="date" className="text-right">Data</Label>
-            <div className="col-span-3 flex items-center">
-              <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="date"
-                type="date"
-                value={newTimeEntry.date}
-                onChange={(e) => setNewTimeEntry({...newTimeEntry, date: e.target.value})}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="checkIn" className="text-right">Entrada</Label>
-            <div className="col-span-3 flex items-center">
-              <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="checkIn"
-                type="time"
-                value={newTimeEntry.checkIn}
-                onChange={(e) => setNewTimeEntry({...newTimeEntry, checkIn: e.target.value})}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="checkOut" className="text-right">Saída</Label>
-            <div className="col-span-3 flex items-center">
-              <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="checkOut"
-                type="time"
-                value={newTimeEntry.checkOut}
-                onChange={(e) => setNewTimeEntry({...newTimeEntry, checkOut: e.target.value})}
-              />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit" onClick={handleAddTimeEntry}>Registrar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  // Aprovar entrada de ponto
+  const approveTimeEntry = (id: number) => {
+    toast({
+      title: "Ponto aprovado",
+      description: "O registro de ponto foi aprovado com sucesso",
+      variant: "success",
+    });
+  };
 
-  const navItems = [
-    { name: 'Colaboradores', href: '/personnel/employees', icon: <Clock size={18} /> },
-    { name: 'Ponto Eletrônico', href: '/personnel/time-tracking', icon: <Clock size={18} /> },
-    { name: 'Holerites', href: '/personnel/payslips', icon: <Clock size={18} /> }
-  ];
+  // Gerar relatório
+  const generateReport = () => {
+    toast({
+      title: "Relatório gerado",
+      description: "O relatório de ponto foi gerado com sucesso",
+      variant: "success",
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
-      
-      <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar items={navItems} />
-        
-        <div className="container px-4 py-6">
-          <PageHeader
-            title="Controle de Ponto"
-            description="Gerencie os registros de ponto dos colaboradores"
-            actionButton={actionButton}
-          />
+    <PageContainer>
+      <PageHeader
+        title="Controle de Ponto"
+        description="Gerenciamento de registro e controle de ponto dos funcionários"
+      />
 
-          <div className="space-y-4">
+      <Tabs defaultValue="register" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="register">Registrar Ponto</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="register">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Registros de Ponto</CardTitle>
-                <CardDescription>
-                  Histórico de entradas e saídas dos colaboradores.
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Registro de Ponto
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar por colaborador, data ou status..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                  <Button variant="outline" className="sm:w-auto w-full">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filtros
-                  </Button>
+                <div className="text-center mb-6">
+                  <h3 className="text-3xl font-bold mb-1">{currentTime}</h3>
+                  <p className="text-muted-foreground">{currentDate}</p>
                 </div>
 
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Colaborador</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Entrada</TableHead>
-                        <TableHead>Saída</TableHead>
-                        <TableHead>Total de Horas</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredTimeEntries.length > 0 ? (
-                        filteredTimeEntries.map((entry) => (
-                          <TableRow key={entry.id}>
-                            <TableCell className="font-medium">{entry.employeeName}</TableCell>
-                            <TableCell>{entry.date}</TableCell>
-                            <TableCell>{entry.checkIn}</TableCell>
-                            <TableCell>{entry.checkOut || '-'}</TableCell>
-                            <TableCell>{entry.totalHours || '-'}</TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                entry.status === 'Aprovado' ? 'bg-green-100 text-green-800' :
-                                entry.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }`}>
-                                {entry.status}
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={6} className="h-24 text-center">
-                            Nenhum resultado encontrado.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => registerTimeEntry('in')}
+                  >
+                    <Clock className="h-4 w-4" />
+                    Entrada
+                  </Button>
+                  
+                  <Button 
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => registerTimeEntry('out')}
+                  >
+                    <Clock className="h-4 w-4" />
+                    Saída
+                  </Button>
+                  
+                  <Button 
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => registerTimeEntry('lunch_start')}
+                  >
+                    <Clock className="h-4 w-4" />
+                    Saída Almoço
+                  </Button>
+                  
+                  <Button 
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => registerTimeEntry('lunch_end')}
+                  >
+                    <Clock className="h-4 w-4" />
+                    Retorno Almoço
+                  </Button>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Mostrando {filteredTimeEntries.length} de {timeEntries.length} registros
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Resumo Diário
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4 flex items-center gap-2">
+                  <Calendar size={16} />
+                  <Input 
+                    type="date" 
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="max-w-[180px]"
+                  />
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled>Anterior</Button>
-                  <Button variant="outline" size="sm" disabled>Próxima</Button>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <span className="text-muted-foreground">Entrada:</span>
+                    <span className="font-medium">08:00</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <span className="text-muted-foreground">Saída Almoço:</span>
+                    <span className="font-medium">12:00</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <span className="text-muted-foreground">Retorno Almoço:</span>
+                    <span className="font-medium">13:00</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <span className="text-muted-foreground">Saída:</span>
+                    <span className="font-medium">17:00</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center py-2 font-bold">
+                    <span>Total de Horas:</span>
+                    <span>8:00</span>
+                  </div>
                 </div>
-              </CardFooter>
+              </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
-    </div>
+        </TabsContent>
+        
+        <TabsContent value="history">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Histórico de Ponto
+                </CardTitle>
+                
+                <div className="flex items-center gap-3">
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar registros..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <Input 
+                    type="date" 
+                    className="w-40"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Funcionário</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Entrada</TableHead>
+                    <TableHead>Saída Almoço</TableHead>
+                    <TableHead>Retorno Almoço</TableHead>
+                    <TableHead>Saída</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-medium">{entry.employeeName}</TableCell>
+                      <TableCell>{new Date(entry.date).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell>{entry.clockIn}</TableCell>
+                      <TableCell>{entry.lunchStart}</TableCell>
+                      <TableCell>{entry.lunchEnd}</TableCell>
+                      <TableCell>{entry.clockOut}</TableCell>
+                      <TableCell>{entry.totalHours}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          entry.status === 'Aprovado' 
+                            ? 'bg-green-100 text-green-800' 
+                            : entry.status === 'Rejeitado'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {entry.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {entry.status === 'Pendente' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => approveTimeEntry(entry.id)}
+                          >
+                            <Check size={16} />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="reports">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Relatórios de Ponto
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Relatórios por Funcionário</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Funcionário</label>
+                        <select className="border rounded-md p-2">
+                          <option value="">Selecione um funcionário</option>
+                          <option value="1">João Silva</option>
+                          <option value="2">Maria Oliveira</option>
+                          <option value="3">Pedro Santos</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Período</label>
+                        <div className="flex gap-2">
+                          <Input type="date" className="flex-1" />
+                          <span className="flex items-center">até</span>
+                          <Input type="date" className="flex-1" />
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={generateReport}
+                        className="w-full flex items-center justify-center gap-2 mt-2"
+                      >
+                        <Download size={16} />
+                        Gerar Relatório Individual
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Relatórios Gerenciais</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Tipo de Relatório</label>
+                        <select className="border rounded-md p-2">
+                          <option value="">Selecione um tipo</option>
+                          <option value="monthly">Espelho de Ponto Mensal</option>
+                          <option value="overtime">Horas Extras</option>
+                          <option value="absences">Faltas e Atrasos</option>
+                          <option value="bank">Banco de Horas</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Período</label>
+                        <select className="border rounded-md p-2">
+                          <option value="">Selecione um período</option>
+                          <option value="current-month">Mês Atual</option>
+                          <option value="last-month">Mês Anterior</option>
+                          <option value="custom">Período Personalizado</option>
+                        </select>
+                      </div>
+                      
+                      <Button 
+                        onClick={generateReport}
+                        className="w-full flex items-center justify-center gap-2 mt-2"
+                      >
+                        <Download size={16} />
+                        Gerar Relatório Gerencial
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </PageContainer>
   );
 };
 
