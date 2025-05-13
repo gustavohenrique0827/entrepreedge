@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -55,7 +56,6 @@ import Support from './pages/dev-admin/Support';
 // Isso resolve o erro de importação enquanto desenvolvemos as páginas específicas
 type SegmentPageComponent = React.FC;
 
-// Páginas de segmentos específicos (tipos para resolver os erros de importação)
 // Manufacturing (Indústria)
 const Inventory: SegmentPageComponent = GenericSegmentPage;
 const ProductionOrders: SegmentPageComponent = GenericSegmentPage;

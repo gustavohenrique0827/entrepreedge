@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import { useSegment } from '@/contexts/SegmentContext';
 import { PageContainer } from '../PageContainer';
+import { useToast } from "@/hooks/use-toast";
 
 interface SegmentPageLayoutProps {
   children: React.ReactNode;
@@ -25,10 +26,10 @@ export const SegmentPageLayout: React.FC<SegmentPageLayoutProps> = ({
         <div className="bg-background">
           <PageContainer>
             <div className="py-4">
-              <h1 className="text-2xl font-bold">{title}</h1>
+              <h1 className="text-2xl font-bold text-primary">{title}</h1>
               {description && <p className="text-muted-foreground mt-1">{description}</p>}
               <div className="mt-2 text-sm text-muted-foreground">
-                Segmento: <span className="font-medium">{segmentName}</span>
+                Segmento: <span className="font-medium text-primary">{segmentName}</span>
               </div>
             </div>
             <div className="pb-8">

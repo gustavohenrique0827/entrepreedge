@@ -1,350 +1,208 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "@/components/ui/icons"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useSupabase } from '@/contexts/SupabaseContext';
+import { BusinessSegmentType } from '@/contexts/SegmentContext';
 
 const Auth = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setCurrentSegment } = useSegment();
-  const [activeTab, setActiveTab] = useState('login');
-  
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  
-  // Register form state
-  const [companyName, setCompanyName] = useState('');
-  const [companyCnpj, setCompanyCnpj] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [segment, setSegment] = useState<BusinessSegmentType | ''>('');
-  
-  // Create test user on component mount if it doesn't exist
+  const { supabase, setSession, setCompanyName: setContextCompanyName, setIsConfigured } = useSupabase();
+
   useEffect(() => {
-    // Check if test user already exists
-    if (!localStorage.getItem('testUserCreated')) {
-      // Create test user credentials
-      localStorage.setItem('testEmail', 'teste@empresa.com');
-      localStorage.setItem('testPassword', 'senha123');
-      localStorage.setItem('testCompanyName', 'Empresa Teste LTDA');
-      localStorage.setItem('testCompanyCnpj', '12.345.678/0001-90');
-      localStorage.setItem('testUserCreated', 'true');
-      
-      // Set test credentials in the form for easy access
-      setLoginEmail('teste@empresa.com');
-      setLoginPassword('senha123');
-      
-      toast({
-        title: "Usuário de teste criado",
-        description: "Email: teste@empresa.com | Senha: senha123",
-      });
-    }
-  }, [toast]);
-  
-  const handleLogin = (e: React.FormEvent) => {
+    document.title = isLogin ? 'Login' : 'Register';
+  }, [isLogin]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulate login validation
-    if (!loginEmail || !loginPassword) {
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast({
+            title: "Erro ao logar",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          setSession(data.session);
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('token', data.session?.access_token || '');
+
+          // Fetch user details from the public schema
+          const { data: userDetails, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', data.session?.user.id)
+            .single();
+
+          if (userError) {
+            console.error("Erro ao buscar detalhes do usuário:", userError);
+            toast({
+              title: "Erro ao buscar detalhes do usuário",
+              description: userError.message,
+              variant: "destructive",
+            });
+          } else {
+            // Set company name and segment in local storage and context
+            const companyName = userDetails?.company_name || 'Sua Empresa';
+            const segmentType = userDetails?.segment as BusinessSegmentType || null;
+
+            localStorage.setItem('companyName', companyName);
+            setContextCompanyName(companyName);
+
+            if (segmentType) {
+              localStorage.setItem('segmentType', segmentType);
+            }
+
+            setIsConfigured(!!segmentType);
+            localStorage.setItem('isConfigured', !!segmentType ? 'true' : 'false');
+            localStorage.setItem('userRole', userDetails?.role || 'user');
+
+            toast({
+              title: "Login efetuado com sucesso!",
+              description: `Bem-vindo(a) ${companyName}!`,
+            });
+            navigate('/');
+          }
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              company_name: companyName,
+            }
+          }
+        });
+
+        if (error) {
+          toast({
+            title: "Erro ao registrar",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          setSession(data.session);
+           // Insert user details into the public schema
+           const { error: insertError } = await supabase
+           .from('users')
+           .insert([
+             { 
+               id: data.user?.id, 
+               email: email, 
+               company_name: companyName,
+               role: 'user'
+             },
+           ]);
+ 
+         if (insertError) {
+           console.error("Erro ao inserir detalhes do usuário:", insertError);
+           toast({
+             title: "Erro ao inserir detalhes do usuário",
+             description: insertError.message,
+             variant: "destructive",
+           });
+         } else {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('companyName', companyName);
+            setContextCompanyName(companyName);
+            localStorage.setItem('isConfigured', 'false');
+            localStorage.setItem('token', data.session?.access_token || '');
+
+            toast({
+              title: "Registro efetuado com sucesso!",
+              description: "Verifique seu email para confirmar o cadastro.",
+            });
+            navigate('/onboarding');
+          }
+        }
+      }
+    } catch (error: any) {
       toast({
-        title: "Erro de validação",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive"
+        title: "Erro inesperado",
+        description: error.message || "Ocorreu um erro ao processar sua requisição.",
+        variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Check if it's the test user
-    const isTestUser = loginEmail === localStorage.getItem('testEmail') && 
-                       loginPassword === localStorage.getItem('testPassword');
-                       
-    if (isTestUser) {
-      // Set logged in user data
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', loginEmail);
-      localStorage.setItem('companyName', localStorage.getItem('testCompanyName') || '');
-      localStorage.setItem('companyCnpj', localStorage.getItem('testCompanyCnpj') || '');
-      localStorage.setItem('onboardingCompleted', 'true'); // Skip onboarding for test user
-      
-      // Carregar o segmento armazenado ou definir um padrão
-      const savedSegment = localStorage.getItem('segment') as BusinessSegmentType || 'generic';
-      setCurrentSegment(savedSegment);
-      
-      toast({
-        title: "Login bem-sucedido",
-        description: "Bem-vindo ao sistema de teste!",
-      });
-      
-      navigate('/');
-      return;
-    }
-    
-    // Continue with normal login flow
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userEmail', loginEmail);
-    
-    toast({
-      title: "Login bem-sucedido",
-      description: "Redirecionando para o questionário inicial...",
-    });
-    
-    // Check if onboarding completed
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    
-    if (onboardingCompleted === 'true') {
-      navigate('/');
-    } else {
-      navigate('/onboarding');
-    }
-  };
-  
-  // Format CNPJ as user types
-  const formatCnpj = (value: string) => {
-    // Remove any non-digit character
-    const cnpj = value.replace(/\D/g, '');
-    
-    // Apply CNPJ mask (XX.XXX.XXX/XXXX-XX)
-    return cnpj
-      .replace(/^(\d{2})(\d)/, '$1.$2')
-      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-      .replace(/\.(\d{3})(\d)/, '.$1/$2')
-      .replace(/(\d{4})(\d)/, '$1-$2')
-      .substring(0, 18);
-  };
-  
-  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedCnpj = formatCnpj(e.target.value);
-    setCompanyCnpj(formattedCnpj);
-  };
-  
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate register form
-    if (!companyName || !companyCnpj || !registerEmail || !registerPassword || !confirmPassword || !segment) {
-      toast({
-        title: "Erro de validação",
-        description: "Por favor, preencha todos os campos, incluindo o segmento da empresa.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Basic CNPJ validation (should have 14 digits)
-    const cnpjDigits = companyCnpj.replace(/\D/g, '');
-    if (cnpjDigits.length !== 14) {
-      toast({
-        title: "Erro de validação",
-        description: "CNPJ inválido. Por favor, verifique o número informado.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (registerPassword !== confirmPassword) {
-      toast({
-        title: "Erro de validação",
-        description: "As senhas não coincidem.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Simulate successful registration
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userEmail', registerEmail);
-    localStorage.setItem('companyName', companyName);
-    localStorage.setItem('companyCnpj', companyCnpj);
-    localStorage.setItem('segment', segment);
-    
-    // Aplicar o segmento escolhido
-    setCurrentSegment(segment as BusinessSegmentType);
-    
-    toast({
-      title: "Cadastro realizado com sucesso",
-      description: "Redirecionando para o questionário inicial...",
-    });
-    
-    navigate('/onboarding');
-  };
-  
-  const fillTestCredentials = () => {
-    setLoginEmail(localStorage.getItem('testEmail') || 'teste@empresa.com');
-    setLoginPassword(localStorage.getItem('testPassword') || 'senha123');
   };
 
-  const segments: {id: BusinessSegmentType, name: string}[] = [
-    { id: 'generic', name: 'Genérico' },
-    { id: 'agro', name: 'Agronegócio' },
-    { id: 'ecommerce', name: 'E-Commerce' },
-    { id: 'health', name: 'Saúde' },
-    { id: 'fashion', name: 'Moda' },
-    { id: 'services', name: 'Serviços' },
-    { id: 'tech', name: 'Tecnologia' },
-    { id: 'legal', name: 'Jurídico' },
-    { id: 'education', name: 'Educação' },
-    { id: 'manufacturing', name: 'Indústria' }
-  ];
-  
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-block bg-primary rounded-md p-2 mb-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L17 7H14V13H10V7H7L12 2Z" fill="white" />
-              <path d="M19 14H5V17H19V14Z" fill="white" />
-              <path d="M17 18H7V22H17V18Z" fill="white" />
-            </svg>
+    <div className="flex items-center justify-center h-screen bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">{isLogin ? "Login" : "Criar Conta"}</CardTitle>
+          <CardDescription className="text-muted-foreground text-center">
+            {isLogin ? "Entre com seu email e senha" : "Crie uma nova conta"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seuemail@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-          <h1 className="text-2xl font-bold">EntrepreEdge</h1>
-          <p className="text-muted-foreground text-sm">Sua plataforma completa de gestão empresarial</p>
-        </div>
-        
-        <Card className="glass">
-          <CardHeader>
-            <CardTitle className="text-xl text-center">Bem-vindo</CardTitle>
-            <CardDescription className="text-center">
-              Faça login ou cadastre sua empresa para começar
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Cadastro</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <form onSubmit={handleLogin}>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="seu@email.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Senha</Label>
-                        <a href="#" className="text-sm text-primary hover:underline">
-                          Esqueceu a senha?
-                        </a>
-                      </div>
-                      <Input 
-                        id="password" 
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">Entrar</Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={fillTestCredentials}
-                    >
-                      Usar credenciais de teste
-                    </Button>
-                  </div>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <form onSubmit={handleRegister}>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Nome da Empresa</Label>
-                      <Input 
-                        id="company" 
-                        placeholder="Sua Empresa Ltda."
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cnpj">CNPJ</Label>
-                      <Input 
-                        id="cnpj" 
-                        placeholder="XX.XXX.XXX/XXXX-XX"
-                        value={companyCnpj}
-                        onChange={handleCnpjChange}
-                        maxLength={18}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="segment">Segmento da Empresa <span className="text-destructive">*</span></Label>
-                      <Select value={segment} onValueChange={(value: BusinessSegmentType) => setSegment(value)}>
-                        <SelectTrigger id="segment">
-                          <SelectValue placeholder="Selecione o segmento" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {segments.map((segment) => (
-                            <SelectItem key={segment.id} value={segment.id}>
-                              {segment.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        O visual e os recursos do sistema serão personalizados de acordo com o segmento escolhido.
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input 
-                        id="register-email" 
-                        type="email" 
-                        placeholder="contato@suaempresa.com"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Senha</Label>
-                      <Input 
-                        id="register-password" 
-                        type="password"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                      <Input 
-                        id="confirm-password" 
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">Cadastrar</Button>
-                  </div>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-muted-foreground">
-              Ao continuar, você concorda com nossos <a href="#" className="text-primary hover:underline">Termos de Serviço</a> e <a href="#" className="text-primary hover:underline">Política de Privacidade</a>.
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {!isLogin && (
+            <div className="grid gap-2">
+              <Label htmlFor="companyName">Nome da Empresa</Label>
+              <Input
+                id="companyName"
+                type="text"
+                placeholder="Nome da sua empresa"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button disabled={isLoading} onClick={handleSubmit}>
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isLogin ? "Entrar" : "Criar conta"}
+          </Button>
+          <div className="text-center">
+            <Button variant="link" size="sm" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? "Criar uma conta" : "Já tenho uma conta"}
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

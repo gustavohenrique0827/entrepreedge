@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, BarChart2, Code, Settings, Package, PenTool, Check, X } from 'lucide-react';
+import { Home, BarChart2, Code, Settings, Package, PenTool, Check, X, FileText, BookOpen, Users, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -12,12 +13,13 @@ import {
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
+import { useToast } from "@/hooks/use-toast";
 import { useSegment } from '@/contexts/SegmentContext';
 
 const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const location = useLocation();
+  const { toast } = useToast();
   
   const { segmentName, segmentActivities, segmentIcon } = useSegment();
   
@@ -57,7 +59,7 @@ const Sidebar = () => {
       ],
     },
     {
-      title: `Atividades do Segmento (${segmentIcon} ${segmentName})`,
+      title: segmentName ? `Atividades do Segmento (${segmentIcon} ${segmentName})` : "Selecione um segmento nas configurações",
       items: segmentActivities.map(activity => ({
         name: activity.title,
         href: activity.path,
@@ -176,6 +178,25 @@ const Sidebar = () => {
       ],
     },
   ];
+  
+  // Função para lidar com clicks em links inativos (páginas em desenvolvimento)
+  const handleMenuItemClick = (item: { name: string, href: string }) => {
+    // Verificar se o link corresponde a uma página em desenvolvimento
+    const isGenericSegmentPath = item.href.startsWith('/segment/');
+    const isImplemented = !isGenericSegmentPath || segmentActivities.some(activity => 
+      activity.path === item.href && 
+      ['inventory', 'production-orders', 'supplies', 'students', 'courses', 'patients', 'appointments', 'cases', 'legal-documents', 'products', 'checkout'].some(impl => 
+        item.href.includes(impl)
+      )
+    );
+    
+    if (!isImplemented && isGenericSegmentPath) {
+      toast({
+        title: "Página em Desenvolvimento",
+        description: `A funcionalidade "${item.name}" estará disponível em breve.`
+      });
+    }
+  };
 
   return (
     <>
@@ -213,6 +234,7 @@ const Sidebar = () => {
                             : 'hover:bg-accent hover:text-accent-foreground'
                         }`
                       }
+                      onClick={() => handleMenuItemClick(item)}
                     >
                       {item.icon && (
                         <span className="mr-2">{item.icon}</span>
@@ -304,6 +326,7 @@ const Sidebar = () => {
                               : 'hover:bg-accent hover:text-accent-foreground'
                           }`
                         }
+                        onClick={() => handleMenuItemClick(item)}
                       >
                         {item.icon && (
                           <span className="mr-2">{item.icon}</span>
