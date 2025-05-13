@@ -36,8 +36,22 @@ import {
   DollarSign as Financial
 } from 'lucide-react';
 
+// Define interfaces for navigation items
+export interface NavSubItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+export interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  subItems?: NavSubItem[];
+}
+
 // Define common items for all segments
-export const getCommonNavItems = () => {
+export const getCommonNavItems = (): NavItem[] => {
   return [
     // Department Personnel (Required for all segments)
     {
@@ -177,19 +191,19 @@ export const getCommonNavItems = () => {
 };
 
 // Define the navigation items for different segments
-export const getNavItemsBySegment = (segment: BusinessSegmentType) => {
+export const getNavItemsBySegment = (segment: BusinessSegmentType): NavItem[] => {
   // Get common navigation items
   const commonItems = getCommonNavItems();
   
   // Dashboard is first for all segments
-  const dashboardItem = {
+  const dashboardItem: NavItem = {
     name: 'Dashboard',
     href: '/dashboard',
     icon: <Home size={18} />
   };
   
   // Segment-specific navigation items
-  const segmentItems = {
+  const segmentItems: Record<BusinessSegmentType, NavItem[]> = {
     // E-commerce segment
     ecommerce: [
       dashboardItem,

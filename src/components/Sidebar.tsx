@@ -8,6 +8,20 @@ import { useSegment } from "@/contexts/SegmentContext";
 import { getNavItemsBySegment } from "@/utils/navigationUtils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
+// Define proper TypeScript interfaces for navigation items
+interface NavSubItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  subItems?: NavSubItem[];
+}
+
 const Sidebar = () => {
   const location = useLocation();
   const { hasAccess } = useSubscription();
@@ -70,7 +84,7 @@ const Sidebar = () => {
   useEffect(() => {
     const navItems = getNavItemsBySegment(currentSegment);
     
-    navItems.forEach(item => {
+    navItems.forEach((item: NavItem) => {
       if (item.subItems && item.subItems.some(subItem => isActive(subItem.href))) {
         setOpenSections(prev => ({
           ...prev,
@@ -81,7 +95,7 @@ const Sidebar = () => {
   }, [location.pathname, currentSegment]);
 
   // Get navigation items for current segment
-  const navItems = getNavItemsBySegment(currentSegment);
+  const navItems = getNavItemsBySegment(currentSegment) as NavItem[];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20 overflow-y-auto">
