@@ -1,4 +1,8 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+// Definição do tipo BusinessSegmentType para exportação
+export type BusinessSegmentType = 'generic' | 'manufacturing' | 'education' | 'legal' | 'technology' | 'services' | 'fashion' | 'health' | 'ecommerce' | 'agribusiness' | 'agro' | 'tech';
 
 // Definição de tipos para as atividades de cada segmento
 export interface SegmentActivity {

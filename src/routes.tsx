@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -19,27 +18,8 @@ import Calendar from './pages/Calendar';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Páginas de segmentos específicos
-// Manufacturing (Indústria)
-import Inventory from './pages/segment/manufacturing/Inventory';
-import ProductionOrders from './pages/segment/manufacturing/ProductionOrders';
-import Supplies from './pages/segment/manufacturing/Supplies';
-
-// Education (Educação)
-import Students from './pages/segment/education/Students';
-import Courses from './pages/segment/education/Courses';
-
-// Health (Saúde)
-import Patients from './pages/segment/health/Patients';
-import Appointments from './pages/segment/health/Appointments';
-
-// Legal (Jurídico)
-import CaseManagement from './pages/segment/legal/CaseManagement';
-import LegalDocuments from './pages/segment/legal/LegalDocuments';
-
-// E-commerce
-import Products from './pages/segment/ecommerce/Products';
-import Checkout from './pages/segment/ecommerce/Checkout';
+// Componente para fallback das páginas de segmento não implementadas
+import GenericSegmentPage from './pages/segment/GenericSegmentPage';
 
 // Importações de outras páginas existentes
 import Benchmarking from './pages/Benchmarking';
@@ -71,8 +51,31 @@ import Plans from './pages/dev-admin/Plans';
 import ReportsAdmin from './pages/dev-admin/Reports';
 import Support from './pages/dev-admin/Support';
 
-// Componente para fallback das páginas de segmento não implementadas
-import GenericSegmentPage from './pages/segment/GenericSegmentPage';
+// Definindo os tipos para os componentes que ainda não foram completamente implementados
+// Isso resolve o erro de importação enquanto desenvolvemos as páginas específicas
+type SegmentPageComponent = React.FC;
+
+// Páginas de segmentos específicos (tipos para resolver os erros de importação)
+// Manufacturing (Indústria)
+const Inventory: SegmentPageComponent = GenericSegmentPage;
+const ProductionOrders: SegmentPageComponent = GenericSegmentPage;
+const Supplies: SegmentPageComponent = GenericSegmentPage;
+
+// Education (Educação)
+const Students: SegmentPageComponent = GenericSegmentPage;
+const Courses: SegmentPageComponent = GenericSegmentPage;
+
+// Health (Saúde)
+const Patients: SegmentPageComponent = GenericSegmentPage;
+const Appointments: SegmentPageComponent = GenericSegmentPage;
+
+// Legal (Jurídico)
+const CaseManagement: SegmentPageComponent = GenericSegmentPage;
+const LegalDocuments: SegmentPageComponent = GenericSegmentPage;
+
+// E-commerce
+const Products: SegmentPageComponent = GenericSegmentPage;
+const Checkout: SegmentPageComponent = GenericSegmentPage;
 
 const AppRoutes = () => {
   const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
