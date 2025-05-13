@@ -1,22 +1,25 @@
 
-import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { PlusCircle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Column {
-  accessorKey: string;
-  header: string;
-  cell?: (info: any) => React.ReactNode;
-}
-
-interface DataTableProps {
-  title?: string;
+export interface DataTableProps {
+  columns: Array<{
+    accessorKey: string;
+    header: string;
+    cell?: (info: any) => any;
+  }>;
   data: any[];
-  columns: Column[];
-  onRowClick?: (item: any) => void;
+  onRowClick?: (row: any) => void;
   onAddNew?: () => void;
   searchable?: boolean;
   pagination?: boolean;
@@ -24,65 +27,50 @@ interface DataTableProps {
 }
 
 export function DataTable({
-  title,
-  data,
   columns,
+  data,
   onRowClick,
   onAddNew,
   searchable = true,
   pagination = false,
   emptyMessage = "Nenhum registro encontrado."
 }: DataTableProps) {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return data;
-    
-    return data.filter(item => {
-      return columns.some(column => {
-        const value = item[column.accessorKey];
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-        if (typeof value === 'number') {
-          return value.toString().includes(searchQuery);
-        }
-        return false;
+  
+  // Filter data based on search query
+  const filteredData = searchQuery === "" 
+    ? data 
+    : data.filter(item => {
+        return Object.keys(item).some(key => {
+          const value = item[key];
+          if (value == null) return false;
+          return value.toString().toLowerCase().includes(searchQuery.toLowerCase());
+        });
       });
-    });
-  }, [data, searchQuery, columns]);
-
-  const paginatedData = React.useMemo(() => {
-    if (!pagination) return filteredData;
-    
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredData.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredData, currentPage, pagination]);
-
-  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
-
+  
+  // Get paginated data
+  const paginatedData = pagination 
+    ? filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : filteredData;
+  
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+  
+  // Calculate total pages
+  const totalPages = pagination ? Math.ceil(filteredData.length / itemsPerPage) : 1;
+  
   return (
-    <Card>
-      {title && (
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>{title}</CardTitle>
-            {onAddNew && (
-              <Button size="sm" onClick={onAddNew}>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-      )}
-      <CardContent>
-        {searchable && (
-          <div className="flex w-full items-center space-x-2 pb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-4">
+      {/* Search and Add New */}
+      {(searchable || onAddNew) && (
+        <div className="flex items-center justify-between">
+          {searchable && (
+            <div className="relative max-w-xs">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar..."
                 className="pl-8"
@@ -90,70 +78,91 @@ export function DataTable({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-          </div>
-        )}
-        
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableHead key={column.accessorKey}>{column.header}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    {emptyMessage}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedData.map((row, rowIndex) => (
-                  <TableRow
-                    key={rowIndex}
-                    onClick={() => onRowClick && onRowClick(row)}
-                    className={onRowClick ? "cursor-pointer hover:bg-muted" : ""}
-                  >
-                    {columns.map((column) => (
-                      <TableCell key={column.accessorKey}>
-                        {column.cell
-                          ? column.cell(row)
-                          : row[column.accessorKey]}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          )}
+          
+          {onAddNew && (
+            <Button onClick={onAddNew}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Novo
+            </Button>
+          )}
         </div>
-        
-        {pagination && pageCount > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
+      )}
+      
+      {/* Table */}
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.accessorKey}>{column.header}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedData.map((row, rowIndex) => (
+                <TableRow 
+                  key={rowIndex}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={() => onRowClick && onRowClick(row)}
+                >
+                  {columns.map((column) => (
+                    <TableCell key={`${rowIndex}-${column.accessorKey}`}>
+                      {column.cell 
+                        ? column.cell({ getValue: () => row[column.accessorKey], row })
+                        : row[column.accessorKey]
+                      }
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      
+      {/* Pagination */}
+      {pagination && totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Mostrando {filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} a{" "}
+            {Math.min(currentPage * itemsPerPage, filteredData.length)} de {filteredData.length} registros
+          </p>
+          
+          <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
-              Anterior
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Página anterior</span>
             </Button>
-            <div className="text-sm text-muted-foreground">
-              Página {currentPage} de {pageCount}
+            
+            <div className="text-sm">
+              Página {currentPage} de {totalPages}
             </div>
+            
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-              disabled={currentPage === pageCount}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
             >
-              Próximo
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Próxima página</span>
             </Button>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }

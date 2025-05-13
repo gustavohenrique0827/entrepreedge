@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -10,6 +11,7 @@ import { AlertCircle, BarChart2, Target, BookOpen, CheckCircle, BookOpenCheck } 
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSegment } from '@/contexts/SegmentContext';
 
 const Index = () => {
   // Get company data from localStorage
@@ -17,6 +19,7 @@ const Index = () => {
   const businessType = localStorage.getItem('businessType') || '';
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
   const { applyThemeColors } = useTheme();
+  const { segmentActivities, segmentName } = useSegment();
   
   // Apply theme colors on component mount
   useEffect(() => {
@@ -25,6 +28,9 @@ const Index = () => {
     // Update document title
     document.title = `${companyName} - Painel Principal`;
   }, []);
+  
+  // Get first three segment activities to display as cards
+  const featuredActivities = segmentActivities.slice(0, 3);
   
   return (
     <div className="min-h-screen bg-background flex">
@@ -37,7 +43,7 @@ const Index = () => {
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-1">Bem-vindo(a), {companyName}</h1>
             <p className="text-sm text-muted-foreground">
-              {businessType && `${businessType} • `}
+              {segmentName && `${segmentName} • `}
               Resumo das suas atividades
             </p>
           </div>
@@ -60,7 +66,7 @@ const Index = () => {
               <AlertCircle className="h-4 w-4 text-primary" />
               <AlertTitle className="text-sm font-medium">Resumo do seu negócio</AlertTitle>
               <AlertDescription className="text-xs">
-                Veja abaixo um panorama geral das suas informações mais importantes.
+                Veja abaixo um panorama geral das suas informações mais importantes para o segmento de {segmentName}.
               </AlertDescription>
             </Alert>
           )}
@@ -106,6 +112,30 @@ const Index = () => {
             </Link>
           </div>
           
+          {/* Segment Activities */}
+          {featuredActivities.length > 0 && (
+            <>
+              <h2 className="text-lg font-medium mb-4">Atividades para {segmentName}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {featuredActivities.map((activity) => (
+                  <Link key={activity.path} to={activity.path} className="block">
+                    <Card className="glass h-full hover:shadow-md transition-all border-primary/10">
+                      <CardContent className="p-4 flex flex-col h-full">
+                        <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
+                          {/* Render icon based on the activity icon name */}
+                          <span className="h-5 w-5 text-primary">{activity.icon}</span>
+                        </div>
+                        <h3 className="font-semibold mb-1">{activity.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-auto">{activity.description}</p>
+                        <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">Acessar</Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             <Card className="glass">
               <CardHeader className="pb-2">
@@ -140,7 +170,7 @@ const Index = () => {
                   Aprendizado recomendado
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Baseado no seu segmento: {businessType || "Seu negócio"}
+                  Baseado no seu segmento: {segmentName}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4">

@@ -23,7 +23,7 @@ export function SegmentPageLayout({
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 overflow-auto pt-16 md:pt-0">
+      <div className="flex-1 overflow-auto ml-[240px] pt-16 md:pt-0">
         <PageContainer>
           <PageHeader 
             title={title} 

@@ -4,8 +4,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useSegment } from '@/contexts/SegmentContext';
 import { SegmentPageLayout } from '@/components/segment/SegmentPageLayout';
 import { ActivityCard } from '@/components/segment/ActivityCard';
-import * as LucideIcons from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, FileText } from 'lucide-react';
+
+// Hardcoded implemented pages to redirect to specific implementations
+const specificImplementations: Record<string, string> = {
+  'online-sales': '/segment/ecommerce/online-sales',
+  'products': '/segment/ecommerce/products',
+  'checkout': '/segment/ecommerce/checkout'
+};
 
 // Mocked data service to simulate saving and loading data
 const dataService = {
@@ -19,144 +29,135 @@ const dataService = {
   }
 };
 
-// Mapeamento de páginas específicas implementadas
-const specificImplementations: Record<string, string> = {
-  'online-sales': '/segment/ecommerce/online-sales',
-  'products': '/segment/ecommerce/products',
-  'checkout': '/segment/checkout',
-  // Aqui você vai adicionar mais implementações específicas conforme criar:
-  // 'ecommerce-inventory': '/segment/ecommerce/inventory',
-  // 'payments': '/segment/ecommerce/payments',
-  // 'ecommerce-logistics': '/segment/ecommerce/logistics',
-  // 'marketing': '/segment/ecommerce/marketing',
-  // etc.
-};
-
-export default function GenericSegmentPage() {
-  const { pageId } = useParams<{ pageId: string }>();
-  const { segmentActivities, segmentName, currentSegment } = useSegment();
+const GenericSegmentPage = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const { pageId } = useParams<{ pageId: string }>();
+  const { segmentActivities, currentSegment, segmentName } = useSegment();
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageData, setPageData] = useState<any>(null);
   
+  // Find the current activity based on the pageId
+  const currentActivity = pageId 
+    ? segmentActivities.find(activity => activity.path.includes(pageId))
+    : null;
+  
+  // If no pageId, show all segment activities
+  const showAllActivities = !pageId;
+  
+  // Check if there's a specific implementation for this page
   useEffect(() => {
-    // Verificar se existe uma implementação específica para este pageId
     if (pageId && specificImplementations[pageId]) {
-      navigate(specificImplementations[pageId]);
+      navigate(specificImplementations[pageId], { replace: true });
       return;
     }
     
-    // Simulate loading data for this segment activity
-    const loadPageData = async () => {
-      setLoading(true);
-      try {
-        await dataService.loadData(`${currentSegment}_${pageId}`);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error loading segment data:", error);
-        toast({
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar os dados desta atividade",
-          variant: "destructive"
-        });
-        setLoading(false);
-      }
-    };
-    
-    loadPageData();
-  }, [currentSegment, pageId, navigate]);
+    // Load data for this specific page
+    if (pageId) {
+      const loadPageData = async () => {
+        try {
+          setIsLoading(true);
+          const data = await dataService.loadData(`${currentSegment}_${pageId}`);
+          setPageData(data || { title: currentActivity?.title, content: [] });
+        } catch (error) {
+          console.error('Error loading page data:', error);
+          toast({
+            title: "Erro ao carregar dados",
+            description: "Não foi possível carregar os dados desta página.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadPageData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [pageId, currentSegment]);
   
-  // If this is the main segment page (no specific pageId), show all available activities
-  if (!pageId) {
+  // Handle the case where we're showing all activities for the segment
+  if (showAllActivities) {
     return (
-      <SegmentPageLayout 
-        title={`Atividades de ${segmentName}`} 
-        description={`Gerencie todas as atividades específicas para o segmento de ${segmentName}`}
+      <SegmentPageLayout
+        title={`Atividades para ${segmentName}`}
+        description={`Gerencie todas as atividades específicas para o segmento ${segmentName}`}
       >
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {segmentActivities.map((activity) => {
-            // Get the icon from Lucide icons if available
-            const IconComponent = activity.icon && (LucideIcons as any)[activity.icon.charAt(0).toUpperCase() + activity.icon.slice(1)];
-            
-            return (
-              <ActivityCard
-                key={activity.path}
-                title={activity.title}
-                description={activity.description || `Gerencie ${activity.title.toLowerCase()} específicos para ${segmentName}`}
-                icon={IconComponent && <IconComponent size={24} />}
-                onClick={() => navigate(activity.path)}
-              />
-            );
-          })}
+        <Alert className="mb-6 border-primary/20 bg-primary/5">
+          <AlertCircle className="h-4 w-4 text-primary" />
+          <AlertTitle className="text-sm font-medium">Atividades específicas para seu segmento</AlertTitle>
+          <AlertDescription className="text-xs">
+            As atividades abaixo foram personalizadas para o segmento de {segmentName}. Clique em uma atividade para acessá-la.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {segmentActivities.map((activity) => (
+            <ActivityCard 
+              key={activity.path}
+              title={activity.title}
+              description={activity.description}
+              path={activity.path}
+              icon={activity.icon}
+            />
+          ))}
         </div>
       </SegmentPageLayout>
     );
   }
   
-  // Find the specific activity
-  const currentActivity = segmentActivities.find(activity => 
-    activity.path === `/segment/${pageId}` || 
-    activity.path.endsWith(`/${pageId}`)
-  );
-  
+  // Handle the case of a specific activity page
   if (!currentActivity) {
     return (
-      <SegmentPageLayout 
-        title="Atividade não encontrada" 
-        description="A atividade solicitada não está disponível para este segmento."
+      <SegmentPageLayout
+        title="Página não encontrada"
+        description="A atividade que você está procurando não existe para este segmento."
       >
-        <div className="p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">Atividade não encontrada</h3>
-          <p className="text-muted-foreground mb-4">
-            A atividade solicitada não existe ou não está disponível para o segmento de {segmentName}.
-          </p>
-          <button 
-            onClick={() => navigate('/segment')} 
-            className="text-primary hover:underline"
-          >
-            Voltar para atividades do segmento
-          </button>
+        <div className="flex flex-col items-center justify-center py-12">
+          <h2 className="text-lg font-medium mb-2">Atividade não encontrada</h2>
+          <p className="text-muted-foreground mb-6">A página que você está procurando não existe ou não está disponível para este segmento.</p>
+          <Button onClick={() => navigate('/segment')}>Ver todas as atividades</Button>
         </div>
       </SegmentPageLayout>
     );
   }
   
-  // Para atividades que não têm uma implementação específica ainda, 
-  // continuamos mostrando a versão genérica
+  // Show a generic page for activities that don't have specific implementations
   return (
-    <SegmentPageLayout 
-      title={currentActivity.title} 
-      description={currentActivity.description || `Gerencie ${currentActivity.title.toLowerCase()} específicos para ${segmentName}`}
+    <SegmentPageLayout
+      title={currentActivity.title}
+      description={currentActivity.description || `Gerenciamento de ${currentActivity.title} para o segmento ${segmentName}`}
+      action={
+        <Button>
+          <FileText className="mr-2 h-4 w-4" />
+          Exportar dados
+        </Button>
+      }
     >
-      <div className="p-4">
-        <h3 className="text-lg font-medium mb-4">Esta é a página para {currentActivity.title}</h3>
-        <p className="text-muted-foreground mb-6">
-          Esta é uma página de demonstração para {currentActivity.title} no segmento de {segmentName}.
-          Em uma implementação real, esta página teria funcionalidades específicas para {currentActivity.title.toLowerCase()}.
-        </p>
-        
-        <div className="bg-muted p-4 rounded-md mb-6">
-          <h4 className="font-medium mb-2">Ações disponíveis:</h4>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>Visualizar {currentActivity.title.toLowerCase()}</li>
-            <li>Adicionar novos {currentActivity.title.toLowerCase()}</li>
-            <li>Editar {currentActivity.title.toLowerCase()} existentes</li>
-            <li>Remover {currentActivity.title.toLowerCase()}</li>
-            <li>Buscar e filtrar {currentActivity.title.toLowerCase()}</li>
-          </ul>
-        </div>
-        
-        <button 
-          onClick={() => {
-            toast({
-              title: "Função simulada",
-              description: `A funcionalidade para ${currentActivity.title} foi executada com sucesso!`,
-            });
-          }}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
-        >
-          Simular ação para {currentActivity.title}
-        </button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center">
+            Funcionalidade em desenvolvimento
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-6">
+          <div className="flex flex-col items-center justify-center text-center py-8">
+            <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center mb-4">
+              {currentActivity.icon}
+            </div>
+            <h2 className="text-xl font-semibold mb-2">{currentActivity.title}</h2>
+            <p className="text-muted-foreground max-w-md mb-6">
+              Esta funcionalidade está em desenvolvimento para o segmento de {segmentName}.
+              O conteúdo será personalizado de acordo com as necessidades específicas deste segmento.
+            </p>
+            <Button variant="outline" onClick={() => navigate('/segment')}>
+              Voltar para atividades
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </SegmentPageLayout>
   );
-}
+};
+
+export default GenericSegmentPage;

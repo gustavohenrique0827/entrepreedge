@@ -1,35 +1,86 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import * as LucideIcons from 'lucide-react';
 
 interface ActivityCardProps {
   title: string;
-  description: string;
-  icon?: React.ReactNode;
-  footer?: React.ReactNode;
-  onClick?: () => void;
+  description?: string;
+  path: string;
+  icon: string;
+  className?: string;
 }
 
-export function ActivityCard({ title, description, icon, footer, onClick }: ActivityCardProps) {
+// Helper function to get icons by name
+const getIconByName = (iconName: string, size: number = 18) => {
+  const iconMap: Record<string, keyof typeof LucideIcons> = {
+    'package': 'Package',
+    'clipboard-list': 'ClipboardList',
+    'shopping-cart': 'ShoppingCart',
+    'wrench': 'Wrench',
+    'truck': 'Truck',
+    'file-text': 'FileText',
+    'user-plus': 'UserPlus',
+    'book': 'BookOpen',
+    'user-check': 'UserCheck',
+    'edit': 'Edit',
+    'award': 'Award',
+    'calendar': 'Calendar',
+    'folder-open': 'FolderOpen',
+    'calendar-clock': 'Clock',
+    'users': 'Users',
+    'bar-chart': 'BarChart',
+    'kanban': 'Kanban',
+    'headphones': 'Headphones',
+    'git-branch': 'GitBranch',
+    'settings': 'Settings',
+    'line-chart': 'LineChart',
+    'message-square': 'MessageSquare',
+    'layers': 'Layers',
+    'image': 'Image',
+    'refresh-cw': 'RefreshCw',
+    'bed': 'BedDouble',
+    'dollar-sign': 'DollarSign',
+    'credit-card': 'CreditCard',
+    'megaphone': 'Megaphone',
+    'map': 'Map',
+    'wifi': 'Wifi',
+  };
+
+  const IconComponent = iconMap[iconName.toLowerCase()]
+    ? LucideIcons[iconMap[iconName.toLowerCase()]]
+    : LucideIcons.FileText;
+
+  return IconComponent ? <IconComponent size={size} /> : <LucideIcons.FileText size={size} />;
+};
+
+export const ActivityCard: React.FC<ActivityCardProps> = ({ 
+  title, 
+  description, 
+  path, 
+  icon,
+  className = ""
+}) => {
   return (
-    <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-start gap-4">
-        {icon && <div className="mt-1 text-primary">{icon}</div>}
-        <div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription className="mt-2">{description}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        {/* Content can be added here */}
-      </CardContent>
-      <CardFooter className="pt-2">
-        {footer || (
-          onClick && <Button onClick={onClick} variant="secondary" className="w-full">Acessar</Button>
-        )}
-      </CardFooter>
-    </Card>
+    <Link to={path} className="block">
+      <Card className={`glass h-full hover:shadow-md transition-all ${className}`}>
+        <CardContent className="p-4 flex flex-col h-full">
+          <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
+            <span className="text-primary">
+              {getIconByName(icon)}
+            </span>
+          </div>
+          <h3 className="font-semibold mb-1">{title}</h3>
+          {description && (
+            <p className="text-sm text-muted-foreground mb-auto">{description}</p>
+          )}
+          <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">
+            Acessar
+          </Button>
+        </CardContent>
+      </Card>
+    </Link>
   );
-}
+};
