@@ -49,13 +49,14 @@ const getIconByName = (iconName: string, size: number = 18) => {
     'wifi': 'Wifi',
   };
 
-  const IconName = iconMap[iconName.toLowerCase()]
-    ? iconMap[iconName.toLowerCase()]
-    : 'FileText';
-
-  // Use the correct approach to render icons
-  const IconComponent = LucideIcons[IconName];
-  return IconComponent ? <IconComponent size={size} /> : <LucideIcons.FileText size={size} />;
+  const iconName2 = iconMap[iconName.toLowerCase()] || 'FileText';
+  
+  // Get the specific icon component from LucideIcons
+  // @ts-ignore - Dynamic icon component
+  const IconComponent = LucideIcons[iconName2];
+  
+  // Return the icon component with the specified size
+  return IconComponent ? React.createElement(IconComponent, { size }) : React.createElement(LucideIcons.FileText, { size });
 };
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({ 

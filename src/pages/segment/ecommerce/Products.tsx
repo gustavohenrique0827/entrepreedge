@@ -10,7 +10,7 @@ import { Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSegment } from '@/contexts/SegmentContext';
-import api from '@/services/dbService';
+import apiService from '@/services/apiService';
 import { DataTable } from '@/components/ui/data-table';
 import { Product } from '@/components/ecommerce/types';
 import { columns } from '@/components/ecommerce/ProductColumn';
@@ -56,8 +56,13 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsData = await api.products.getAll();
-        setProducts(productsData);
+        const productsData = await apiService.getProducts();
+        // Ensure all products have valid status values
+        const typedProducts = productsData.map(product => ({
+          ...product,
+          status: product.status as "active" | "inactive" | "out_of_stock"
+        }));
+        setProducts(typedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
         toast({
@@ -73,7 +78,7 @@ const Products = () => {
 
   const handleAddProduct = async (product: Product) => {
     try {
-      await api.products.add(product);
+      await apiService.addProduct(product);
       setProducts(prev => [...prev, product]);
       setIsAddProductOpen(false);
       toast({
@@ -92,7 +97,7 @@ const Products = () => {
 
   const handleUpdateProduct = async (product: Product) => {
     try {
-      await api.products.update(product);
+      await apiService.updateProduct(product);
       setProducts(prev =>
         prev.map(p => (p.id === product.id ? product : p))
       );
@@ -113,7 +118,7 @@ const Products = () => {
 
   const handleDeleteProduct = async (id: string) => {
     try {
-      await api.products.delete(id);
+      await apiService.deleteProduct(id);
       setProducts(prev => prev.filter(p => p.id !== id));
       setIsDeleteProductOpen(false);
       toast({

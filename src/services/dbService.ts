@@ -1,3 +1,4 @@
+
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Define our database schema
@@ -108,6 +109,13 @@ export const api = {
     delete: deleteGoal,
   },
   
+  transactions: {
+    getAll: getTransactions,
+    add: addTransaction,
+    update: updateTransaction,
+    delete: deleteTransaction,
+  },
+  
   products: {
     getAll: async () => {
       // Mock data for products
@@ -120,7 +128,7 @@ export const api = {
           stock: 15,
           category: 'Móveis',
           sku: 'CAD-001',
-          status: 'active',
+          status: 'active' as const,
           createdAt: '2023-05-10T14:30:00Z',
           updatedAt: '2023-05-10T14:30:00Z'
         },
@@ -132,7 +140,7 @@ export const api = {
           stock: 5,
           category: 'Eletrônicos',
           sku: 'MON-002',
-          status: 'active',
+          status: 'active' as const,
           createdAt: '2023-05-11T10:15:00Z',
           updatedAt: '2023-05-11T10:15:00Z'
         },
@@ -144,7 +152,7 @@ export const api = {
           stock: 0,
           category: 'Periféricos',
           sku: 'TEC-003',
-          status: 'out_of_stock',
+          status: 'out_of_stock' as const,
           createdAt: '2023-05-12T09:45:00Z',
           updatedAt: '2023-05-12T09:45:00Z'
         }
