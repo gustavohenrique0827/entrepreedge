@@ -8,6 +8,7 @@ interface PageHeaderProps {
   description?: string; // Added description as an alternative to subtitle
   icon?: React.ReactNode; // Added icon support
   actionButton?: React.ReactNode;
+  action?: React.ReactNode; // Added this prop to match what SegmentPageLayout is using
   className?: string;
 }
 
@@ -17,9 +18,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   description, // Support for description prop
   icon,
   actionButton,
+  action, // Added this prop to the component destructuring
   className = ""
 }) => {
   const displayedSubtitle = subtitle || description; // Use either subtitle or description
+  const displayedAction = actionButton || action; // Use either actionButton or action
   
   return (
     <div className={`mb-6 ${className}`}>
@@ -33,9 +36,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             )}
           </div>
         </div>
-        {actionButton && (
+        {displayedAction && (
           <div className="flex-shrink-0">
-            {actionButton}
+            {displayedAction}
           </div>
         )}
       </div>
