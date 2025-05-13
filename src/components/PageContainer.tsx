@@ -5,12 +5,20 @@ import Sidebar from '@/components/Sidebar';
 import { useSegment } from '@/contexts/SegmentContext';
 import useSegmentConfig from '@/hooks/useSegmentConfig';
 
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
 interface PageContainerProps {
   children: React.ReactNode;
+  navItems?: NavItem[];
 }
 
 export const PageContainer: React.FC<PageContainerProps> = ({ 
-  children
+  children,
+  navItems = []
 }) => {
   const { currentSegment, getVisualPreferences, applySegmentVisuals } = useSegment();
   const { isConfigApplied, applySegmentConfig } = useSegmentConfig();
@@ -37,7 +45,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
       <Sidebar />
       
       <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar />
+        <Navbar items={navItems} />
         
         <div className="container px-4 py-6">
           {children}
