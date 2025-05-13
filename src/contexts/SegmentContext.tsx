@@ -1,264 +1,328 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
-// Tipos de segmentos de negócio disponíveis
-export type BusinessSegmentType = 
-  'manufacturing' | 
-  'education' | 
-  'health' | 
-  'legal' | 
-  'technology' | 
-  'services' | 
-  'fashion' | 
-  'ecommerce' | 
-  'agribusiness' | 
-  'retail';
+// Define segment types
+export type BusinessSegmentType = 'generic' | 'agro' | 'ecommerce' | 'health' | 'fashion' | 'services' | 'tech' | 'legal' | 'education' | 'manufacturing';
 
-// Definir o tipo para uma atividade de segmento
-export interface SegmentActivity {
-  id: string;
-  title: string;
-  description?: string;
-  path: string;
-  icon?: React.ReactNode;
-}
-
-// Interface para preferências visuais do segmento
-interface VisualPreferences {
+// Visual preferences for each segment
+export interface SegmentVisualPreferences {
   primaryColor: string;
   secondaryColor: string;
-  icon: string;
+  typography: 'serif' | 'sans-serif' | 'handwritten';
+  iconStyle: 'outlined' | 'filled' | 'duotone';
+  layoutPriorities: string[];
 }
 
-// Definir o tipo para o contexto
+// Define segment activities
+export interface SegmentActivity {
+  title: string;
+  path: string;
+  icon: string; // Icon name from lucide-react
+  description?: string;
+}
+
 interface SegmentContextType {
+  currentSegment: BusinessSegmentType;
+  setCurrentSegment: (segment: BusinessSegmentType) => void;
+  getVisualPreferences: () => SegmentVisualPreferences;
+  applySegmentVisuals: () => void;
   segmentName: string;
-  segmentType: BusinessSegmentType | null;
-  currentSegment: string; // Adicionado para compatibilidade
-  segmentIcon: string;
   segmentActivities: SegmentActivity[];
-  changeSegment: (type: BusinessSegmentType, name: string) => void;
-  setCurrentSegment: (segment: string) => void; // Adicionado para compatibilidade
-  getVisualPreferences: () => VisualPreferences; // Método para obter preferências visuais
-  applySegmentVisuals: () => void; // Método para aplicar preferências visuais
 }
 
-// Criar o contexto
+// Default visual preferences for each segment
+const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPreferences> = {
+  generic: {
+    primaryColor: '#8B5CF6', // Purple
+    secondaryColor: '#D946EF', // Pink
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['dashboard', 'finances', 'goals']
+  },
+  agro: {
+    primaryColor: '#84cc16', // Earth green
+    secondaryColor: '#ca8a04', // Wheat/Earth brown
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'weather', 'finances']
+  },
+  ecommerce: {
+    primaryColor: '#f97316', // Orange
+    secondaryColor: '#6554C0', // Purple
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['products', 'sales', 'marketing']
+  },
+  health: {
+    primaryColor: '#00A3C4', // Teal
+    secondaryColor: '#00875A', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['patients', 'appointments', 'finances']
+  },
+  fashion: {
+    primaryColor: '#EC4899', // Pink
+    secondaryColor: '#8B5CF6', // Purple
+    typography: 'handwritten',
+    iconStyle: 'duotone',
+    layoutPriorities: ['collections', 'sales', 'trends']
+  },
+  services: {
+    primaryColor: '#3B82F6', // Blue
+    secondaryColor: '#10B981', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['clients', 'projects', 'invoices']
+  },
+  tech: {
+    primaryColor: '#6366F1', // Indigo
+    secondaryColor: '#14B8A6', // Teal
+    typography: 'sans-serif',
+    iconStyle: 'duotone',
+    layoutPriorities: ['projects', 'development', 'clients']
+  },
+  legal: {
+    primaryColor: '#0F172A', // Dark navy
+    secondaryColor: '#475569', // Slate
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['cases', 'documents', 'clients']
+  },
+  education: {
+    primaryColor: '#6554C0', // Purple
+    secondaryColor: '#00B8D9', // Blue
+    typography: 'serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['courses', 'students', 'schedule']
+  },
+  manufacturing: {
+    primaryColor: '#505F79', // Steel blue
+    secondaryColor: '#0052CC', // Blue
+    typography: 'sans-serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'inventory', 'orders']
+  }
+};
+
+// Segment display names
+const segmentNames: Record<BusinessSegmentType, string> = {
+  generic: 'Genérico',
+  agro: 'Agronegócio',
+  ecommerce: 'E-Commerce',
+  health: 'Saúde',
+  fashion: 'Moda',
+  services: 'Serviços',
+  tech: 'Tecnologia',
+  legal: 'Jurídico',
+  education: 'Educação',
+  manufacturing: 'Indústria'
+};
+
+// Segment-specific activities
+const segmentActivitiesByType: Record<BusinessSegmentType, SegmentActivity[]> = {
+  manufacturing: [
+    { title: "Gestão de Estoque", path: "/segment/inventory", icon: "package" },
+    { title: "Ordens de Produção", path: "/segment/production-orders", icon: "list-ordered" },
+    { title: "Compras e Suprimentos", path: "/segment/supplies", icon: "shopping-cart" },
+    { title: "Manutenção de Equipamentos", path: "/segment/equipment", icon: "wrench" },
+    { title: "Logística e Expedição", path: "/segment/logistics", icon: "truck" },
+    { title: "Relatórios de Produção", path: "/segment/production-reports", icon: "file-text" }
+  ],
+  education: [
+    { title: "Matrículas e Alunos", path: "/segment/students", icon: "user-plus" },
+    { title: "Disciplinas e Turmas", path: "/segment/courses", icon: "book" },
+    { title: "Professores e Diário", path: "/segment/teachers", icon: "user-check" },
+    { title: "Notas e Avaliações", path: "/segment/grades", icon: "edit" },
+    { title: "Emissão de Certificados", path: "/segment/certificates", icon: "award" },
+    { title: "Calendário Escolar", path: "/segment/school-calendar", icon: "calendar" }
+  ],
+  legal: [
+    { title: "Gestão de Processos", path: "/segment/cases", icon: "folder-open" },
+    { title: "Prazos e Audiências", path: "/segment/hearings", icon: "calendar-clock" },
+    { title: "Documentos Jurídicos", path: "/segment/legal-documents", icon: "file-text" },
+    { title: "Clientes e Contratos", path: "/segment/legal-clients", icon: "users" },
+    { title: "Agenda Jurídica", path: "/segment/legal-calendar", icon: "calendar" },
+    { title: "Relatórios por Advogado", path: "/segment/lawyer-reports", icon: "chart-bar" }
+  ],
+  tech: [
+    { title: "Gestão de Projetos", path: "/segment/projects", icon: "kanban" },
+    { title: "Chamados e Suporte", path: "/segment/support-tickets", icon: "headphones" },
+    { title: "Testes e Versionamento", path: "/segment/testing", icon: "git-branch" },
+    { title: "Base de Conhecimento", path: "/segment/knowledge", icon: "book" },
+    { title: "Configurações Técnicas", path: "/segment/tech-config", icon: "settings" },
+    { title: "Indicadores de Dev", path: "/segment/dev-metrics", icon: "chart-line" }
+  ],
+  services: [
+    { title: "Ordens de Serviço", path: "/segment/service-orders", icon: "clipboard-list" },
+    { title: "Agendamentos", path: "/segment/service-appointments", icon: "calendar-check" },
+    { title: "Contratos e SLA", path: "/segment/sla", icon: "file-contract" },
+    { title: "Atendimento ao Cliente", path: "/segment/customer-support", icon: "message-square" },
+    { title: "Orçamentos e Propostas", path: "/segment/proposals", icon: "file-text" },
+    { title: "Equipe de Campo", path: "/segment/field-team", icon: "users" }
+  ],
+  fashion: [
+    { title: "Gestão de Coleções", path: "/segment/collections", icon: "layout-grid" },
+    { title: "Estoque (tamanho/cor)", path: "/segment/fashion-inventory", icon: "grid-2x2" },
+    { title: "Vendas Online", path: "/segment/fashion-sales", icon: "shopping-cart" },
+    { title: "Produtos com Imagens", path: "/segment/product-images", icon: "image" },
+    { title: "Trocas e Devoluções", path: "/segment/returns", icon: "repeat" },
+    { title: "Relatórios de Moda", path: "/segment/fashion-reports", icon: "chart-bar" }
+  ],
+  health: [
+    { title: "Cadastro de Pacientes", path: "/segment/patients", icon: "user-plus" },
+    { title: "Agendamento Consultas", path: "/segment/appointments", icon: "calendar-check" },
+    { title: "Gestão Hospital/Leitos", path: "/segment/hospital", icon: "bed" },
+    { title: "Controle de Medicamentos", path: "/segment/medications", icon: "pill" },
+    { title: "Faturamento Convênios", path: "/segment/health-billing", icon: "file-invoice" },
+    { title: "Prontuário Eletrônico", path: "/segment/medical-records", icon: "clipboard-list" }
+  ],
+  ecommerce: [
+    { title: "Cadastro de Produtos", path: "/segment/products", icon: "package" },
+    { title: "Carrinho e Checkout", path: "/segment/checkout", icon: "shopping-cart" },
+    { title: "Gestão Vendas Online", path: "/segment/online-sales", icon: "dollar-sign" },
+    { title: "Integração Pagamentos", path: "/segment/payments", icon: "credit-card" },
+    { title: "Logística e Entregas", path: "/segment/ecommerce-logistics", icon: "truck" },
+    { title: "Marketing e Campanhas", path: "/segment/marketing", icon: "megaphone" }
+  ],
+  agro: [
+    { title: "Talhões e Safras", path: "/segment/crops", icon: "map" },
+    { title: "Controle de Insumos", path: "/segment/farm-supplies", icon: "package" },
+    { title: "Produtividade por Área", path: "/segment/productivity", icon: "chart-bar" },
+    { title: "Calendário Agrícola", path: "/segment/farm-calendar", icon: "calendar" },
+    { title: "Integração Sensores/IoT", path: "/segment/farm-iot", icon: "wifi" },
+    { title: "Comercialização", path: "/segment/farm-sales", icon: "dollar-sign" }
+  ],
+  generic: [
+    { title: "Clientes e Fornecedores", path: "/segment/clients-suppliers", icon: "users" },
+    { title: "Emissão de Notas Fiscais", path: "/segment/invoices", icon: "file-text" },
+    { title: "Financeiro", path: "/segment/financial", icon: "dollar-sign" }
+  ]
+};
+
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
 
-// Definir o provedor do contexto
-export const SegmentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Estado para armazenar o tipo de segmento atual
-  const [segmentType, setSegmentType] = useState<BusinessSegmentType | null>(null);
-  // Estado para armazenar o nome do segmento atual
-  const [segmentName, setSegmentName] = useState<string>('');
-  // Estado para armazenar o ícone do segmento atual
-  const [segmentIcon, setSegmentIcon] = useState<string>('🏢');
-  // Estado para armazenar as atividades do segmento atual
-  const [segmentActivities, setSegmentActivities] = useState<SegmentActivity[]>([]);
-  // Estado para armazenar o segmento atual (string)
-  const [currentSegment, setCurrentSegment] = useState<string>('');
+export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { toast } = useToast();
+  const [currentSegment, setCurrentSegment] = useState<BusinessSegmentType>('generic');
 
-  // Função para definir as atividades com base no tipo de segmento
-  const getSegmentActivities = (type: BusinessSegmentType): SegmentActivity[] => {
-    switch (type) {
-      case 'manufacturing':
-        setSegmentIcon('🏭');
-        return [
-          { id: '1', title: 'Estoque', description: 'Gestão de inventário', path: '/segment/inventory' },
-          { id: '2', title: 'Ordens de Produção', description: 'Controle de produção', path: '/segment/production-orders' },
-          { id: '3', title: 'Suprimentos', description: 'Gestão de materiais', path: '/segment/supplies' },
-          { id: '4', title: 'Equipamentos', description: 'Manutenção e controle', path: '/segment/equipment' },
-          { id: '5', title: 'Logística', description: 'Transporte e distribuição', path: '/segment/logistics' },
-          { id: '6', title: 'Relatórios', description: 'Análise de produção', path: '/segment/production-reports' }
-        ];
-      case 'education':
-        setSegmentIcon('🎓');
-        return [
-          { id: '1', title: 'Alunos', description: 'Cadastro e gerenciamento', path: '/segment/students' },
-          { id: '2', title: 'Cursos e Turmas', description: 'Estrutura pedagógica', path: '/segment/courses' },
-          { id: '3', title: 'Professores', description: 'Corpo docente', path: '/segment/teachers' },
-          { id: '4', title: 'Notas', description: 'Avaliação e desempenho', path: '/segment/grades' },
-          { id: '5', title: 'Certificados', description: 'Emissão de documentos', path: '/segment/certificates' },
-          { id: '6', title: 'Calendário', description: 'Agenda escolar', path: '/segment/school-calendar' }
-        ];
-      case 'health':
-        setSegmentIcon('🏥');
-        return [
-          { id: '1', title: 'Pacientes', description: 'Cadastro e prontuários', path: '/segment/patients' },
-          { id: '2', title: 'Consultas', description: 'Agendamento e atendimento', path: '/segment/appointments' },
-          { id: '3', title: 'Hospital', description: 'Gestão hospitalar', path: '/segment/hospital' },
-          { id: '4', title: 'Medicamentos', description: 'Controle de farmácia', path: '/segment/medications' },
-          { id: '5', title: 'Faturamento', description: 'Convênios e recebimentos', path: '/segment/health-billing' },
-          { id: '6', title: 'Prontuários', description: 'Histórico médico', path: '/segment/medical-records' }
-        ];
-      case 'legal':
-        setSegmentIcon('⚖️');
-        return [
-          { id: '1', title: 'Processos', description: 'Gestão de casos', path: '/segment/cases' },
-          { id: '2', title: 'Documentos', description: 'Geração de documentos jurídicos', path: '/segment/legal-documents' },
-          { id: '3', title: 'Audiências', description: 'Agenda de audiências', path: '/segment/hearings' },
-          { id: '4', title: 'Clientes', description: 'Cadastro de clientes', path: '/segment/legal-clients' },
-          { id: '5', title: 'Prazos', description: 'Calendário jurídico', path: '/segment/legal-calendar' },
-          { id: '6', title: 'Relatórios', description: 'Produtividade e resultados', path: '/segment/lawyer-reports' }
-        ];
-      case 'technology':
-        setSegmentIcon('💻');
-        return [
-          { id: '1', title: 'Projetos', description: 'Gestão de projetos', path: '/segment/projects' },
-          { id: '2', title: 'Chamados', description: 'Suporte técnico', path: '/segment/support-tickets' },
-          { id: '3', title: 'Testes', description: 'Qualidade de software', path: '/segment/testing' },
-          { id: '4', title: 'Base de Conhecimento', description: 'Documentação', path: '/segment/knowledge' },
-          { id: '5', title: 'Configurações', description: 'Infraestrutura', path: '/segment/tech-config' },
-          { id: '6', title: 'Métricas', description: 'Desempenho e análises', path: '/segment/dev-metrics' }
-        ];
-      case 'services':
-        setSegmentIcon('🔧');
-        return [
-          { id: '1', title: 'Ordens de Serviço', description: 'Gestão de tarefas', path: '/segment/service-orders' },
-          { id: '2', title: 'Agendamentos', description: 'Calendário de serviços', path: '/segment/service-appointments' },
-          { id: '3', title: 'SLA', description: 'Acordos de nível de serviço', path: '/segment/sla' },
-          { id: '4', title: 'Suporte', description: 'Atendimento ao cliente', path: '/segment/customer-support' },
-          { id: '5', title: 'Propostas', description: 'Orçamentos e contratos', path: '/segment/proposals' },
-          { id: '6', title: 'Equipe de Campo', description: 'Gestão de técnicos', path: '/segment/field-team' }
-        ];
-      case 'fashion':
-        setSegmentIcon('👕');
-        return [
-          { id: '1', title: 'Coleções', description: 'Desenvolvimento de produtos', path: '/segment/collections' },
-          { id: '2', title: 'Estoque', description: 'Controle de inventário', path: '/segment/fashion-inventory' },
-          { id: '3', title: 'Vendas', description: 'Gestão de vendas', path: '/segment/fashion-sales' },
-          { id: '4', title: 'Catálogo', description: 'Imagens de produtos', path: '/segment/product-images' },
-          { id: '5', title: 'Devoluções', description: 'Gestão de trocas', path: '/segment/returns' },
-          { id: '6', title: 'Relatórios', description: 'Desempenho e tendências', path: '/segment/fashion-reports' }
-        ];
-      case 'ecommerce':
-        setSegmentIcon('🛒');
-        return [
-          { id: '1', title: 'Produtos', description: 'Gestão de catálogo', path: '/segment/products' },
-          { id: '2', title: 'Checkout', description: 'Pagamento e finalização', path: '/segment/checkout' },
-          { id: '3', title: 'Vendas', description: 'Gestão de pedidos', path: '/segment/online-sales' },
-          { id: '4', title: 'Pagamentos', description: 'Formas de pagamento', path: '/segment/payments' },
-          { id: '5', title: 'Logística', description: 'Entrega e rastreamento', path: '/segment/ecommerce-logistics' },
-          { id: '6', title: 'Marketing', description: 'Campanhas e promoções', path: '/segment/marketing' }
-        ];
-      case 'agribusiness':
-        setSegmentIcon('🌾');
-        return [
-          { id: '1', title: 'Culturas', description: 'Gestão de plantio', path: '/segment/crops' },
-          { id: '2', title: 'Insumos', description: 'Controle de estoque', path: '/segment/farm-supplies' },
-          { id: '3', title: 'Produtividade', description: 'Métricas de produção', path: '/segment/productivity' },
-          { id: '4', title: 'Calendário', description: 'Planejamento agrícola', path: '/segment/farm-calendar' },
-          { id: '5', title: 'Sensores', description: 'IoT e monitoramento', path: '/segment/farm-iot' },
-          { id: '6', title: 'Vendas', description: 'Comercialização', path: '/segment/farm-sales' }
-        ];
-      case 'retail':
-        setSegmentIcon('🏪');
-        return [
-          { id: '1', title: 'Clientes e Fornecedores', description: 'Cadastro e gestão', path: '/segment/clients-suppliers' },
-          { id: '2', title: 'Notas Fiscais', description: 'Documentos fiscais', path: '/segment/invoices' },
-          { id: '3', title: 'Financeiro', description: 'Contas e pagamentos', path: '/segment/financial' },
-          { id: '4', title: 'PDV', description: 'Ponto de venda', path: '/segment/pos' },
-          { id: '5', title: 'Estoque', description: 'Controle de produtos', path: '/segment/retail-inventory' },
-          { id: '6', title: 'Relatórios', description: 'Análises de vendas', path: '/segment/retail-reports' }
-        ];
-      default:
-        return [];
-    }
-  };
-
-  // Função para obter preferências visuais do segmento
-  const getVisualPreferences = (): VisualPreferences => {
-    if (!segmentType) return { primaryColor: '#8B5CF6', secondaryColor: '#D946EF', icon: '🏢' };
-    
-    // Cores específicas para cada segmento
-    switch(segmentType) {
-      case 'manufacturing':
-        return { primaryColor: '#16a34a', secondaryColor: '#22c55e', icon: '🏭' };
-      case 'education':
-        return { primaryColor: '#2563eb', secondaryColor: '#3b82f6', icon: '🎓' };
-      case 'health':
-        return { primaryColor: '#0891b2', secondaryColor: '#06b6d4', icon: '🏥' };
-      case 'legal':
-        return { primaryColor: '#7c3aed', secondaryColor: '#8b5cf6', icon: '⚖️' };
-      case 'technology':
-        return { primaryColor: '#9333ea', secondaryColor: '#a855f7', icon: '💻' };
-      case 'services':
-        return { primaryColor: '#0284c7', secondaryColor: '#0ea5e9', icon: '🔧' };
-      case 'fashion':
-        return { primaryColor: '#db2777', secondaryColor: '#ec4899', icon: '👕' };
-      case 'ecommerce':
-        return { primaryColor: '#ea580c', secondaryColor: '#f97316', icon: '🛒' };
-      case 'agribusiness':
-        return { primaryColor: '#65a30d', secondaryColor: '#84cc16', icon: '🌾' };
-      case 'retail':
-        return { primaryColor: '#0369a1', secondaryColor: '#0ea5e9', icon: '🏪' };
-      default:
-        return { primaryColor: '#8B5CF6', secondaryColor: '#D946EF', icon: '🏢' };
-    }
-  };
-
-  // Função para aplicar preferências visuais do segmento atual
-  const applySegmentVisuals = () => {
-    const prefs = getVisualPreferences();
-    // Esta função apenas retorna as preferências, a aplicação real é feita pelo componente que chama
-    return prefs;
-  };
-
-  // Carregar o segmento salvo ao iniciar
+  // Initialize from localStorage on component mount
   useEffect(() => {
-    const savedSegmentType = localStorage.getItem('segmentType') as BusinessSegmentType;
-    const savedSegmentName = localStorage.getItem('segmentName') || '';
-    const savedCurrentSegment = localStorage.getItem('segment') || '';
-    
-    if (savedSegmentType) {
-      setSegmentType(savedSegmentType);
-      setSegmentName(savedSegmentName);
-      setSegmentActivities(getSegmentActivities(savedSegmentType));
-      setCurrentSegment(savedCurrentSegment);
+    const savedSegment = localStorage.getItem('segment') as BusinessSegmentType;
+    if (savedSegment && visualPreferencesBySegment[savedSegment]) {
+      setCurrentSegment(savedSegment);
+      
+      // Apply the visual preferences when loading the app
+      setTimeout(() => {
+        const prefs = visualPreferencesBySegment[savedSegment];
+        applyVisualPreferences(prefs);
+      }, 100);
     }
   }, []);
 
-  // Função para mudar o segmento atual
-  const changeSegment = (type: BusinessSegmentType, name: string) => {
-    setSegmentType(type);
-    setSegmentName(name);
-    setCurrentSegment(type); // Atualiza também o currentSegment
+  // Apply visual preferences function
+  const applyVisualPreferences = (preferences: SegmentVisualPreferences) => {
+    // Apply colors to CSS variables
+    document.documentElement.style.setProperty('--primary-color', preferences.primaryColor);
+    document.documentElement.style.setProperty('--secondary-color', preferences.secondaryColor);
     
-    // Atualizar atividades com base no novo tipo
-    const newActivities = getSegmentActivities(type);
-    setSegmentActivities(newActivities);
+    // Apply to Tailwind variables
+    document.documentElement.style.setProperty('--primary', `hsl(${hexToHSL(preferences.primaryColor).h} ${hexToHSL(preferences.primaryColor).s}% ${hexToHSL(preferences.primaryColor).l}%)`);
+    document.documentElement.style.setProperty('--secondary', `hsl(${hexToHSL(preferences.secondaryColor).h} ${hexToHSL(preferences.secondaryColor).s}% ${hexToHSL(preferences.secondaryColor).l}%)`);
     
-    // Salvar no localStorage
-    localStorage.setItem('segmentType', type);
-    localStorage.setItem('segmentName', name);
-    localStorage.setItem('segment', type);
+    // Apply typography
+    const rootElement = document.documentElement;
+    rootElement.classList.remove('font-serif', 'font-sans', 'font-handwritten');
+    
+    if (preferences.typography === 'serif') {
+      rootElement.classList.add('font-serif');
+    } else if (preferences.typography === 'handwritten') {
+      rootElement.classList.add('font-handwritten');
+    } else {
+      rootElement.classList.add('font-sans');
+    }
+
+    // Save color preferences to localStorage for other components
+    localStorage.setItem('primaryColor', preferences.primaryColor);
+    localStorage.setItem('secondaryColor', preferences.secondaryColor);
   };
 
-  // Valor do contexto
-  const value: SegmentContextType = {
-    segmentName,
-    segmentType,
-    currentSegment,
-    segmentIcon,
-    segmentActivities,
-    changeSegment,
-    setCurrentSegment,
-    getVisualPreferences,
-    applySegmentVisuals
+  // Helper function to convert hex to HSL
+  const hexToHSL = (hex: string) => {
+    // Remove the # from the beginning
+    hex = hex.replace(/^#/, '');
+
+    // Parse the hex values
+    let r = parseInt(hex.substring(0, 2), 16) / 255;
+    let g = parseInt(hex.substring(2, 4), 16) / 255;
+    let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    // Find max and min values to calculate the lightness
+    let max = Math.max(r, g, b);
+    let min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    // Calculate hue and saturation
+    if (max !== min) {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else if (max === b) h = (r - g) / d + 4;
+      h *= 60;
+    }
+
+    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+  };
+
+  // Get current segment visual preferences
+  const getVisualPreferences = (): SegmentVisualPreferences => {
+    return visualPreferencesBySegment[currentSegment];
+  };
+
+  // Update segment and save to localStorage
+  const updateSegment = (segment: BusinessSegmentType) => {
+    setCurrentSegment(segment);
+    localStorage.setItem('segment', segment);
+    
+    // Apply the visual preferences immediately
+    const prefs = visualPreferencesBySegment[segment];
+    applyVisualPreferences(prefs);
+    
+    toast({
+      title: "Segmento atualizado",
+      description: `Sua empresa agora está configurada como: ${segmentNames[segment]}`,
+    });
+  };
+
+  // Apply visual preferences to the app
+  const applySegmentVisuals = () => {
+    const preferences = getVisualPreferences();
+    applyVisualPreferences(preferences);
+    
+    toast({
+      title: "Estilo visual atualizado",
+      description: `Estilo visual para ${segmentNames[currentSegment]} aplicado com sucesso`,
+    });
   };
 
   return (
-    <SegmentContext.Provider value={value}>
+    <SegmentContext.Provider value={{ 
+      currentSegment,
+      setCurrentSegment: updateSegment,
+      getVisualPreferences,
+      applySegmentVisuals,
+      segmentName: segmentNames[currentSegment],
+      segmentActivities: segmentActivitiesByType[currentSegment] || []
+    }}>
       {children}
     </SegmentContext.Provider>
   );
 };
 
-// Hook para facilitar o uso do contexto
 export const useSegment = () => {
   const context = useContext(SegmentContext);
   if (context === undefined) {
-    throw new Error('useSegment deve ser usado dentro de um SegmentProvider');
+    throw new Error('useSegment must be used within a SegmentProvider');
   }
   return context;
 };

@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
 
 interface SupabaseContextType {
@@ -9,10 +9,6 @@ interface SupabaseContextType {
   currentSegment: string | null;
   switchSegment: (segment: string) => Promise<boolean>;
   isConfigured: (segment: string) => boolean;
-  // Propriedades adicionadas para compatibilidade
-  setSession: (session: Session | null) => void;
-  setCompanyName: (name: string) => void;
-  setIsConfigured: (isConfigured: boolean) => void;
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -22,27 +18,6 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [currentSegment, setCurrentSegment] = useState<string | null>(null);
   const [loadingSupabase, setLoadingSupabase] = useState<boolean>(false);
-  const [session, setSessionState] = useState<Session | null>(null);
-
-  // Função para definir a sessão
-  const setSession = (newSession: Session | null) => {
-    setSessionState(newSession);
-    if (newSession) {
-      localStorage.setItem('supabaseSession', JSON.stringify(newSession));
-    } else {
-      localStorage.removeItem('supabaseSession');
-    }
-  };
-
-  // Função para definir o nome da empresa
-  const setCompanyName = (name: string) => {
-    localStorage.setItem('companyName', name);
-  };
-
-  // Função para definir se está configurado
-  const setIsConfigured = (isConfigured: boolean) => {
-    localStorage.setItem('isConfigured', isConfigured ? 'true' : 'false');
-  };
 
   // Load segment configurations from localStorage
   const getSegmentConfigs = () => {
@@ -154,10 +129,7 @@ export const SupabaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       loadingSupabase,
       currentSegment,
       switchSegment,
-      isConfigured,
-      setSession,
-      setCompanyName,
-      setIsConfigured
+      isConfigured
     }}>
       {children}
     </SupabaseContext.Provider>
