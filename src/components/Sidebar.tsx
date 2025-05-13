@@ -1,540 +1,324 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Home, BarChart2, Code, Settings, Package, PenTool, Check, X } from 'lucide-react';
+import { Button } from "@/components/ui/button"
 import {
-  BarChartBig,
-  BookOpen,
-  CalendarDays,
-  CircleUserRound,
-  FileText,
-  Goal,
-  HelpCircle,
-  Home,
-  Leaf,
-  LineChart,
-  MessageCircle,
-  Settings,
-  Star,
-  Target,
-  Users,
-  Briefcase,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  FileSpreadsheet,
-  UserPlus,
-  UserCheck,
-  GraduationCap,
-  Receipt,
-  Building2,
-  FilePieChart,
-  FileBarChart,
-  LayoutDashboard,
-  ClipboardCheck,
-  Tag,
-  Code,
-  Lock,
-  Building,
-  BarChart,
-  HeadphonesIcon,
-  Package,
-  Layers
-} from "lucide-react";
-import { useSubscription } from "@/contexts/SubscriptionContext";
-import { useSegment } from "@/contexts/SegmentContext";
-import { Icon } from './ui/icon';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-type SidebarMainItem = {
-  title: string;
-  icon: JSX.Element;
-  href: string;
-  requiresFeature?: string;
-};
-
-type SidebarSubItem = {
-  title: string;
-  href: string;
-  icon?: JSX.Element;
-};
-
-type SidebarCollapsibleItem = {
-  title: string;
-  icon: JSX.Element;
-  items: SidebarSubItem[];
-  requiresFeature?: string;
-  open?: boolean;
-};
+import { useSegment } from '@/contexts/SegmentContext';
 
 const Sidebar = () => {
+  const [isExpanded, setIsExpanded] = useState(true);
   const location = useLocation();
-  const { hasAccess } = useSubscription();
-  const { segmentName, currentSegment, segmentActivities } = useSegment();
   
-  const [segmentMenuOpen, setSegmentMenuOpen] = useState(false);
-  const [personnelOpen, setPersonnelOpen] = useState(false);
-  const [accountingOpen, setAccountingOpen] = useState(false);
-  const [devAdminOpen, setDevAdminOpen] = useState(false);
+  const { segmentName, segmentActivities, segmentIcon } = useSegment();
   
-  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
-  const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
-  
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setCompanyName(localStorage.getItem('companyName') || 'Sua Empresa');
-      setLogoUrl(localStorage.getItem('logoUrl') || '');
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    const checkInterval = setInterval(() => {
-      const storedLogo = localStorage.getItem('logoUrl') || '';
-      const storedName = localStorage.getItem('companyName') || 'Sua Empresa';
-      
-      if (storedLogo !== logoUrl) {
-        setLogoUrl(storedLogo);
-      }
-      
-      if (storedName !== companyName) {
-        setCompanyName(storedName);
-      }
-    }, 2000);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(checkInterval);
-    };
-  }, [logoUrl, companyName]);
-  
-  useEffect(() => {
-    if (location.pathname.startsWith('/segment')) {
-      setSegmentMenuOpen(true);
-    }
-    if (location.pathname.startsWith('/personnel')) {
-      setPersonnelOpen(true);
-    }
-    if (location.pathname.startsWith('/accounting')) {
-      setAccountingOpen(true);
-    }
-    if (location.pathname.startsWith('/dev-admin')) {
-      setDevAdminOpen(true);
-    }
-  }, [location.pathname]);
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
   };
-
-  const isInPath = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
-
-  const sidebarMainItems: SidebarMainItem[] = [
-    { title: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
-    { title: "Finanças", icon: <BarChartBig size={18} />, href: "/finances", requiresFeature: "financial" },
-    { title: "Metas", icon: <Goal size={18} />, href: "/goals", requiresFeature: "goals" },
+  
+  // Define estrutura do menu
+  const menuItems = [
+    {
+      title: 'Navegação',
+      items: [
+        {
+          name: 'Dashboard',
+          href: '/dashboard',
+          icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+          active: location.pathname === '/dashboard',
+        },
+        {
+          name: 'Finanças',
+          href: '/finances',
+          icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+          active: location.pathname === '/finances',
+        },
+        {
+          name: 'Metas',
+          href: '/goals',
+          icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+          active: location.pathname === '/goals',
+        },
+        {
+          name: 'Aprendizado',
+          href: '/learn',
+          icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+          active: location.pathname === '/learn',
+        },
+      ],
+    },
+    {
+      title: `Atividades do Segmento (${segmentIcon} ${segmentName})`,
+      items: segmentActivities.map(activity => ({
+        name: activity.title,
+        href: activity.path,
+        description: activity.description,
+        active: location.pathname === activity.path,
+      })),
+    },
+    {
+      title: 'Departamento Pessoal',
+      items: [
+        {
+          name: 'Gestão de Colaboradores',
+          href: '/personnel/employees',
+          active: location.pathname === '/personnel/employees',
+        },
+        {
+          name: 'Controle de Ponto',
+          href: '/personnel/time-tracking',
+          active: location.pathname === '/personnel/time-tracking',
+        },
+        {
+          name: 'Holerites',
+          href: '/personnel/payslips',
+          active: location.pathname === '/personnel/payslips',
+        },
+        {
+          name: 'Recrutamento',
+          href: '/personnel/hiring',
+          active: location.pathname === '/personnel/hiring',
+        },
+        {
+          name: 'Processos de RH',
+          href: '/personnel/processes',
+          active: location.pathname === '/personnel/processes',
+        },
+      ],
+    },
+    {
+      title: 'Contabilidade',
+      items: [
+        {
+          name: 'Visão Geral',
+          href: '/accounting/overview',
+          active: location.pathname === '/accounting/overview',
+        },
+        {
+          name: 'Dashboard Contábil',
+          href: '/accounting/dashboard',
+          active: location.pathname === '/accounting/dashboard',
+        },
+        {
+          name: 'Lançamentos',
+          href: '/accounting/entries',
+          active: location.pathname === '/accounting/entries',
+        },
+        {
+          name: 'Fiscal',
+          href: '/accounting/fiscal',
+          active: location.pathname === '/accounting/fiscal',
+        },
+        {
+          name: 'Impostos',
+          href: '/accounting/taxes',
+          active: location.pathname === '/accounting/taxes',
+        },
+        {
+          name: 'Notas Fiscais',
+          href: '/accounting/invoices',
+          active: location.pathname === '/accounting/invoices',
+        },
+        {
+          name: 'Relatórios',
+          href: '/accounting/reports',
+          active: location.pathname === '/accounting/reports',
+        },
+        {
+          name: 'MEI',
+          href: '/accounting/mei',
+          active: location.pathname === '/accounting/mei',
+        },
+        {
+          name: 'DRE e Balanços',
+          href: '/accounting/financial-statements',
+          active: location.pathname === '/accounting/financial-statements',
+        },
+      ],
+    },
+    {
+      title: 'Utilitários',
+      items: [
+        {
+          name: 'Calendário',
+          href: '/calendar',
+          active: location.pathname === '/calendar',
+        },
+        {
+          name: 'Benchmarking',
+          href: '/benchmarking',
+          active: location.pathname === '/benchmarking',
+        },
+        {
+          name: 'Simulador',
+          href: '/simulator',
+          active: location.pathname === '/simulator',
+        },
+        {
+          name: 'Inspiração',
+          href: '/inspiration',
+          active: location.pathname === '/inspiration',
+        },
+        {
+          name: 'Indicadores ESG',
+          href: '/esg',
+          active: location.pathname === '/esg',
+        },
+      ],
+    },
   ];
-
-  const analyticsItems: SidebarMainItem[] = [
-    { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
-    { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
-    { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
-  ];
-
-  const collaborationItems: SidebarMainItem[] = [
-    { title: "Aprendizado", icon: <BookOpen size={18} />, href: "/learn" },
-    { title: "Inspiração", icon: <Star size={18} />, href: "/inspiration" },
-    { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
-    { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
-  ];
-
-  const personnelItems = [
-    { title: "Colaboradores", href: "/personnel/employees", icon: <Users size={16} /> },
-    { title: "Ponto Eletrônico", href: "/personnel/time-tracking", icon: <Clock size={16} /> },
-    { title: "Holerites", href: "/personnel/payslips", icon: <FileSpreadsheet size={16} /> },
-    { title: "Admissões", href: "/personnel/hiring", icon: <UserPlus size={16} /> },
-    { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
-  ];
-
-  const accountingItems = [
-    { title: "Visão Geral", href: "/accounting/overview", icon: <LayoutDashboard size={16} /> },
-    { title: "Lançamentos Contábeis", href: "/accounting/entries", icon: <FileText size={16} /> },
-    { title: "Fiscal", href: "/accounting/fiscal", icon: <ClipboardCheck size={16} /> },
-    { title: "Tributos", href: "/accounting/taxes", icon: <Building2 size={16} /> },
-    { title: "Notas Fiscais", href: "/accounting/invoices", icon: <Receipt size={16} /> },
-    { title: "Relatórios", href: "/accounting/reports", icon: <FilePieChart size={16} /> },
-    { title: "MEI", href: "/accounting/mei", icon: <Tag size={16} /> },
-    { title: "DRE", href: "/accounting/financial-statements", icon: <FileBarChart size={16} /> },
-  ];
-
-  const devAdminItems = [
-    { title: "Processos Personalizados", href: "/dev-admin/custom-processes", icon: <Code size={16} /> },
-    { title: "Níveis de Acesso", href: "/dev-admin/access-levels", icon: <Lock size={16} /> },
-    { title: "Empresas", href: "/dev-admin/companies", icon: <Building size={16} /> },
-    { title: "Relatórios", href: "/dev-admin/reports", icon: <BarChart size={16} /> },
-    { title: "Planos", href: "/dev-admin/plans", icon: <Package size={16} /> },
-    { title: "Suporte", href: "/dev-admin/support", icon: <HeadphonesIcon size={16} /> },
-  ];
-
-  useEffect(() => {
-    const prefs = localStorage.getItem('primaryColor') || '#8B5CF6';
-    if (prefs) {
-      document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`);
-      document.documentElement.style.setProperty('--sidebar-primary', prefs);
-    }
-  }, [currentSegment]);
-
-  // Map the icon string from segmentActivities to a Lucide component
-  const getIconComponent = (iconName: string, size: number = 16) => {
-    try {
-      // Common icons used in the app
-      switch (iconName) {
-        case 'package': return <Package size={size} />;
-        case 'list-ordered': return <ClipboardCheck size={size} />;
-        case 'shopping-cart': return <Receipt size={size} />;
-        case 'wrench': return <Settings size={size} />;
-        case 'truck': return <Building2 size={size} />;
-        case 'file-text': return <FileText size={size} />;
-        case 'user-plus': return <UserPlus size={size} />;
-        case 'book': return <BookOpen size={size} />;
-        case 'user-check': return <UserCheck size={size} />;
-        case 'edit': return <FileText size={size} />;
-        case 'award': return <Star size={size} />;
-        case 'calendar': return <CalendarDays size={size} />;
-        case 'folder-open': return <FileText size={size} />;
-        case 'calendar-clock': return <Clock size={size} />;
-        case 'users': return <Users size={size} />;
-        case 'chart-bar': return <BarChart size={size} />;
-        case 'kanban': return <Layers size={size} />;
-        case 'headphones': return <HeadphonesIcon size={size} />;
-        case 'git-branch': return <Code size={size} />;
-        case 'settings': return <Settings size={size} />;
-        case 'chart-line': return <LineChart size={size} />;
-        case 'clipboard-list': return <ClipboardCheck size={size} />;
-        case 'calendar-check': return <CalendarDays size={size} />;
-        case 'file-contract': return <FileText size={size} />;
-        case 'message-square': return <MessageCircle size={size} />;
-        case 'grid-2x2': return <Layers size={size} />;
-        case 'image': return <FileText size={size} />;
-        case 'repeat': return <Code size={size} />;
-        case 'bed': return <Building2 size={size} />;
-        case 'pill': return <Package size={size} />;
-        case 'file-invoice': return <FileText size={size} />;
-        case 'dollar-sign': return <BarChartBig size={size} />;
-        case 'credit-card': return <BarChartBig size={size} />;
-        case 'megaphone': return <MessageCircle size={size} />;
-        case 'map': return <FileText size={size} />;
-        case 'wifi': return <Code size={size} />;
-        case 'layout-grid': return <Layers size={size} />;
-        default: return <FileText size={size} />;
-      }
-    } catch (error) {
-      console.error(`Error loading icon: ${iconName}`, error);
-      return <FileText size={size} />;
-    }
-  };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
-      <div className="flex flex-col h-full">
-        <div className="p-6">
-          <Link to="/" className="flex items-center gap-2 no-underline">
-            {logoUrl ? (
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white">
-                <img src={logoUrl} alt={companyName} className="max-w-full max-h-full object-contain" />
-              </div>
-            ) : (
-              <div className="bg-primary rounded-lg w-8 h-8 flex items-center justify-center text-white font-bold">
-                {companyName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="font-medium text-sidebar-foreground truncate">
-              {companyName}
-            </span>
-          </Link>
-          <div className="text-xs text-sidebar-foreground/70 mt-1 ml-10">
-            {segmentName}
-          </div>
+    <>
+      <aside
+        className={`bg-card min-h-screen ${
+          isExpanded ? 'w-[240px]' : 'w-[75px]'
+        } flex flex-col transition-all duration-300`}
+      >
+        <div className="flex items-center justify-center h-16 shrink-0">
+          <img
+            src="/logo.svg"
+            alt="Company Logo"
+            className="h-8 w-auto transition-all duration-300"
+          />
         </div>
-
-        <nav className="flex-1 overflow-y-auto pb-6">
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Principal
-            </div>
-            {sidebarMainItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
-
-          {/* Segment-specific Activities Section */}
-          {segmentActivities.length > 0 && (
-            <div className="px-3 py-2">
-              <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-                Atividades do Segmento
-              </div>
-              <div
-                className={cn(
-                  "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                  isInPath("/segment")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80"
-                )}
-                onClick={() => setSegmentMenuOpen(!segmentMenuOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <Layers size={18} />
-                  <span>Atividades do {segmentName}</span>
+        <Separator />
+        <nav className="flex-1 py-4">
+          {menuItems.map((section, index) => (
+            <div key={index} className="mb-4">
+              {section.title && (
+                <div className="text-sm text-muted-foreground px-4 py-2">
+                  {section.title}
                 </div>
-                {segmentMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </div>
-              
-              {segmentMenuOpen && (
-                <div className="ml-9 space-y-1 mt-1">
-                  {segmentActivities.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={cn(
-                        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                        isActive(item.path)
-                          ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70"
-                      )}
+              )}
+              <ul>
+                {section.items.map((item) => (
+                  <li key={item.name}>
+                    <NavLink
+                      to={item.href}
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2 text-sm rounded-md transition-colors duration-200
+                        ${
+                          isActive
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'hover:bg-accent hover:text-accent-foreground'
+                        }`
+                      }
                     >
-                      {getIconComponent(item.icon)}
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Analytics
-            </div>
-            {analyticsItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Departamento Pessoal
-            </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/personnel")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setPersonnelOpen(!personnelOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <Briefcase size={18} />
-                <span>Departamento Pessoal</span>
-              </div>
-              {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {personnelOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {personnelItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
+                      {item.icon && (
+                        <span className="mr-2">{item.icon}</span>
+                      )}
+                      <span>{item.name}</span>
+                    </NavLink>
+                  </li>
                 ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Área Contábil
+              </ul>
             </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/accounting")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setAccountingOpen(!accountingOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <FileText size={18} />
-                <span>Área Contábil</span>
-              </div>
-              {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {accountingOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {accountingItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Dev / Admin
-            </div>
-            <div
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
-                isInPath("/dev-admin")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80"
-              )}
-              onClick={() => setDevAdminOpen(!devAdminOpen)}
-            >
-              <div className="flex items-center gap-3">
-                <Code size={18} />
-                <span>Dev / Admin</span>
-              </div>
-              {devAdminOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </div>
-            
-            {devAdminOpen && (
-              <div className="ml-9 space-y-1 mt-1">
-                {devAdminItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
-                    )}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="px-3 py-2">
-            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
-              Colaboração
-            </div>
-            {collaborationItems.map((item) => (
-              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                    isActive(item.href)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              )
-            ))}
-          </div>
+          ))}
         </nav>
+      </aside>
 
-        <div className="border-t border-sidebar-border p-3">
-          <Link
-            to="/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-              isActive("/settings")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <Settings size={18} />
-            Configurações
-          </Link>
-          <Link
-            to="/help"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-              isActive("/help")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <HelpCircle size={18} />
-            Ajuda
-          </Link>
-          <Link
-            to="/profile"
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
-              isActive("/profile")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80"
-            )}
-          >
-            <CircleUserRound size={18} />
-            Perfil
-          </Link>
-        </div>
-      </div>
-    </aside>
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="ml-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-6 w-6 md:hidden"
+            >
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span className="sr-only">Abrir menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="sm:max-w-sm">
+          <SheetHeader className="text-left">
+            <SheetTitle>Menu</SheetTitle>
+            <SheetDescription>
+              Ações rápidas e informações da sua conta.
+            </SheetDescription>
+          </SheetHeader>
+          <Separator className="my-4" />
+          <div className="pb-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium leading-none">
+                Sua Empresa
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Informações da sua conta e perfil.
+              </p>
+            </div>
+            <Separator className="my-4" />
+            <div className="flex items-center gap-4">
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                <AvatarFallback>SC</AvatarFallback>
+              </Avatar>
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">
+                  Seu Nome
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  seuemail@example.com
+                </p>
+              </div>
+            </div>
+          </div>
+          <Separator />
+          <nav className="flex-1 py-4">
+            {menuItems.map((section, index) => (
+              <div key={index} className="mb-4">
+                {section.title && (
+                  <div className="text-sm text-muted-foreground px-4 py-2">
+                    {section.title}
+                  </div>
+                )}
+                <ul>
+                  {section.items.map((item) => (
+                    <li key={item.name}>
+                      <NavLink
+                        to={item.href}
+                        className={({ isActive }) =>
+                          `flex items-center px-4 py-2 text-sm rounded-md transition-colors duration-200
+                          ${
+                            isActive
+                              ? 'bg-primary/10 text-primary font-medium'
+                              : 'hover:bg-accent hover:text-accent-foreground'
+                          }`
+                        }
+                      >
+                        {item.icon && (
+                          <span className="mr-2">{item.icon}</span>
+                        )}
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 };
 
