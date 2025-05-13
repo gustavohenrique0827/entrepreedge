@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,12 +13,21 @@ export interface SegmentVisualPreferences {
   layoutPriorities: string[];
 }
 
+// Define segment activities
+export interface SegmentActivity {
+  title: string;
+  path: string;
+  icon: string; // Icon name from lucide-react
+  description?: string;
+}
+
 interface SegmentContextType {
   currentSegment: BusinessSegmentType;
   setCurrentSegment: (segment: BusinessSegmentType) => void;
   getVisualPreferences: () => SegmentVisualPreferences;
   applySegmentVisuals: () => void;
   segmentName: string;
+  segmentActivities: SegmentActivity[];
 }
 
 // Default visual preferences for each segment
@@ -108,6 +116,87 @@ const segmentNames: Record<BusinessSegmentType, string> = {
   legal: 'Jurídico',
   education: 'Educação',
   manufacturing: 'Indústria'
+};
+
+// Segment-specific activities
+const segmentActivitiesByType: Record<BusinessSegmentType, SegmentActivity[]> = {
+  manufacturing: [
+    { title: "Gestão de Estoque", path: "/segment/inventory", icon: "package" },
+    { title: "Ordens de Produção", path: "/segment/production-orders", icon: "list-ordered" },
+    { title: "Compras e Suprimentos", path: "/segment/supplies", icon: "shopping-cart" },
+    { title: "Manutenção de Equipamentos", path: "/segment/equipment", icon: "wrench" },
+    { title: "Logística e Expedição", path: "/segment/logistics", icon: "truck" },
+    { title: "Relatórios de Produção", path: "/segment/production-reports", icon: "file-text" }
+  ],
+  education: [
+    { title: "Matrículas e Alunos", path: "/segment/students", icon: "user-plus" },
+    { title: "Disciplinas e Turmas", path: "/segment/courses", icon: "book" },
+    { title: "Professores e Diário", path: "/segment/teachers", icon: "user-check" },
+    { title: "Notas e Avaliações", path: "/segment/grades", icon: "edit" },
+    { title: "Emissão de Certificados", path: "/segment/certificates", icon: "award" },
+    { title: "Calendário Escolar", path: "/segment/school-calendar", icon: "calendar" }
+  ],
+  legal: [
+    { title: "Gestão de Processos", path: "/segment/cases", icon: "folder-open" },
+    { title: "Prazos e Audiências", path: "/segment/hearings", icon: "calendar-clock" },
+    { title: "Documentos Jurídicos", path: "/segment/legal-documents", icon: "file-text" },
+    { title: "Clientes e Contratos", path: "/segment/legal-clients", icon: "users" },
+    { title: "Agenda Jurídica", path: "/segment/legal-calendar", icon: "calendar" },
+    { title: "Relatórios por Advogado", path: "/segment/lawyer-reports", icon: "chart-bar" }
+  ],
+  tech: [
+    { title: "Gestão de Projetos", path: "/segment/projects", icon: "kanban" },
+    { title: "Chamados e Suporte", path: "/segment/support-tickets", icon: "headphones" },
+    { title: "Testes e Versionamento", path: "/segment/testing", icon: "git-branch" },
+    { title: "Base de Conhecimento", path: "/segment/knowledge", icon: "book" },
+    { title: "Configurações Técnicas", path: "/segment/tech-config", icon: "settings" },
+    { title: "Indicadores de Dev", path: "/segment/dev-metrics", icon: "chart-line" }
+  ],
+  services: [
+    { title: "Ordens de Serviço", path: "/segment/service-orders", icon: "clipboard-list" },
+    { title: "Agendamentos", path: "/segment/service-appointments", icon: "calendar-check" },
+    { title: "Contratos e SLA", path: "/segment/sla", icon: "file-contract" },
+    { title: "Atendimento ao Cliente", path: "/segment/customer-support", icon: "message-square" },
+    { title: "Orçamentos e Propostas", path: "/segment/proposals", icon: "file-text" },
+    { title: "Equipe de Campo", path: "/segment/field-team", icon: "users" }
+  ],
+  fashion: [
+    { title: "Gestão de Coleções", path: "/segment/collections", icon: "layout-grid" },
+    { title: "Estoque (tamanho/cor)", path: "/segment/fashion-inventory", icon: "grid-2x2" },
+    { title: "Vendas Online", path: "/segment/fashion-sales", icon: "shopping-cart" },
+    { title: "Produtos com Imagens", path: "/segment/product-images", icon: "image" },
+    { title: "Trocas e Devoluções", path: "/segment/returns", icon: "repeat" },
+    { title: "Relatórios de Moda", path: "/segment/fashion-reports", icon: "chart-bar" }
+  ],
+  health: [
+    { title: "Cadastro de Pacientes", path: "/segment/patients", icon: "user-plus" },
+    { title: "Agendamento Consultas", path: "/segment/appointments", icon: "calendar-check" },
+    { title: "Gestão Hospital/Leitos", path: "/segment/hospital", icon: "bed" },
+    { title: "Controle de Medicamentos", path: "/segment/medications", icon: "pill" },
+    { title: "Faturamento Convênios", path: "/segment/health-billing", icon: "file-invoice" },
+    { title: "Prontuário Eletrônico", path: "/segment/medical-records", icon: "clipboard-list" }
+  ],
+  ecommerce: [
+    { title: "Cadastro de Produtos", path: "/segment/products", icon: "package" },
+    { title: "Carrinho e Checkout", path: "/segment/checkout", icon: "shopping-cart" },
+    { title: "Gestão Vendas Online", path: "/segment/online-sales", icon: "dollar-sign" },
+    { title: "Integração Pagamentos", path: "/segment/payments", icon: "credit-card" },
+    { title: "Logística e Entregas", path: "/segment/ecommerce-logistics", icon: "truck" },
+    { title: "Marketing e Campanhas", path: "/segment/marketing", icon: "megaphone" }
+  ],
+  agro: [
+    { title: "Talhões e Safras", path: "/segment/crops", icon: "map" },
+    { title: "Controle de Insumos", path: "/segment/farm-supplies", icon: "package" },
+    { title: "Produtividade por Área", path: "/segment/productivity", icon: "chart-bar" },
+    { title: "Calendário Agrícola", path: "/segment/farm-calendar", icon: "calendar" },
+    { title: "Integração Sensores/IoT", path: "/segment/farm-iot", icon: "wifi" },
+    { title: "Comercialização", path: "/segment/farm-sales", icon: "dollar-sign" }
+  ],
+  generic: [
+    { title: "Clientes e Fornecedores", path: "/segment/clients-suppliers", icon: "users" },
+    { title: "Emissão de Notas Fiscais", path: "/segment/invoices", icon: "file-text" },
+    { title: "Financeiro", path: "/segment/financial", icon: "dollar-sign" }
+  ]
 };
 
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
@@ -222,7 +311,8 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
       setCurrentSegment: updateSegment,
       getVisualPreferences,
       applySegmentVisuals,
-      segmentName: segmentNames[currentSegment]
+      segmentName: segmentNames[currentSegment],
+      segmentActivities: segmentActivitiesByType[currentSegment] || []
     }}>
       {children}
     </SegmentContext.Provider>
