@@ -20,6 +20,7 @@ interface DataTableProps {
   onAddNew?: () => void;
   searchable?: boolean;
   pagination?: boolean;
+  emptyMessage?: string;
 }
 
 export function DataTable({
@@ -29,7 +30,8 @@ export function DataTable({
   onRowClick,
   onAddNew,
   searchable = true,
-  pagination = false
+  pagination = false,
+  emptyMessage = "Nenhum registro encontrado."
 }: DataTableProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -104,7 +106,7 @@ export function DataTable({
               {paginatedData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    Nenhum registro encontrado.
+                    {emptyMessage}
                   </TableCell>
                 </TableRow>
               ) : (
