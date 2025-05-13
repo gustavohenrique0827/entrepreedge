@@ -1,582 +1,369 @@
-
 import React, { useState } from 'react';
-import { PageContainer } from '@/components/PageContainer';
-import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Download, Edit, Eye, Plus, Printer, Search, Filter, FileText, Calendar, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, Search, Download, FileText, Calendar, Filter, Eye } from 'lucide-react';
-
-interface PayslipItem {
-  id: number;
-  description: string;
-  reference: string;
-  value: number;
-  type: 'earnings' | 'deductions';
-}
+import { PageContainer } from '@/components/PageContainer';
+import { PageHeader } from '@/components/PageHeader';
+import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Payslip {
   id: number;
-  employeeId: number;
-  employeeName: string;
+  employee: string;
   period: string;
-  baseDate: string;
-  grossAmount: number;
-  netAmount: number;
-  status: 'Processando' | 'Disponível' | 'Pago';
-  items: PayslipItem[];
+  status: string;
+  amount?: string;
+  department?: string;
 }
 
-const mockPayslips: Payslip[] = [
-  {
-    id: 1,
-    employeeId: 1,
-    employeeName: 'João Silva',
-    period: 'Maio 2023',
-    baseDate: '2023-05-31',
-    grossAmount: 5000,
-    netAmount: 4125,
-    status: 'Pago',
-    items: [
-      { id: 1, description: 'Salário Base', reference: '30 dias', value: 5000, type: 'earnings' },
-      { id: 2, description: 'INSS', reference: '8%', value: 400, type: 'deductions' },
-      { id: 3, description: 'IRRF', reference: '7.5%', value: 375, type: 'deductions' },
-      { id: 4, description: 'FGTS', reference: '8%', value: 400, type: 'earnings' }
-    ]
-  },
-  {
-    id: 2,
-    employeeId: 2,
-    employeeName: 'Maria Oliveira',
-    period: 'Maio 2023',
-    baseDate: '2023-05-31',
-    grossAmount: 7500,
-    netAmount: 5925,
-    status: 'Pago',
-    items: [
-      { id: 1, description: 'Salário Base', reference: '30 dias', value: 7500, type: 'earnings' },
-      { id: 2, description: 'INSS', reference: '9%', value: 675, type: 'deductions' },
-      { id: 3, description: 'IRRF', reference: '12%', value: 900, type: 'deductions' },
-      { id: 4, description: 'FGTS', reference: '8%', value: 600, type: 'earnings' }
-    ]
-  },
-  {
-    id: 3,
-    employeeId: 3,
-    employeeName: 'Pedro Santos',
-    period: 'Maio 2023',
-    baseDate: '2023-05-31',
-    grossAmount: 6200,
-    netAmount: 5022,
-    status: 'Disponível',
-    items: [
-      { id: 1, description: 'Salário Base', reference: '30 dias', value: 6000, type: 'earnings' },
-      { id: 2, description: 'Hora Extra', reference: '10h', value: 200, type: 'earnings' },
-      { id: 3, description: 'INSS', reference: '9%', value: 558, type: 'deductions' },
-      { id: 4, description: 'IRRF', reference: '10%', value: 620, type: 'deductions' },
-      { id: 5, description: 'FGTS', reference: '8%', value: 496, type: 'earnings' }
-    ]
-  }
-];
-
 const Payslips = () => {
-  const [payslips] = useState<Payslip[]>(mockPayslips);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
-  const [isPayslipDialogOpen, setIsPayslipDialogOpen] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState('05/2023');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [periodFilter, setPeriodFilter] = useState('all');
+  const [sortColumn, setSortColumn] = useState<keyof Payslip>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { toast } = useToast();
 
-  // Filtrar folhas de pagamento
-  const filteredPayslips = payslips.filter(
-    (payslip) => 
-      payslip.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payslip.period.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Formatar valores monetários
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
-  // Visualizar detalhes da folha de pagamento
-  const viewPayslip = (payslip: Payslip) => {
-    setSelectedPayslip(payslip);
-    setIsPayslipDialogOpen(true);
-  };
-
-  // Gerar folha de pagamento
-  const generatePayslip = () => {
+  const handleDownload = (id: number) => {
     toast({
-      title: "Folha de pagamento gerada",
-      description: `A folha de pagamento do período ${selectedMonth} foi gerada com sucesso.`,
-      variant: "success",
+      title: "Download Iniciado",
+      description: `O download do holerite #${id} foi iniciado.`,
     });
   };
 
-  // Download da folha de pagamento
-  const downloadPayslip = (id: number) => {
+  const handleSort = (column: keyof Payslip) => {
+    if (column === sortColumn) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const handlePrint = () => {
     toast({
-      title: "Download iniciado",
-      description: "O download do contracheque foi iniciado.",
-      variant: "success",
+      title: "Imprimindo holerites",
+      description: "Todos os holerites filtrados serão enviados para impressão.",
     });
   };
+
+  const handleGeneratePayslip = () => {
+    toast({
+      title: "Gerar Holerite",
+      description: "Processo de geração de holerite iniciado.",
+    });
+  };
+
+  const payslipsData: Payslip[] = [
+    { id: 1, employee: 'João Silva', period: '2024-01', status: 'Pago', amount: 'R$ 3.450,00', department: 'Comercial' },
+    { id: 2, employee: 'Maria Santos', period: '2024-01', status: 'Pago', amount: 'R$ 4.200,00', department: 'Tecnologia' },
+    { id: 3, employee: 'Alice Oliveira', period: '2024-01', status: 'Pendente', amount: 'R$ 2.850,00', department: 'Marketing' },
+    { id: 4, employee: 'Carlos Mendes', period: '2024-02', status: 'Pago', amount: 'R$ 3.600,00', department: 'Comercial' },
+    { id: 5, employee: 'Fernanda Lima', period: '2024-02', status: 'Pendente', amount: 'R$ 5.100,00', department: 'Tecnologia' },
+    { id: 6, employee: 'Roberto Alves', period: '2024-02', status: 'Cancelado', amount: 'R$ 3.200,00', department: 'RH' },
+    { id: 7, employee: 'Paula Sousa', period: '2024-03', status: 'Pago', amount: 'R$ 4.500,00', department: 'Financeiro' },
+    { id: 8, employee: 'Miguel Costa', period: '2024-03', status: 'Pendente', amount: 'R$ 2.950,00', department: 'Marketing' },
+  ];
+
+  const filteredPayslips = payslipsData
+    .filter(payslip => {
+      const matchesSearch = 
+        payslip.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payslip.period.includes(searchTerm) ||
+        (payslip.department && payslip.department.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesStatus = 
+        statusFilter === 'all' || 
+        payslip.status.toLowerCase() === statusFilter.toLowerCase();
+      
+      const matchesPeriod =
+        periodFilter === 'all' ||
+        payslip.period === periodFilter;
+      
+      return matchesSearch && matchesStatus && matchesPeriod;
+    })
+    .sort((a, b) => {
+      if (sortColumn === 'id' || sortColumn === 'period') {
+        return sortDirection === 'asc' 
+          ? a[sortColumn] > b[sortColumn] ? 1 : -1
+          : a[sortColumn] < b[sortColumn] ? 1 : -1;
+      }
+      
+      return sortDirection === 'asc'
+        ? String(a[sortColumn]).localeCompare(String(b[sortColumn]))
+        : String(b[sortColumn]).localeCompare(String(a[sortColumn]));
+    });
+
+  const periods = [...new Set(payslipsData.map(p => p.period))];
+
+  const getBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pago':
+        return 'default';
+      case 'pendente':
+        return 'secondary';
+      case 'cancelado':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Metas', href: '/goals', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Aprendizados', href: '/learn', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> }
+  ];
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="Folha de Pagamento"
-        description="Gerenciamento de folha de pagamento e contracheques"
-      />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
+      <div className="flex-1 ml-[240px] transition-all duration-300">
+        <Navbar items={navItems} />
+        <PageContainer>
+          <PageHeader title="Holerites" description="Gerenciar e visualizar holerites dos colaboradores" />
 
-      <Tabs defaultValue="payslips" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="payslips">Contracheques</TabsTrigger>
-          <TabsTrigger value="processing">Processamento</TabsTrigger>
-          <TabsTrigger value="reports">Relatórios</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="payslips">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Contracheques
-                </CardTitle>
-                
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} />
-                    <select 
-                      className="bg-background border rounded py-1 px-2 text-sm"
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                    >
-                      <option value="05/2023">Maio/2023</option>
-                      <option value="04/2023">Abril/2023</option>
-                      <option value="03/2023">Março/2023</option>
-                    </select>
-                  </div>
-                  
-                  <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar funcionário..."
-                      className="pl-8"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <div className="relative w-full sm:w-auto">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar colaborador ou departamento..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-full sm:w-[300px]"
+                  />
                 </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <div className="flex items-center">
+                      <Filter className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Status" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                  <SelectTrigger className="w-full sm:w-[150px]">
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Período" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {periods.map(period => (
+                      <SelectItem key={period} value={period}>{period}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Funcionário</TableHead>
-                    <TableHead>Período</TableHead>
-                    <TableHead>Data Base</TableHead>
-                    <TableHead className="text-right">Valor Bruto</TableHead>
-                    <TableHead className="text-right">Valor Líquido</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPayslips.map((payslip) => (
-                    <TableRow key={payslip.id}>
-                      <TableCell className="font-medium">{payslip.employeeName}</TableCell>
-                      <TableCell>{payslip.period}</TableCell>
-                      <TableCell>{new Date(payslip.baseDate).toLocaleDateString('pt-BR')}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(payslip.grossAmount)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(payslip.netAmount)}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          payslip.status === 'Pago' 
-                            ? 'bg-green-100 text-green-800' 
-                            : payslip.status === 'Disponível'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {payslip.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => viewPayslip(payslip)}
-                          >
-                            <Eye size={16} />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => downloadPayslip(payslip.id)}
-                          >
-                            <Download size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="processing">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Processamento da Folha
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-4">Parâmetros de Processamento</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium">Período de Competência</label>
-                      <div className="flex items-center gap-2">
-                        <select className="border rounded-md p-2 w-full">
-                          <option value="05/2023">Maio/2023</option>
-                          <option value="06/2023">Junho/2023</option>
-                          <option value="07/2023">Julho/2023</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium">Data de Pagamento</label>
-                      <Input type="date" defaultValue="2023-06-05" />
-                    </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium">Tipo de Folha</label>
-                      <select className="border rounded-md p-2">
-                        <option value="regular">Folha Regular</option>
-                        <option value="13">13º Salário</option>
-                        <option value="vacation">Férias</option>
-                        <option value="bonus">Participação nos Lucros</option>
-                      </select>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium">Funcionários</label>
-                      <select className="border rounded-md p-2">
-                        <option value="all">Todos os Funcionários</option>
-                        <option value="department">Por Departamento</option>
-                        <option value="individual">Individual</option>
-                      </select>
-                    </div>
-                    
-                    <Button onClick={generatePayslip} className="mt-2 w-full">
-                      Processar Folha de Pagamento
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Gerar Holerite
                     </Button>
-                  </div>
-                </div>
-                
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Criar novo holerite para um colaborador</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Visão Geral de Holerites</CardTitle>
+                <CardDescription>Visualize e gerencie os holerites dos colaboradores.</CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort('id')}>
+                        <div className="flex items-center">
+                          ID
+                          {sortColumn === 'id' && (
+                            <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort('employee')}>
+                        <div className="flex items-center">
+                          Colaborador
+                          {sortColumn === 'employee' && (
+                            <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort('period')}>
+                        <div className="flex items-center">
+                          Período
+                          {sortColumn === 'period' && (
+                            <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead>Departamento</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
+                        <div className="flex items-center">
+                          Status
+                          {sortColumn === 'status' && (
+                            <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                          )}
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayslips.length > 0 ? (
+                      filteredPayslips.map((payslip) => (
+                        <TableRow key={payslip.id}>
+                          <TableCell>{payslip.id}</TableCell>
+                          <TableCell className="font-medium">{payslip.employee}</TableCell>
+                          <TableCell>{payslip.period}</TableCell>
+                          <TableCell>{payslip.department || '-'}</TableCell>
+                          <TableCell>{payslip.amount || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={getBadgeVariant(payslip.status)}>
+                              {payslip.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => handleDownload(payslip.id)}>
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Baixar holerite</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Visualizar holerite</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Editar holerite</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <FileText className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Ver detalhes completos</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                          <div className="flex flex-col items-center">
+                            <FileText className="h-10 w-10 text-muted-foreground/60 mb-2" />
+                            <p>Nenhum holerite encontrado com os filtros aplicados</p>
+                            <Button 
+                              variant="link" 
+                              onClick={() => {
+                                setSearchTerm('');
+                                setStatusFilter('all');
+                                setPeriodFilter('all');
+                              }}
+                            >
+                              Limpar filtros
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Histórico de Processamentos</h3>
-                  
-                  <div className="border rounded-md divide-y">
-                    <div className="p-3 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Folha de Maio/2023</p>
-                        <p className="text-sm text-muted-foreground">Processada em 31/05/2023</p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Download size={16} className="mr-1" /> Relatório
-                      </Button>
-                    </div>
-                    
-                    <div className="p-3 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Folha de Abril/2023</p>
-                        <p className="text-sm text-muted-foreground">Processada em 30/04/2023</p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Download size={16} className="mr-1" /> Relatório
-                      </Button>
-                    </div>
-                    
-                    <div className="p-3 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Folha de Março/2023</p>
-                        <p className="text-sm text-muted-foreground">Processada em 31/03/2023</p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Download size={16} className="mr-1" /> Relatório
-                      </Button>
-                    </div>
-                    
-                    <div className="p-3 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">13º Salário - 1ª Parcela</p>
-                        <p className="text-sm text-muted-foreground">Processada em 15/11/2022</p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Download size={16} className="mr-1" /> Relatório
-                      </Button>
-                    </div>
-                  </div>
+                  <p className="text-sm">
+                    Total de Holerites: <strong>{filteredPayslips.length}</strong>
+                    {filteredPayslips.length !== payslipsData.length && (
+                      <span className="text-muted-foreground"> de {payslipsData.length}</span>
+                    )}
+                  </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="reports">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Relatórios da Folha
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Relatórios Gerenciais</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Resumo da Folha</span>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Download size={14} />
-                          PDF
-                        </Button>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Custos por Departamento</span>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Download size={14} />
-                          PDF
-                        </Button>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Encargos Sociais</span>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Download size={14} />
-                          PDF
-                        </Button>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2">
-                        <span>Provisões Trabalhistas</span>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Download size={14} />
-                          PDF
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handlePrint}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Imprimir
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Relatórios Legais</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Guia INSS</span>
-                        <div className="flex items-center gap-1">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            PDF
-                          </Button>
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            GFIP
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Guia FGTS</span>
-                        <div className="flex items-center gap-1">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            PDF
-                          </Button>
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            SEFIP
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2 border-b">
-                        <span>Guia IRRF</span>
-                        <div className="flex items-center gap-1">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            PDF
-                          </Button>
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Download size={14} />
-                            DARF
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center py-2">
-                        <span>CAGED</span>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1">
-                          <Download size={14} />
-                          XML
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Diálogo de detalhes do contracheque */}
-      <Dialog open={isPayslipDialogOpen} onOpenChange={setIsPayslipDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          {selectedPayslip && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Detalhes do Contracheque</DialogTitle>
-              </DialogHeader>
-              
-              <div className="py-4">
-                <div className="flex justify-between mb-4">
-                  <div>
-                    <p className="text-lg font-bold">{selectedPayslip.employeeName}</p>
-                    <p className="text-sm text-muted-foreground">Matrícula: #{selectedPayslip.employeeId}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold">{selectedPayslip.period}</p>
-                    <p className="text-sm text-muted-foreground">Data Base: {new Date(selectedPayslip.baseDate).toLocaleDateString('pt-BR')}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-medium text-lg mb-2">Vencimentos</h3>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Descrição</TableHead>
-                          <TableHead>Referência</TableHead>
-                          <TableHead className="text-right">Valor</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedPayslip.items
-                          .filter(item => item.type === 'earnings')
-                          .map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell>{item.description}</TableCell>
-                              <TableCell>{item.reference}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(item.value)}</TableCell>
-                            </TableRow>
-                          ))
-                        }
-                      </TableBody>
-                    </Table>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium text-lg mb-2">Descontos</h3>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Descrição</TableHead>
-                          <TableHead>Referência</TableHead>
-                          <TableHead className="text-right">Valor</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedPayslip.items
-                          .filter(item => item.type === 'deductions')
-                          .map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell>{item.description}</TableCell>
-                              <TableCell>{item.reference}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(item.value)}</TableCell>
-                            </TableRow>
-                          ))
-                        }
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex justify-between items-center pt-4 border-t">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Vencimentos</p>
-                    <p className="text-lg font-bold">{formatCurrency(selectedPayslip.grossAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Descontos</p>
-                    <p className="text-lg font-bold">{formatCurrency(selectedPayslip.grossAmount - selectedPayslip.netAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valor Líquido</p>
-                    <p className="text-xl font-bold">{formatCurrency(selectedPayslip.netAmount)}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsPayslipDialogOpen(false)}>
-                  Fechar
-                </Button>
-                <Button 
-                  onClick={() => downloadPayslip(selectedPayslip.id)}
-                  className="flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Baixar Contracheque
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </PageContainer>
+          <Button 
+            onClick={handleGeneratePayslip} 
+            className="absolute top-4 right-4"
+          >
+            Gerar Novo Holerite
+          </Button>
+        </PageContainer>
+      </div>
+    </div>
   );
 };
 

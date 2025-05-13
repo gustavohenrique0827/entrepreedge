@@ -1,5 +1,4 @@
 
-// Re-export the hook e funções de toast da implementação principal
-import { useToast, toast, ToastProvider, type ToastProps, type ToastActionElement, type ToastVariant } from "@/hooks/use-toast";
+import { useToast, toast } from "@/hooks/use-toast"
 
-export { useToast, toast, ToastProvider, type ToastProps, type ToastActionElement, type ToastVariant };
+export { useToast, toast }

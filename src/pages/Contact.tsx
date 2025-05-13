@@ -2,16 +2,45 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
-import { Send } from 'lucide-react';
+import { 
+  Home, 
+  BarChart2, 
+  Target, 
+  BookOpen,
+  Send
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Contact = () => {
+  const navItems = [
+    {
+      name: 'Dashboard',
+      href: '/',
+      icon: <Home size={18} />
+    },
+    {
+      name: 'Finanças',
+      href: '/#finances',
+      icon: <BarChart2 size={18} />
+    },
+    {
+      name: 'Metas',
+      href: '/#goals',
+      icon: <Target size={18} />
+    },
+    {
+      name: 'Aprendizado',
+      href: '/#learn',
+      icon: <BookOpen size={18} />
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar />
+        <Navbar items={navItems} />
         
         <div className="container px-4 py-12 mt-16">
           <div className="max-w-3xl mx-auto">

@@ -1,13 +1,114 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { 
-  BusinessSegmentType, 
-  SegmentContextType, 
-  SegmentModuleConfig, 
-  SegmentVisualPreferences 
-} from '@/types/segment-types';
-import { moduleConfigBySegment, segmentNames, visualPreferencesBySegment } from '@/data/segments-config';
+
+// Define segment types
+export type BusinessSegmentType = 'generic' | 'agro' | 'ecommerce' | 'health' | 'fashion' | 'services' | 'tech' | 'legal' | 'education' | 'manufacturing';
+
+// Visual preferences for each segment
+export interface SegmentVisualPreferences {
+  primaryColor: string;
+  secondaryColor: string;
+  typography: 'serif' | 'sans-serif' | 'handwritten';
+  iconStyle: 'outlined' | 'filled' | 'duotone';
+  layoutPriorities: string[];
+}
+
+interface SegmentContextType {
+  currentSegment: BusinessSegmentType;
+  setCurrentSegment: (segment: BusinessSegmentType) => void;
+  getVisualPreferences: () => SegmentVisualPreferences;
+  applySegmentVisuals: () => void;
+  segmentName: string;
+}
+
+// Default visual preferences for each segment
+const visualPreferencesBySegment: Record<BusinessSegmentType, SegmentVisualPreferences> = {
+  generic: {
+    primaryColor: '#8B5CF6', // Purple
+    secondaryColor: '#D946EF', // Pink
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['dashboard', 'finances', 'goals']
+  },
+  agro: {
+    primaryColor: '#84cc16', // Earth green
+    secondaryColor: '#ca8a04', // Wheat/Earth brown
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'weather', 'finances']
+  },
+  ecommerce: {
+    primaryColor: '#f97316', // Orange
+    secondaryColor: '#6554C0', // Purple
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['products', 'sales', 'marketing']
+  },
+  health: {
+    primaryColor: '#00A3C4', // Teal
+    secondaryColor: '#00875A', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['patients', 'appointments', 'finances']
+  },
+  fashion: {
+    primaryColor: '#EC4899', // Pink
+    secondaryColor: '#8B5CF6', // Purple
+    typography: 'handwritten',
+    iconStyle: 'duotone',
+    layoutPriorities: ['collections', 'sales', 'trends']
+  },
+  services: {
+    primaryColor: '#3B82F6', // Blue
+    secondaryColor: '#10B981', // Green
+    typography: 'sans-serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['clients', 'projects', 'invoices']
+  },
+  tech: {
+    primaryColor: '#6366F1', // Indigo
+    secondaryColor: '#14B8A6', // Teal
+    typography: 'sans-serif',
+    iconStyle: 'duotone',
+    layoutPriorities: ['projects', 'development', 'clients']
+  },
+  legal: {
+    primaryColor: '#0F172A', // Dark navy
+    secondaryColor: '#475569', // Slate
+    typography: 'serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['cases', 'documents', 'clients']
+  },
+  education: {
+    primaryColor: '#6554C0', // Purple
+    secondaryColor: '#00B8D9', // Blue
+    typography: 'serif',
+    iconStyle: 'outlined',
+    layoutPriorities: ['courses', 'students', 'schedule']
+  },
+  manufacturing: {
+    primaryColor: '#505F79', // Steel blue
+    secondaryColor: '#0052CC', // Blue
+    typography: 'sans-serif',
+    iconStyle: 'filled',
+    layoutPriorities: ['production', 'inventory', 'orders']
+  }
+};
+
+// Segment display names
+const segmentNames: Record<BusinessSegmentType, string> = {
+  generic: 'Genérico',
+  agro: 'Agronegócio',
+  ecommerce: 'E-Commerce',
+  health: 'Saúde',
+  fashion: 'Moda',
+  services: 'Serviços',
+  tech: 'Tecnologia',
+  legal: 'Jurídico',
+  education: 'Educação',
+  manufacturing: 'Indústria'
+};
 
 const SegmentContext = createContext<SegmentContextType | undefined>(undefined);
 
@@ -24,17 +125,13 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Apply the visual preferences when loading the app
       setTimeout(() => {
         const prefs = visualPreferencesBySegment[savedSegment];
-        if (prefs) {
-          applyVisualPreferences(prefs);
-        }
+        applyVisualPreferences(prefs);
       }, 100);
     }
   }, []);
 
   // Apply visual preferences function
   const applyVisualPreferences = (preferences: SegmentVisualPreferences) => {
-    if (!preferences) return;
-    
     // Apply colors to CSS variables
     document.documentElement.style.setProperty('--primary-color', preferences.primaryColor);
     document.documentElement.style.setProperty('--secondary-color', preferences.secondaryColor);
@@ -90,25 +187,17 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // Get current segment visual preferences
   const getVisualPreferences = (): SegmentVisualPreferences => {
-    return visualPreferencesBySegment[currentSegment] || visualPreferencesBySegment.generic;
-  };
-
-  // Get current segment module configuration
-  const getModuleConfig = (): SegmentModuleConfig => {
-    return moduleConfigBySegment[currentSegment] || moduleConfigBySegment.generic;
+    return visualPreferencesBySegment[currentSegment];
   };
 
   // Update segment and save to localStorage
   const updateSegment = (segment: BusinessSegmentType) => {
     setCurrentSegment(segment);
     localStorage.setItem('segment', segment);
-    localStorage.setItem('businessType', segmentNames[segment]);
     
     // Apply the visual preferences immediately
     const prefs = visualPreferencesBySegment[segment];
-    if (prefs) {
-      applyVisualPreferences(prefs);
-    }
+    applyVisualPreferences(prefs);
     
     toast({
       title: "Segmento atualizado",
@@ -127,29 +216,12 @@ export const SegmentProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   };
 
-  // Apply module configuration for the current segment
-  const applyModuleConfig = () => {
-    // Busca configuração do segmento atual
-    const config = getModuleConfig();
-    
-    // Salva no localStorage
-    localStorage.setItem('moduleConfig', JSON.stringify(config));
-    
-    // Notifica o usuário
-    toast({
-      title: "Módulos configurados",
-      description: `Estrutura de módulos para ${segmentNames[currentSegment]} configurada com sucesso`,
-    });
-  };
-
   return (
     <SegmentContext.Provider value={{ 
       currentSegment,
       setCurrentSegment: updateSegment,
       getVisualPreferences,
       applySegmentVisuals,
-      getModuleConfig,
-      applyModuleConfig,
       segmentName: segmentNames[currentSegment]
     }}>
       {children}
@@ -164,6 +236,3 @@ export const useSegment = () => {
   }
   return context;
 };
-
-export { segmentNames };
-export type { BusinessSegmentType };

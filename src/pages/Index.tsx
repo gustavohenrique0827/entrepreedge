@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
@@ -10,59 +9,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, BarChart2, Target, BookOpen, CheckCircle, BookOpenCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const Index = () => {
   // Get company data from localStorage
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
   const businessType = localStorage.getItem('businessType') || '';
   const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+  const { applyThemeColors } = useTheme();
   
   // Apply theme colors on component mount
   useEffect(() => {
-    const primaryColor = localStorage.getItem('primaryColor') || '#8B5CF6';
-    const secondaryColor = localStorage.getItem('secondaryColor') || '#D946EF';
-    
-    // Apply theme colors
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-    
-    // Convert to HSL for Tailwind variables
-    const hexToHSL = (hex) => {
-      // Remove the # from the beginning
-      hex = hex.replace(/^#/, '');
-
-      // Parse the hex values
-      let r = parseInt(hex.substring(0, 2), 16) / 255;
-      let g = parseInt(hex.substring(2, 4), 16) / 255;
-      let b = parseInt(hex.substring(4, 6), 16) / 255;
-
-      // Find max and min values to calculate the lightness
-      let max = Math.max(r, g, b);
-      let min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-
-      // Calculate hue and saturation
-      if (max !== min) {
-        let d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-        else if (max === g) h = (b - r) / d + 2;
-        else if (max === b) h = (r - g) / d + 4;
-        h *= 60;
-      }
-
-      return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
-    };
-    
-    const primaryHSL = hexToHSL(primaryColor);
-    const secondaryHSL = hexToHSL(secondaryColor);
-    
-    document.documentElement.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-    document.documentElement.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
-    
-    // Apply sidebar accent color
-    document.documentElement.style.setProperty('--sidebar-accent', `${primaryColor}15`); // 15% opacity for accent bg
-    document.documentElement.style.setProperty('--sidebar-primary', primaryColor);
+    applyThemeColors();
     
     // Update document title
     document.title = `${companyName} - Painel Principal`;

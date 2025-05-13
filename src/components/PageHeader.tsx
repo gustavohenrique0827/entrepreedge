@@ -1,40 +1,45 @@
 
 import React from 'react';
+import { Separator } from "@/components/ui/separator";
 
 interface PageHeaderProps {
   title: string;
-  description?: string;
   subtitle?: string;
-  actions?: React.ReactNode;
-  icon?: React.ReactNode;
+  description?: string; // Added description as an alternative to subtitle
+  icon?: React.ReactNode; // Added icon support
   actionButton?: React.ReactNode;
+  className?: string;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  description,
+export const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
   subtitle,
-  actions,
+  description, // Support for description prop
   icon,
-  actionButton
+  actionButton,
+  className = ""
 }) => {
+  const displayedSubtitle = subtitle || description; // Use either subtitle or description
+  
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-      <div className="flex items-center gap-3">
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-        <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
-          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+    <div className={`mb-6 ${className}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <div className="mb-4 sm:mb-0 flex items-center">
+          {icon && <span className="mr-2">{icon}</span>}
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+            {displayedSubtitle && (
+              <p className="text-sm text-muted-foreground mt-1">{displayedSubtitle}</p>
+            )}
+          </div>
         </div>
+        {actionButton && (
+          <div className="flex-shrink-0">
+            {actionButton}
+          </div>
+        )}
       </div>
-      
-      {(actions || actionButton) && (
-        <div className="flex items-center gap-2">
-          {actions}
-          {actionButton}
-        </div>
-      )}
+      <Separator className="my-4" />
     </div>
   );
 };

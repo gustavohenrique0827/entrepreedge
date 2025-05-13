@@ -1,37 +1,79 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Settings, HelpCircle, CircleUserRound } from "lucide-react";
+import {
+  BarChartBig,
+  BookOpen,
+  CalendarDays,
+  CircleUserRound,
+  FileText,
+  Goal,
+  HelpCircle,
+  Home,
+  Leaf,
+  LineChart,
+  MessageCircle,
+  Settings,
+  Star,
+  Target,
+  Users,
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  FileSpreadsheet,
+  UserPlus,
+  UserCheck,
+  GraduationCap,
+  Receipt,
+  Building2,
+  FilePieChart,
+  FileBarChart,
+  LayoutDashboard,
+  ClipboardCheck,
+  Tag,
+  Code,
+  Lock,
+  Building,
+  BarChart,
+  HeadphonesIcon,
+  Package
+} from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useSegment } from "@/contexts/SegmentContext";
-import { getNavItemsBySegment } from "@/utils/navigationUtils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-// Define proper TypeScript interfaces for navigation items
-interface NavSubItem {
-  name: string;
+type SidebarMainItem = {
+  title: string;
+  icon: JSX.Element;
   href: string;
-  icon: React.ReactNode;
-}
+  requiresFeature?: string;
+};
 
-interface NavItem {
-  name: string;
+type SidebarSubItem = {
+  title: string;
   href: string;
-  icon: React.ReactNode;
-  subItems?: NavSubItem[];
-}
+  icon?: JSX.Element;
+};
+
+type SidebarCollapsibleItem = {
+  title: string;
+  icon: JSX.Element;
+  items: SidebarSubItem[];
+  requiresFeature?: string;
+  open?: boolean;
+};
 
 const Sidebar = () => {
   const location = useLocation();
   const { hasAccess } = useSubscription();
   const { segmentName, currentSegment } = useSegment();
   
+  const [personnelOpen, setPersonnelOpen] = useState(false);
+  const [accountingOpen, setAccountingOpen] = useState(false);
+  const [devAdminOpen, setDevAdminOpen] = useState(false);
+  
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('logoUrl') || '');
-  
-  // State to track open menu sections
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   
   useEffect(() => {
     const handleStorageChange = () => {
@@ -61,6 +103,73 @@ const Sidebar = () => {
   }, [logoUrl, companyName]);
   
   useEffect(() => {
+    if (location.pathname.startsWith('/personnel')) {
+      setPersonnelOpen(true);
+    }
+    if (location.pathname.startsWith('/accounting')) {
+      setAccountingOpen(true);
+    }
+    if (location.pathname.startsWith('/dev-admin')) {
+      setDevAdminOpen(true);
+    }
+  }, [location.pathname]);
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const isInPath = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
+  const sidebarMainItems: SidebarMainItem[] = [
+    { title: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
+    { title: "Finanças", icon: <BarChartBig size={18} />, href: "/finances", requiresFeature: "financial" },
+    { title: "Metas", icon: <Goal size={18} />, href: "/goals", requiresFeature: "goals" },
+  ];
+
+  const analyticsItems: SidebarMainItem[] = [
+    { title: "Benchmarking", icon: <LineChart size={18} />, href: "/benchmarking" },
+    { title: "Simulador", icon: <Target size={18} />, href: "/simulator" },
+    { title: "ESG", icon: <Leaf size={18} />, href: "/esg" },
+  ];
+
+  const collaborationItems: SidebarMainItem[] = [
+    { title: "Aprendizado", icon: <BookOpen size={18} />, href: "/learn" },
+    { title: "Inspiração", icon: <Star size={18} />, href: "/inspiration" },
+    { title: "Agenda", icon: <CalendarDays size={18} />, href: "/calendar" },
+    { title: "Chat", icon: <MessageCircle size={18} />, href: "/chat", requiresFeature: "communications" },
+  ];
+
+  const personnelItems = [
+    { title: "Colaboradores", href: "/personnel/employees", icon: <Users size={16} /> },
+    { title: "Ponto Eletrônico", href: "/personnel/time-tracking", icon: <Clock size={16} /> },
+    { title: "Holerites", href: "/personnel/payslips", icon: <FileSpreadsheet size={16} /> },
+    { title: "Admissões", href: "/personnel/hiring", icon: <UserPlus size={16} /> },
+    { title: "Processos de RH", href: "/personnel/processes", icon: <GraduationCap size={16} /> },
+  ];
+
+  const accountingItems = [
+    { title: "Visão Geral", href: "/accounting/overview", icon: <LayoutDashboard size={16} /> },
+    { title: "Lançamentos Contábeis", href: "/accounting/entries", icon: <FileText size={16} /> },
+    { title: "Fiscal", href: "/accounting/fiscal", icon: <ClipboardCheck size={16} /> },
+    { title: "Tributos", href: "/accounting/taxes", icon: <Building2 size={16} /> },
+    { title: "Notas Fiscais", href: "/accounting/invoices", icon: <Receipt size={16} /> },
+    { title: "Relatórios", href: "/accounting/reports", icon: <FilePieChart size={16} /> },
+    { title: "MEI", href: "/accounting/mei", icon: <Tag size={16} /> },
+    { title: "DRE", href: "/accounting/financial-statements", icon: <FileBarChart size={16} /> },
+  ];
+
+  const devAdminItems = [
+    { title: "Processos Personalizados", href: "/dev-admin/custom-processes", icon: <Code size={16} /> },
+    { title: "Níveis de Acesso", href: "/dev-admin/access-levels", icon: <Lock size={16} /> },
+    { title: "Empresas", href: "/dev-admin/companies", icon: <Building size={16} /> },
+    { title: "Relatórios", href: "/dev-admin/reports", icon: <BarChart size={16} /> },
+    { title: "Planos", href: "/dev-admin/plans", icon: <Package size={16} /> },
+    { title: "Suporte", href: "/dev-admin/support", icon: <HeadphonesIcon size={16} /> },
+  ];
+
+  useEffect(() => {
     const prefs = localStorage.getItem('primaryColor') || '#8B5CF6';
     if (prefs) {
       document.documentElement.style.setProperty('--sidebar-accent', `${prefs}15`);
@@ -68,37 +177,8 @@ const Sidebar = () => {
     }
   }, [currentSegment]);
 
-  const isActive = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
-  
-  // Toggle a collapsible section
-  const toggleSection = (sectionName: string) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [sectionName]: !prev[sectionName]
-    }));
-  };
-  
-  // Auto-expand sections that contain the current active route
-  useEffect(() => {
-    const navItems = getNavItemsBySegment(currentSegment);
-    
-    navItems.forEach((item: NavItem) => {
-      if (item.subItems && item.subItems.some(subItem => isActive(subItem.href))) {
-        setOpenSections(prev => ({
-          ...prev,
-          [item.name]: true
-        }));
-      }
-    });
-  }, [location.pathname, currentSegment]);
-
-  // Get navigation items for current segment
-  const navItems = getNavItemsBySegment(currentSegment) as NavItem[];
-
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20 overflow-y-auto">
+    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r bg-sidebar border-sidebar-border transition-all duration-300 ease-in-out z-20">
       <div className="flex flex-col h-full">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-2 no-underline">
@@ -120,62 +200,198 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-2">
-          {navItems.map((item, index) => (
-            <div key={`${item.name}-${index}`} className="mb-2">
-              {item.subItems ? (
-                <Collapsible 
-                  open={openSections[item.name]} 
-                  onOpenChange={() => toggleSection(item.name)}
-                  className="w-full"
-                >
-                  <CollapsibleTrigger className="flex items-center justify-between w-full rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline text-sidebar-foreground/80">
-                    <div className="flex items-center gap-3">
-                      {item.icon}
-                      <span>{item.name}</span>
-                    </div>
-                    {openSections[item.name] ? (
-                      <ChevronDown size={16} />
-                    ) : (
-                      <ChevronRight size={16} />
-                    )}
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="ml-2 pl-3 border-l border-sidebar-border mt-1">
-                      {item.subItems.map((subItem, subIndex) => (
-                        <Link
-                          key={`${subItem.name}-${subIndex}`}
-                          to={subItem.href}
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
-                            isActive(subItem.href)
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground/80"
-                          )}
-                        >
-                          {subItem.icon}
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              ) : (
+        <nav className="flex-1 overflow-y-auto pb-6">
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Principal
+            </div>
+            {sidebarMainItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
                 <Link
+                  key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-2 no-underline",
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
                     isActive(item.href)
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground/80"
                   )}
                 >
                   {item.icon}
-                  {item.name}
+                  {item.title}
                 </Link>
-              )}
+              )
+            ))}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Analytics
             </div>
-          ))}
+            {analyticsItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )
+            ))}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Departamento Pessoal
+            </div>
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/personnel")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setPersonnelOpen(!personnelOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <Briefcase size={18} />
+                <span>Departamento Pessoal</span>
+              </div>
+              {personnelOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {personnelOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {personnelItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Área Contábil
+            </div>
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/accounting")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setAccountingOpen(!accountingOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <FileText size={18} />
+                <span>Área Contábil</span>
+              </div>
+              {accountingOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {accountingOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {accountingItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Dev / Admin
+            </div>
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 cursor-pointer",
+                isInPath("/dev-admin")
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/80"
+              )}
+              onClick={() => setDevAdminOpen(!devAdminOpen)}
+            >
+              <div className="flex items-center gap-3">
+                <Code size={18} />
+                <span>Dev / Admin</span>
+              </div>
+              {devAdminOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+            
+            {devAdminOpen && (
+              <div className="ml-9 space-y-1 mt-1">
+                {devAdminItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground no-underline",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
+                    )}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="px-3 py-1 text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider">
+              Colaboração
+            </div>
+            {collaborationItems.map((item) => (
+              (!item.requiresFeature || hasAccess(item.requiresFeature)) && (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1 no-underline",
+                    isActive(item.href)
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )
+            ))}
+          </div>
         </nav>
 
         <div className="border-t border-sidebar-border p-3">
@@ -191,7 +407,6 @@ const Sidebar = () => {
             <Settings size={18} />
             Configurações
           </Link>
-
           <Link
             to="/help"
             className={cn(
@@ -204,7 +419,6 @@ const Sidebar = () => {
             <HelpCircle size={18} />
             Ajuda
           </Link>
-
           <Link
             to="/profile"
             className={cn(
