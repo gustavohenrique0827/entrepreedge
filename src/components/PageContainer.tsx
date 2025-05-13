@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { useSegment } from '@/contexts/SegmentContext';
 import useSegmentConfig from '@/hooks/useSegmentConfig';
+import { getNavItemsBySegment } from '@/utils/navigationUtils';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -17,29 +18,32 @@ export const PageContainer: React.FC<PageContainerProps> = ({
   const { currentSegment, getVisualPreferences, applySegmentVisuals } = useSegment();
   const { isConfigApplied, applySegmentConfig } = useSegmentConfig();
   
-  // Aplicar configurações do segmento automaticamente na primeira renderização
+  // Automatically apply segment configuration on first render
   useEffect(() => {
-    // Carregar preferências visuais se não estiverem aplicadas
+    // Load visual preferences if they aren't applied
     const segmentConfigType = localStorage.getItem('segmentConfigType');
     if (segmentConfigType !== currentSegment) {
       applySegmentVisuals();
       applySegmentConfig();
     }
     
-    // Ajustar variáveis CSS para o tema atual
+    // Adjust CSS variables for the current theme
     const prefs = getVisualPreferences();
     if (prefs) {
       document.documentElement.style.setProperty('--primary-color', prefs.primaryColor || '#8B5CF6');
       document.documentElement.style.setProperty('--secondary-color', prefs.secondaryColor || '#D946EF');
     }
   }, [currentSegment]);
+  
+  // Get segment-specific navigation items if none were provided
+  const segmentNavItems = navItems.length > 0 ? navItems : getNavItemsBySegment(currentSegment);
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       <div className="flex-1 ml-[240px] transition-all duration-300">
-        <Navbar items={navItems} />
+        <Navbar items={segmentNavItems} />
         
         <div className="container px-4 py-6">
           {children}

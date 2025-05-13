@@ -40,7 +40,11 @@ const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
 
   // Function to toggle the theme
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    if (theme === "light") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
   };
 
   return (
@@ -70,7 +74,7 @@ const Navbar: React.FC<NavbarProps> = ({ items = [] }) => {
           
           {!isAuthPage && isLoggedIn && (
             <>
-              <Link to="/segment-test" className="nav-link">
+              <Link to="/segment-test" className="nav-link text-sm hover:text-primary transition-colors">
                 <span>Teste de Segmentos</span>
               </Link>
               <DropdownMenu>
