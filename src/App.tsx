@@ -48,7 +48,7 @@ import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
 import GenericSegmentPage from "./pages/segment/GenericSegmentPage";
-import OnlineSales from "./pages/ecommerce/OnlineSales";
+import OnlineSales from "./pages/segment/ecommerce/OnlineSales";
 
 const queryClient = new QueryClient();
 

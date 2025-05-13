@@ -1,12 +1,12 @@
 
-import { Toast, ToastActionElement, ToastProps } from "@/components/ui/toast"
+import { Toast as ToastComponent, ToastActionElement, ToastProps } from "@/components/ui/toast"
 
 type ToastVariant = 'default' | 'destructive' | 'success';
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000
 
-type ToasterToast = Toast & {
+type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
