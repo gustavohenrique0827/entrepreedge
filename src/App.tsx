@@ -48,6 +48,7 @@ import PlansManagement from "./pages/dev-admin/Plans";
 import ReportsManagement from "./pages/dev-admin/Reports";
 import SupportManagement from "./pages/dev-admin/Support";
 import GenericSegmentPage from "./pages/segment/GenericSegmentPage";
+import OnlineSales from "./pages/ecommerce/OnlineSales";
 
 const queryClient = new QueryClient();
 
@@ -228,6 +229,14 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     
+                    {/* Implementações específicas - E-commerce */}
+                    <Route path="/segment/ecommerce/online-sales" element={
+                      <ProtectedRoute>
+                        <OnlineSales />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Rotas de Departamento Pessoal */}
                     <Route path="/personnel" element={
                       <ProtectedRoute>
                         <EmployeeManagement />
@@ -259,6 +268,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     
+                    {/* Rotas de Contábil/Fiscal */}
                     <Route path="/accounting" element={
                       <ProtectedRoute>
                         <AccountingDashboard />
@@ -310,6 +320,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     
+                    {/* Rotas de Dev Admin */}
                     <Route path="/dev-admin/custom-processes" element={
                       <ProtectedRoute>
                         <CustomProcesses />

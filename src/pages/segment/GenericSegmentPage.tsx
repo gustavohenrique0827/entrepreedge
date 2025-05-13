@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSegment } from '@/contexts/SegmentContext';
@@ -18,6 +19,15 @@ const dataService = {
   }
 };
 
+// Mapeamento de páginas específicas implementadas
+const specificImplementations: Record<string, string> = {
+  'online-sales': '/segment/ecommerce/online-sales',
+  // Aqui você vai adicionar mais implementações específicas conforme criar:
+  // 'inventory': '/segment/ecommerce/inventory',
+  // 'products': '/segment/ecommerce/products',
+  // etc.
+};
+
 export default function GenericSegmentPage() {
   const { pageId } = useParams<{ pageId: string }>();
   const { segmentActivities, segmentName, currentSegment } = useSegment();
@@ -25,6 +35,12 @@ export default function GenericSegmentPage() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    // Verificar se existe uma implementação específica para este pageId
+    if (pageId && specificImplementations[pageId]) {
+      navigate(specificImplementations[pageId]);
+      return;
+    }
+    
     // Simulate loading data for this segment activity
     const loadPageData = async () => {
       setLoading(true);
@@ -43,7 +59,7 @@ export default function GenericSegmentPage() {
     };
     
     loadPageData();
-  }, [currentSegment, pageId]);
+  }, [currentSegment, pageId, navigate]);
   
   // If this is the main segment page (no specific pageId), show all available activities
   if (!pageId) {
@@ -100,8 +116,8 @@ export default function GenericSegmentPage() {
     );
   }
   
-  // For demonstration purposes, this is a placeholder that would be replaced
-  // by actual implementations for each segment page
+  // Para atividades que não têm uma implementação específica ainda, 
+  // continuamos mostrando a versão genérica
   return (
     <SegmentPageLayout 
       title={currentActivity.title} 
