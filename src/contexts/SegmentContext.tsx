@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Tipos de segmentos de negócio disponíveis
@@ -23,13 +22,24 @@ export interface SegmentActivity {
   icon?: React.ReactNode;
 }
 
+// Interface para preferências visuais do segmento
+interface VisualPreferences {
+  primaryColor: string;
+  secondaryColor: string;
+  icon: string;
+}
+
 // Definir o tipo para o contexto
 interface SegmentContextType {
   segmentName: string;
   segmentType: BusinessSegmentType | null;
+  currentSegment: string; // Adicionado para compatibilidade
   segmentIcon: string;
   segmentActivities: SegmentActivity[];
   changeSegment: (type: BusinessSegmentType, name: string) => void;
+  setCurrentSegment: (segment: string) => void; // Adicionado para compatibilidade
+  getVisualPreferences: () => VisualPreferences; // Método para obter preferências visuais
+  applySegmentVisuals: () => void; // Método para aplicar preferências visuais
 }
 
 // Criar o contexto
@@ -45,6 +55,8 @@ export const SegmentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [segmentIcon, setSegmentIcon] = useState<string>('🏢');
   // Estado para armazenar as atividades do segmento atual
   const [segmentActivities, setSegmentActivities] = useState<SegmentActivity[]>([]);
+  // Estado para armazenar o segmento atual (string)
+  const [currentSegment, setCurrentSegment] = useState<string>('');
 
   // Função para definir as atividades com base no tipo de segmento
   const getSegmentActivities = (type: BusinessSegmentType): SegmentActivity[] => {
@@ -154,15 +166,55 @@ export const SegmentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  // Função para obter preferências visuais do segmento
+  const getVisualPreferences = (): VisualPreferences => {
+    if (!segmentType) return { primaryColor: '#8B5CF6', secondaryColor: '#D946EF', icon: '🏢' };
+    
+    // Cores específicas para cada segmento
+    switch(segmentType) {
+      case 'manufacturing':
+        return { primaryColor: '#16a34a', secondaryColor: '#22c55e', icon: '🏭' };
+      case 'education':
+        return { primaryColor: '#2563eb', secondaryColor: '#3b82f6', icon: '🎓' };
+      case 'health':
+        return { primaryColor: '#0891b2', secondaryColor: '#06b6d4', icon: '🏥' };
+      case 'legal':
+        return { primaryColor: '#7c3aed', secondaryColor: '#8b5cf6', icon: '⚖️' };
+      case 'technology':
+        return { primaryColor: '#9333ea', secondaryColor: '#a855f7', icon: '💻' };
+      case 'services':
+        return { primaryColor: '#0284c7', secondaryColor: '#0ea5e9', icon: '🔧' };
+      case 'fashion':
+        return { primaryColor: '#db2777', secondaryColor: '#ec4899', icon: '👕' };
+      case 'ecommerce':
+        return { primaryColor: '#ea580c', secondaryColor: '#f97316', icon: '🛒' };
+      case 'agribusiness':
+        return { primaryColor: '#65a30d', secondaryColor: '#84cc16', icon: '🌾' };
+      case 'retail':
+        return { primaryColor: '#0369a1', secondaryColor: '#0ea5e9', icon: '🏪' };
+      default:
+        return { primaryColor: '#8B5CF6', secondaryColor: '#D946EF', icon: '🏢' };
+    }
+  };
+
+  // Função para aplicar preferências visuais do segmento atual
+  const applySegmentVisuals = () => {
+    const prefs = getVisualPreferences();
+    // Esta função apenas retorna as preferências, a aplicação real é feita pelo componente que chama
+    return prefs;
+  };
+
   // Carregar o segmento salvo ao iniciar
   useEffect(() => {
     const savedSegmentType = localStorage.getItem('segmentType') as BusinessSegmentType;
     const savedSegmentName = localStorage.getItem('segmentName') || '';
+    const savedCurrentSegment = localStorage.getItem('segment') || '';
     
     if (savedSegmentType) {
       setSegmentType(savedSegmentType);
       setSegmentName(savedSegmentName);
       setSegmentActivities(getSegmentActivities(savedSegmentType));
+      setCurrentSegment(savedCurrentSegment);
     }
   }, []);
 
@@ -170,6 +222,7 @@ export const SegmentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const changeSegment = (type: BusinessSegmentType, name: string) => {
     setSegmentType(type);
     setSegmentName(name);
+    setCurrentSegment(type); // Atualiza também o currentSegment
     
     // Atualizar atividades com base no novo tipo
     const newActivities = getSegmentActivities(type);
@@ -178,15 +231,20 @@ export const SegmentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Salvar no localStorage
     localStorage.setItem('segmentType', type);
     localStorage.setItem('segmentName', name);
+    localStorage.setItem('segment', type);
   };
 
   // Valor do contexto
   const value: SegmentContextType = {
     segmentName,
     segmentType,
+    currentSegment,
     segmentIcon,
     segmentActivities,
-    changeSegment
+    changeSegment,
+    setCurrentSegment,
+    getVisualPreferences,
+    applySegmentVisuals
   };
 
   return (
