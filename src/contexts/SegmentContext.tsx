@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -121,81 +122,82 @@ const segmentNames: Record<BusinessSegmentType, string> = {
 // Segment-specific activities
 const segmentActivitiesByType: Record<BusinessSegmentType, SegmentActivity[]> = {
   manufacturing: [
-    { title: "Gestão de Estoque", path: "/segment/inventory", icon: "package" },
-    { title: "Ordens de Produção", path: "/segment/production-orders", icon: "list-ordered" },
-    { title: "Compras e Suprimentos", path: "/segment/supplies", icon: "shopping-cart" },
-    { title: "Manutenção de Equipamentos", path: "/segment/equipment", icon: "wrench" },
-    { title: "Logística e Expedição", path: "/segment/logistics", icon: "truck" },
-    { title: "Relatórios de Produção", path: "/segment/production-reports", icon: "file-text" }
+    { title: "Gestão de Estoque", path: "/segment/inventory", icon: "Package", description: "Controle seu estoque de matérias-primas, produtos em processo e produtos acabados." },
+    { title: "Ordens de Produção", path: "/segment/production-orders", icon: "ClipboardList", description: "Crie e gerencie ordens de produção para acompanhar o fluxo de fabricação." },
+    { title: "Compras e Suprimentos", path: "/segment/supplies", icon: "ShoppingCart", description: "Gerencie fornecedores, cotações e pedidos de compra de materiais." },
+    { title: "Manutenção de Equipamentos", path: "/segment/equipment", icon: "Wrench", description: "Controle a manutenção preventiva e corretiva de seus equipamentos e máquinas." },
+    { title: "Logística e Expedição", path: "/segment/logistics", icon: "Truck", description: "Organize o processo de expedição, carga e entrega de seus produtos." },
+    { title: "Relatórios de Produção", path: "/segment/production-reports", icon: "FileText", description: "Visualize relatórios detalhados sobre sua produção, rendimento e eficiência." }
   ],
   education: [
-    { title: "Matrículas e Alunos", path: "/segment/students", icon: "user-plus" },
-    { title: "Disciplinas e Turmas", path: "/segment/courses", icon: "book" },
-    { title: "Professores e Diário", path: "/segment/teachers", icon: "user-check" },
-    { title: "Notas e Avaliações", path: "/segment/grades", icon: "edit" },
-    { title: "Emissão de Certificados", path: "/segment/certificates", icon: "award" },
-    { title: "Calendário Escolar", path: "/segment/school-calendar", icon: "calendar" }
+    { title: "Matrículas e Alunos", path: "/segment/students", icon: "UserPlus", description: "Cadastre e gerencie informações de alunos e processo de matrícula." },
+    { title: "Disciplinas e Turmas", path: "/segment/courses", icon: "Book", description: "Organize disciplinas, turmas, horários e salas de aula." },
+    { title: "Professores e Diário", path: "/segment/teachers", icon: "UserCheck", description: "Gerencie corpo docente, alocação de aulas e diário de classe." },
+    { title: "Notas e Avaliações", path: "/segment/grades", icon: "Edit", description: "Registre notas, frequência e avaliações dos alunos." },
+    { title: "Emissão de Certificados", path: "/segment/certificates", icon: "Award", description: "Emita e controle certificados, diplomas e históricos escolares." },
+    { title: "Calendário Escolar", path: "/segment/school-calendar", icon: "Calendar", description: "Planeje o calendário letivo, eventos e datas importantes." }
   ],
   legal: [
-    { title: "Gestão de Processos", path: "/segment/cases", icon: "folder-open" },
-    { title: "Prazos e Audiências", path: "/segment/hearings", icon: "calendar-clock" },
-    { title: "Documentos Jurídicos", path: "/segment/legal-documents", icon: "file-text" },
-    { title: "Clientes e Contratos", path: "/segment/legal-clients", icon: "users" },
-    { title: "Agenda Jurídica", path: "/segment/legal-calendar", icon: "calendar" },
-    { title: "Relatórios por Advogado", path: "/segment/lawyer-reports", icon: "chart-bar" }
+    { title: "Gestão de Processos", path: "/segment/cases", icon: "FolderOpen", description: "Controle todos os seus processos judiciais e extrajudiciais." },
+    { title: "Prazos e Audiências", path: "/segment/hearings", icon: "CalendarClock", description: "Acompanhe prazos processuais e agende audiências e compromissos." },
+    { title: "Documentos Jurídicos", path: "/segment/legal-documents", icon: "FileText", description: "Elabore e armazene petições, contratos e outros documentos legais." },
+    { title: "Clientes e Contratos", path: "/segment/legal-clients", icon: "Users", description: "Gerencie cadastro de clientes e contratos de honorários." },
+    { title: "Agenda Jurídica", path: "/segment/legal-calendar", icon: "Calendar", description: "Organize sua agenda de compromissos legais e reuniões." },
+    { title: "Relatórios por Advogado", path: "/segment/lawyer-reports", icon: "BarChart", description: "Visualize relatórios de produtividade e desempenho por advogado." }
   ],
   tech: [
-    { title: "Gestão de Projetos", path: "/segment/projects", icon: "kanban" },
-    { title: "Chamados e Suporte", path: "/segment/support-tickets", icon: "headphones" },
-    { title: "Testes e Versionamento", path: "/segment/testing", icon: "git-branch" },
-    { title: "Base de Conhecimento", path: "/segment/knowledge", icon: "book" },
-    { title: "Configurações Técnicas", path: "/segment/tech-config", icon: "settings" },
-    { title: "Indicadores de Dev", path: "/segment/dev-metrics", icon: "chart-line" }
+    { title: "Gestão de Projetos", path: "/segment/projects", icon: "Kanban", description: "Gerencie projetos de tecnologia com metodologias ágeis." },
+    { title: "Chamados e Suporte", path: "/segment/support-tickets", icon: "Headphones", description: "Atenda solicitações de suporte dos clientes e acompanhe status." },
+    { title: "Testes e Versionamento", path: "/segment/testing", icon: "GitBranch", description: "Organize testes e controle versões de seu software." },
+    { title: "Base de Conhecimento", path: "/segment/knowledge", icon: "Book", description: "Crie e consulte documentação técnica e soluções conhecidas." },
+    { title: "Configurações Técnicas", path: "/segment/tech-config", icon: "Settings", description: "Gerencie ambientes, servidores e infraestrutura." },
+    { title: "Indicadores de Dev", path: "/segment/dev-metrics", icon: "LineChart", description: "Acompanhe métricas de desenvolvimento e performance." }
   ],
   services: [
-    { title: "Ordens de Serviço", path: "/segment/service-orders", icon: "clipboard-list" },
-    { title: "Agendamentos", path: "/segment/service-appointments", icon: "calendar-check" },
-    { title: "Contratos e SLA", path: "/segment/sla", icon: "file-contract" },
-    { title: "Atendimento ao Cliente", path: "/segment/customer-support", icon: "message-square" },
-    { title: "Orçamentos e Propostas", path: "/segment/proposals", icon: "file-text" },
-    { title: "Equipe de Campo", path: "/segment/field-team", icon: "users" }
+    { title: "Ordens de Serviço", path: "/segment/service-orders", icon: "ClipboardList", description: "Crie e acompanhe ordens de serviço dos clientes." },
+    { title: "Agendamentos", path: "/segment/service-appointments", icon: "CalendarCheck", description: "Organize sua agenda de atendimentos e visitas técnicas." },
+    { title: "Contratos e SLA", path: "/segment/sla", icon: "FileText", description: "Gerencie contratos de prestação de serviços e acordos de nível." },
+    { title: "Atendimento ao Cliente", path: "/segment/customer-support", icon: "MessageSquare", description: "Registre e solucione solicitações de suporte dos clientes." },
+    { title: "Orçamentos e Propostas", path: "/segment/proposals", icon: "FileText", description: "Elabore orçamentos e propostas comerciais para seus serviços." },
+    { title: "Equipe de Campo", path: "/segment/field-team", icon: "Users", description: "Gerencie equipes externas e atendimentos in loco." }
   ],
   fashion: [
-    { title: "Gestão de Coleções", path: "/segment/collections", icon: "layout-grid" },
-    { title: "Estoque (tamanho/cor)", path: "/segment/fashion-inventory", icon: "grid-2x2" },
-    { title: "Vendas Online", path: "/segment/fashion-sales", icon: "shopping-cart" },
-    { title: "Produtos com Imagens", path: "/segment/product-images", icon: "image" },
-    { title: "Trocas e Devoluções", path: "/segment/returns", icon: "repeat" },
-    { title: "Relatórios de Moda", path: "/segment/fashion-reports", icon: "chart-bar" }
+    { title: "Gestão de Coleções", path: "/segment/collections", icon: "Layers", description: "Organize suas coleções por temporada, tema e categoria." },
+    { title: "Estoque (tamanho/cor)", path: "/segment/fashion-inventory", icon: "Grid", description: "Controle estoque específico de moda com variações de tamanho e cor." },
+    { title: "Vendas Online", path: "/segment/fashion-sales", icon: "ShoppingCart", description: "Gerencie vendas de produtos de moda em sua loja virtual." },
+    { title: "Produtos com Imagens", path: "/segment/product-images", icon: "Image", description: "Cadastre produtos com múltiplas imagens, ângulos e lookbooks." },
+    { title: "Trocas e Devoluções", path: "/segment/returns", icon: "RefreshCw", description: "Gerencie processos de troca, devolução e ajustes de peças." },
+    { title: "Relatórios de Moda", path: "/segment/fashion-reports", icon: "BarChart", description: "Obtenha insights sobre vendas por coleção, estilo e sazonalidade." }
   ],
   health: [
-    { title: "Cadastro de Pacientes", path: "/segment/patients", icon: "user-plus" },
-    { title: "Agendamento Consultas", path: "/segment/appointments", icon: "calendar-check" },
-    { title: "Gestão Hospital/Leitos", path: "/segment/hospital", icon: "bed" },
-    { title: "Controle de Medicamentos", path: "/segment/medications", icon: "pill" },
-    { title: "Faturamento Convênios", path: "/segment/health-billing", icon: "file-invoice" },
-    { title: "Prontuário Eletrônico", path: "/segment/medical-records", icon: "clipboard-list" }
+    { title: "Cadastro de Pacientes", path: "/segment/patients", icon: "UserPlus", description: "Registre informações completas dos pacientes e histórico médico." },
+    { title: "Agendamento Consultas", path: "/segment/appointments", icon: "CalendarCheck", description: "Gerencie agenda de consultas, exames e procedimentos." },
+    { title: "Gestão Hospital/Leitos", path: "/segment/hospital", icon: "Bed", description: "Controle de ocupação de leitos e gestão hospitalar." },
+    { title: "Controle de Medicamentos", path: "/segment/medications", icon: "Package", description: "Gerencie o estoque e dispensação de medicamentos." },
+    { title: "Faturamento Convênios", path: "/segment/health-billing", icon: "FileText", description: "Organize faturamento de convênios médicos e particulares." },
+    { title: "Prontuário Eletrônico", path: "/segment/medical-records", icon: "ClipboardList", description: "Registre prontuários médicos eletrônicos completos." }
   ],
   ecommerce: [
-    { title: "Cadastro de Produtos", path: "/segment/products", icon: "package" },
-    { title: "Carrinho e Checkout", path: "/segment/checkout", icon: "shopping-cart" },
-    { title: "Gestão Vendas Online", path: "/segment/online-sales", icon: "dollar-sign" },
-    { title: "Integração Pagamentos", path: "/segment/payments", icon: "credit-card" },
-    { title: "Logística e Entregas", path: "/segment/ecommerce-logistics", icon: "truck" },
-    { title: "Marketing e Campanhas", path: "/segment/marketing", icon: "megaphone" }
+    { title: "Cadastro de Produtos", path: "/segment/products", icon: "Package", description: "Cadastre e gerencie seu catálogo de produtos para venda online." },
+    { title: "Estoque de Produtos", path: "/segment/ecommerce-inventory", icon: "PackageCheck", description: "Controle seu estoque com alertas de baixo estoque e rastreamento." },
+    { title: "Carrinho e Checkout", path: "/segment/checkout", icon: "ShoppingCart", description: "Configure seu processo de compra, pagamento e finalização de pedidos." },
+    { title: "Gestão Vendas Online", path: "/segment/online-sales", icon: "DollarSign", description: "Acompanhe vendas, status de pedidos e entregas." },
+    { title: "Integração Pagamentos", path: "/segment/payments", icon: "CreditCard", description: "Configure métodos de pagamento e acompanhe transações." },
+    { title: "Logística e Entregas", path: "/segment/ecommerce-logistics", icon: "Truck", description: "Gerencie expedição, entregas e transportadoras." },
+    { title: "Marketing e Campanhas", path: "/segment/marketing", icon: "Megaphone", description: "Crie e acompanhe campanhas promocionais e cupons de desconto." }
   ],
   agro: [
-    { title: "Talhões e Safras", path: "/segment/crops", icon: "map" },
-    { title: "Controle de Insumos", path: "/segment/farm-supplies", icon: "package" },
-    { title: "Produtividade por Área", path: "/segment/productivity", icon: "chart-bar" },
-    { title: "Calendário Agrícola", path: "/segment/farm-calendar", icon: "calendar" },
-    { title: "Integração Sensores/IoT", path: "/segment/farm-iot", icon: "wifi" },
-    { title: "Comercialização", path: "/segment/farm-sales", icon: "dollar-sign" }
+    { title: "Talhões e Safras", path: "/segment/crops", icon: "Map", description: "Gerencie áreas de plantio, safras e produtividade." },
+    { title: "Controle de Insumos", path: "/segment/farm-supplies", icon: "Package", description: "Controle estoque e aplicação de insumos agrícolas." },
+    { title: "Produtividade por Área", path: "/segment/productivity", icon: "BarChart", description: "Analise produtividade e rendimento por talhão ou área." },
+    { title: "Calendário Agrícola", path: "/segment/farm-calendar", icon: "Calendar", description: "Planeje atividades agrícolas de acordo com o calendário sazonal." },
+    { title: "Integração Sensores/IoT", path: "/segment/farm-iot", icon: "Wifi", description: "Conecte sensores e equipamentos IoT para monitoramento." },
+    { title: "Comercialização", path: "/segment/farm-sales", icon: "DollarSign", description: "Gerencie contratos de venda e comercialização da produção." }
   ],
   generic: [
-    { title: "Clientes e Fornecedores", path: "/segment/clients-suppliers", icon: "users" },
-    { title: "Emissão de Notas Fiscais", path: "/segment/invoices", icon: "file-text" },
-    { title: "Financeiro", path: "/segment/financial", icon: "dollar-sign" }
+    { title: "Clientes e Fornecedores", path: "/segment/clients-suppliers", icon: "Users", description: "Gerencie cadastros de clientes e fornecedores da sua empresa." },
+    { title: "Emissão de Notas Fiscais", path: "/segment/invoices", icon: "FileText", description: "Emita e controle notas fiscais de produtos e serviços." },
+    { title: "Financeiro", path: "/segment/financial", icon: "DollarSign", description: "Controle contas a pagar, receber e fluxo de caixa." }
   ]
 };
 
