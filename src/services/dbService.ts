@@ -51,6 +51,16 @@ const dbService = {
       localStorage.setItem('transactions', JSON.stringify(transactions));
       return transactions;
     }
+  },
+  goals: {
+    getAll: async () => {
+      const goals = localStorage.getItem('goals');
+      return goals ? JSON.parse(goals) : [];
+    },
+    saveAll: async (goals: any[]) => {
+      localStorage.setItem('goals', JSON.stringify(goals));
+      return goals;
+    }
   }
 };
 

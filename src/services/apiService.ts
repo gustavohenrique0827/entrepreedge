@@ -240,6 +240,54 @@ const api = {
       }
       return null;
     }
+  },
+  goals: {
+    getAll: async () => {
+      const goals = await dbService.goals.getAll();
+      return goals;
+    },
+    getById: async (id: string) => {
+      const goals = await dbService.goals.getAll();
+      const goal = goals.find(g => g.id === id);
+      return goal;
+    },
+    add: async (goal: any) => {
+      const goals = await dbService.goals.getAll();
+      const newGoal = {
+        id: Date.now().toString(),
+        ...goal,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      goals.push(newGoal);
+      await dbService.goals.saveAll(goals);
+      return newGoal;
+    },
+    update: async (goal: any) => {
+      const goals = await dbService.goals.getAll();
+      const index = goals.findIndex(g => g.id === goal.id);
+      if (index !== -1) {
+        goals[index] = {
+          ...goals[index],
+          ...goal,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.goals.saveAll(goals);
+        return goals[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const goals = await dbService.goals.getAll();
+      const index = goals.findIndex(g => g.id === id);
+      if (index !== -1) {
+        const deletedGoal = goals[index];
+        goals.splice(index, 1);
+        await dbService.goals.saveAll(goals);
+        return deletedGoal;
+      }
+      return null;
+    }
   }
 };
 
