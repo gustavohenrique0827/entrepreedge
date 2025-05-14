@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +8,90 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, FileDown, FileText, Calendar, FileCheck } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const Fiscal = () => {
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('calendario');
+  const [selectedGuias, setSelectedGuias] = useState<Record<string, boolean>>({});
+  const [dialogOpen, setDialogOpen] = useState<{ id: string, type: string } | null>(null);
+  
+  // Função para gerar uma guia de pagamento
+  const handleGerarGuia = (id: string, titulo: string) => {
+    toast({
+      title: "Guia gerada com sucesso",
+      description: `A guia de ${titulo} foi gerada e está pronta para download`,
+    });
+    
+    // Simulando um download após 1 segundo
+    setTimeout(() => {
+      toast({
+        title: "Download iniciado",
+        description: "O download do documento começou automaticamente",
+      });
+    }, 1000);
+  };
+  
+  // Função para preparar uma declaração
+  const handlePreparar = (id: string, titulo: string) => {
+    setDialogOpen({ id, type: 'preparar' });
+  };
+  
+  // Função para continuar uma declaração
+  const handleContinuar = (id: string, titulo: string) => {
+    setDialogOpen({ id, type: 'continuar' });
+  };
+  
+  // Função para visualizar um documento
+  const handleVerDocumento = (id: string) => {
+    toast({
+      title: "Visualizando documento",
+      description: "O documento está sendo carregado",
+    });
+  };
+  
+  // Função para renovar uma certidão
+  const handleRenovar = (id: string) => {
+    setDialogOpen({ id, type: 'renovar' });
+  };
+  
+  // Função para salvar uma declaração em andamento
+  const handleSaveDeclaracao = () => {
+    toast({
+      title: "Declaração salva",
+      description: "Os dados da declaração foram salvos com sucesso",
+    });
+    setDialogOpen(null);
+  };
+  
+  // Função para finalizar o processo de renovação
+  const handleFinishRenovacao = () => {
+    toast({
+      title: "Solicitação enviada",
+      description: "A solicitação de renovação foi enviada com sucesso",
+    });
+    setDialogOpen(null);
+  };
+  
+  // Função para exportar dados
+  const handleExportar = (tipo: string) => {
+    toast({
+      title: "Exportação iniciada",
+      description: `Os dados de ${tipo} estão sendo exportados`,
+    });
+    
+    // Simulando um download após 1 segundo
+    setTimeout(() => {
+      toast({
+        title: "Exportação concluída",
+        description: "O arquivo foi exportado com sucesso",
+      });
+    }, 1000);
+  };
   
   return (
     <div className="min-h-screen bg-background flex">
@@ -35,7 +116,7 @@ const Fiscal = () => {
             </AlertDescription>
           </Alert>
           
-          <Tabs defaultValue="calendario" className="mb-6">
+          <Tabs defaultValue="calendario" value={activeTab} onValueChange={setActiveTab} className="mb-6">
             <TabsList className="grid grid-cols-4 w-full md:w-[600px]">
               <TabsTrigger value="calendario">Calendário</TabsTrigger>
               <TabsTrigger value="impostos">Impostos</TabsTrigger>
@@ -63,7 +144,14 @@ const Fiscal = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R$ 2.450,00</p>
-                        <Button variant="outline" size="sm" className="mt-1">Gerar Guia</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-1"
+                          onClick={() => handleGerarGuia('irpj-042025', 'DARF - IRPJ')}
+                        >
+                          Gerar Guia
+                        </Button>
                       </div>
                     </div>
                     
@@ -79,7 +167,14 @@ const Fiscal = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R$ 1.380,00</p>
-                        <Button variant="outline" size="sm" className="mt-1">Gerar Guia</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-1"
+                          onClick={() => handleGerarGuia('csll-042025', 'DARF - CSLL')}
+                        >
+                          Gerar Guia
+                        </Button>
                       </div>
                     </div>
                     
@@ -95,7 +190,14 @@ const Fiscal = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-amber-600">Pendente</p>
-                        <Button variant="outline" size="sm" className="mt-1">Preparar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-1"
+                          onClick={() => handlePreparar('efd-052025', 'EFD-Contribuições')}
+                        >
+                          Preparar
+                        </Button>
                       </div>
                     </div>
                     
@@ -111,7 +213,14 @@ const Fiscal = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-muted-foreground">Em andamento</p>
-                        <Button variant="outline" size="sm" className="mt-1">Continuar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-1"
+                          onClick={() => handleContinuar('sped-052025', 'SPED Fiscal')}
+                        >
+                          Continuar
+                        </Button>
                       </div>
                     </div>
                     
@@ -127,7 +236,14 @@ const Fiscal = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R$ 975,00</p>
-                        <Button variant="outline" size="sm" className="mt-1">Gerar Guia</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-1"
+                          onClick={() => handleGerarGuia('pis-052025', 'DARF - PIS')}
+                        >
+                          Gerar Guia
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -167,7 +283,12 @@ const Fiscal = () => {
                               <span className="font-medium">R$ 4.536,00</span>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" className="w-full mt-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-3"
+                            onClick={() => handleExportar('Impostos Federais')}
+                          >
                             <FileDown className="mr-2 h-4 w-4" /> 
                             Exportar
                           </Button>
@@ -193,7 +314,12 @@ const Fiscal = () => {
                               <span className="font-medium">R$ 0,00</span>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" className="w-full mt-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-3"
+                            onClick={() => handleExportar('Impostos Estaduais')}
+                          >
                             <FileDown className="mr-2 h-4 w-4" /> 
                             Exportar
                           </Button>
@@ -219,7 +345,12 @@ const Fiscal = () => {
                               <span className="font-medium">R$ 320,00</span>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" className="w-full mt-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-3"
+                            onClick={() => handleExportar('Impostos Municipais')}
+                          >
                             <FileDown className="mr-2 h-4 w-4" /> 
                             Exportar
                           </Button>
@@ -256,7 +387,13 @@ const Fiscal = () => {
                                   </span>
                                 </td>
                                 <td className="px-4 py-2">
-                                  <Button variant="ghost" size="sm">Ver</Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleVerDocumento('comp-irpj-032025')}
+                                  >
+                                    Ver
+                                  </Button>
                                 </td>
                               </tr>
                               <tr className="border-b">
@@ -270,7 +407,13 @@ const Fiscal = () => {
                                   </span>
                                 </td>
                                 <td className="px-4 py-2">
-                                  <Button variant="ghost" size="sm">Ver</Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleVerDocumento('comp-csll-032025')}
+                                  >
+                                    Ver
+                                  </Button>
                                 </td>
                               </tr>
                               <tr className="border-b">
@@ -284,7 +427,13 @@ const Fiscal = () => {
                                   </span>
                                 </td>
                                 <td className="px-4 py-2">
-                                  <Button variant="ghost" size="sm">Ver</Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleVerDocumento('comp-icms-032025')}
+                                  >
+                                    Ver
+                                  </Button>
                                 </td>
                               </tr>
                             </tbody>
@@ -327,7 +476,14 @@ const Fiscal = () => {
                           <span>Próximo prazo: 15/05/2025</span>
                           <span>Responsável: João Silva</span>
                         </div>
-                        <Button variant="outline" size="sm" className="w-full mt-3">Continuar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={() => handleContinuar('sped-052025', 'SPED Fiscal')}
+                        >
+                          Continuar
+                        </Button>
                       </div>
                       
                       <div className="border rounded-lg p-4">
@@ -351,7 +507,14 @@ const Fiscal = () => {
                           <span>Próximo prazo: 10/05/2025</span>
                           <span>Responsável: Maria Santos</span>
                         </div>
-                        <Button variant="outline" size="sm" className="w-full mt-3">Iniciar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={() => handlePreparar('efd-052025', 'EFD-Contribuições')}
+                        >
+                          Iniciar
+                        </Button>
                       </div>
                       
                       <div className="border rounded-lg p-4">
@@ -375,7 +538,14 @@ const Fiscal = () => {
                           <span>Enviado em: 15/04/2025</span>
                           <span>Responsável: João Silva</span>
                         </div>
-                        <Button variant="outline" size="sm" className="w-full mt-3">Ver Protocolo</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={() => handleVerDocumento('protocolo-dctf-042025')}
+                        >
+                          Ver Protocolo
+                        </Button>
                       </div>
                       
                       <div className="border rounded-lg p-4">
@@ -399,7 +569,14 @@ const Fiscal = () => {
                           <span>Enviado em: 10/04/2025</span>
                           <span>Responsável: Maria Santos</span>
                         </div>
-                        <Button variant="outline" size="sm" className="w-full mt-3">Ver Protocolo</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={() => handleVerDocumento('protocolo-ecd-042025')}
+                        >
+                          Ver Protocolo
+                        </Button>
                       </div>
                     </div>
                     
@@ -432,8 +609,20 @@ const Fiscal = () => {
                               Certidão válida até 15/07/2025
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button variant="outline" size="sm">Ver Documento</Button>
-                              <Button variant="outline" size="sm">Baixar</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleVerDocumento('certidao-rf')}
+                              >
+                                Ver Documento
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleExportar('Certidão RFB')}
+                              >
+                                Baixar
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -450,8 +639,20 @@ const Fiscal = () => {
                               Certidão válida até 20/06/2025
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button variant="outline" size="sm">Ver Documento</Button>
-                              <Button variant="outline" size="sm">Baixar</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleVerDocumento('certidao-estado')}
+                              >
+                                Ver Documento
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleExportar('Certidão Estado')}
+                              >
+                                Baixar
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -468,8 +669,20 @@ const Fiscal = () => {
                               Certidão válida até 05/06/2025
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button variant="outline" size="sm">Ver Documento</Button>
-                              <Button variant="outline" size="sm">Baixar</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleVerDocumento('certidao-municipio')}
+                              >
+                                Ver Documento
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleExportar('Certidão Município')}
+                              >
+                                Baixar
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -486,8 +699,20 @@ const Fiscal = () => {
                               Vencendo em 5 dias (29/04/2025)
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button variant="outline" size="sm">Ver Documento</Button>
-                              <Button variant="outline" size="sm">Renovar</Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleVerDocumento('certidao-fgts')}
+                              >
+                                Ver Documento
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRenovar('certidao-fgts')}
+                              >
+                                Renovar
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -505,8 +730,103 @@ const Fiscal = () => {
           </Tabs>
         </div>
       </div>
+      
+      {/* Diálogo para preparar ou continuar declarações */}
+      {dialogOpen && (dialogOpen.type === 'preparar' || dialogOpen.type === 'continuar') && (
+        <Dialog open={true} onOpenChange={() => setDialogOpen(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {dialogOpen.type === 'preparar' ? 'Preparar Declaração' : 'Continuar Declaração'}
+              </DialogTitle>
+              <DialogDescription>
+                Preencha as informações necessárias para {dialogOpen.type === 'preparar' ? 'iniciar' : 'continuar'} esta declaração.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="responsavel" className="text-right">
+                  Responsável
+                </Label>
+                <Input id="responsavel" defaultValue="João Silva" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="competencia" className="text-right">
+                  Competência
+                </Label>
+                <Input id="competencia" defaultValue="05/2025" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="prazo" className="text-right">
+                  Prazo
+                </Label>
+                <Input id="prazo" type="date" defaultValue="2025-05-15" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="observacoes" className="text-right">
+                  Observações
+                </Label>
+                <Input id="observacoes" className="col-span-3" />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(null)}>Cancelar</Button>
+              <Button onClick={handleSaveDeclaracao}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Diálogo para renovação de certidões */}
+      {dialogOpen && dialogOpen.type === 'renovar' && (
+        <Dialog open={true} onOpenChange={() => setDialogOpen(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Renovar Certidão</DialogTitle>
+              <DialogDescription>
+                Preencha as informações necessárias para iniciar o processo de renovação.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="motivo" className="text-right">
+                  Motivo
+                </Label>
+                <Input id="motivo" defaultValue="Vencimento próximo" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="tipo-renovacao" className="text-right">
+                  Tipo
+                </Label>
+                <Input id="tipo-renovacao" defaultValue="Automática" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="data-solicitacao" className="text-right">
+                  Data
+                </Label>
+                <Input id="data-solicitacao" type="date" defaultValue="2025-04-25" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="prioridade" className="text-right">
+                  Prioridade
+                </Label>
+                <Input id="prioridade" defaultValue="Alta" className="col-span-3" />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(null)}>Cancelar</Button>
+              <Button onClick={handleFinishRenovacao}>Enviar Solicitação</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
 
 export default Fiscal;
+

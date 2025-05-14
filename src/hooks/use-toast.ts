@@ -1,62 +1,82 @@
 
-import { Toast as ToastComponent, ToastActionElement, ToastProps } from "@/components/ui/toast"
+import { useState, useEffect } from 'react';
 
-type ToastVariant = 'default' | 'destructive' | 'success';
+type ToastProps = {
+  title: string;
+  description?: string;
+  duration?: number;
+  variant?: 'default' | 'destructive' | 'success';
+};
 
-const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000
+type Toast = ToastProps & {
+  id: string;
+};
 
-type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-  variant?: ToastVariant
-}
+export function useToast() {
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-let count = 0
+  const toast = ({ title, description, duration = 5000, variant = 'default' }: ToastProps) => {
+    const id = Math.random().toString(36).slice(2, 11);
+    const newToast = { id, title, description, duration, variant };
+    setToasts((prev) => [...prev, newToast]);
+    
+    setTimeout(() => {
+      dismissToast(id);
+    }, duration);
+    
+    return id;
+  };
 
-function genId() {
-  count = (count + 1) % Number.MAX_VALUE
-  return count.toString()
-}
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
-const toasts: ToasterToast[] = []
-
-type ToasterToastOptions = Omit<ToasterToast, "id">
-
-function toast(options: ToasterToastOptions) {
-  const id = genId()
-
-  const toast: ToasterToast = {
-    id,
-    ...options,
-    open: true,
-    onOpenChange: open => {
-      if (!open) {
-        // Remove toast from DOM after it's been closed
-        setTimeout(() => {
-          toasts.splice(toasts.indexOf(toast), 1)
-        }, TOAST_REMOVE_DELAY)
-      }
-    },
-  }
-
-  toasts.push(toast)
-  return toast
-}
-
-function useToast() {
   return {
     toast,
-    toasts,
-    dismiss: (toastId: string) => {
-      const toast = toasts.find(toast => toast.id === toastId)
-      if (toast) {
-        toast.open = false
-      }
-    },
-  }
+    dismissToast,
+    toasts
+  };
 }
 
-export { toast, useToast }
+// Export a stand-alone toast function for use without hooks context
+export const toast = (props: ToastProps) => {
+  const customEvent = new CustomEvent('toast', { detail: props });
+  window.dispatchEvent(customEvent);
+};
+
+// Global toast handler (optional, for use with the stand-alone toast function)
+if (typeof window !== 'undefined') {
+  window.addEventListener('toast', (e: any) => {
+    const { title, description, duration, variant } = e.detail;
+    const toastContainer = document.getElementById('toast-container');
+    
+    if (toastContainer) {
+      const toastElement = document.createElement('div');
+      toastElement.className = `toast-item ${variant || 'default'}`;
+      
+      const toastContent = document.createElement('div');
+      toastContent.className = 'toast-content';
+      
+      const titleElement = document.createElement('h4');
+      titleElement.textContent = title;
+      
+      toastContent.appendChild(titleElement);
+      
+      if (description) {
+        const descriptionElement = document.createElement('p');
+        descriptionElement.textContent = description;
+        toastContent.appendChild(descriptionElement);
+      }
+      
+      toastElement.appendChild(toastContent);
+      toastContainer.appendChild(toastElement);
+      
+      setTimeout(() => {
+        toastElement.classList.add('hide');
+        setTimeout(() => {
+          toastContainer.removeChild(toastElement);
+        }, 300);
+      }, duration || 5000);
+    }
+  });
+}
