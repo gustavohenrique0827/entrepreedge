@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, PenTool, Tags } from 'lucide-react';
+import { Plus, PenTool, Tags, Filter, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Tipo para os processos
 interface Process {
@@ -31,7 +31,7 @@ const initialProcesses: Process[] = [
 
 const Processes = () => {
   const [processes, setProcesses] = useState<Process[]>(initialProcesses);
-  const [showForm, setShowForm] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProcess, setCurrentProcess] = useState<Process>({
     id: 0,
@@ -91,14 +91,14 @@ const Processes = () => {
       description: '',
       status: 'active'
     });
-    setShowForm(false);
+    setDialogOpen(false);
     setIsEditing(false);
   };
 
   const handleEdit = (process: Process) => {
     setCurrentProcess(process);
     setIsEditing(true);
-    setShowForm(true);
+    setDialogOpen(true);
   };
 
   const toggleProcessStatus = (id: number) => {
@@ -124,6 +124,17 @@ const Processes = () => {
     }
   };
 
+  const getTypeColor = (type: string): string => {
+    switch(type) {
+      case 'rh': return 'bg-blue-100 text-blue-800';
+      case 'financial': return 'bg-green-100 text-green-800';
+      case 'administrative': return 'bg-purple-100 text-purple-800';
+      case 'development': return 'bg-amber-100 text-amber-800';
+      case 'custom': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const filteredProcesses = processes.filter(process => 
     process.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     getTypeLabel(process.type).toLowerCase().includes(searchTerm.toLowerCase())
@@ -134,178 +145,168 @@ const Processes = () => {
       title="Processos de Pessoal" 
       description="Gerencie os processos de recursos humanos e pessoal da sua empresa"
       action={
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => setDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          {showForm ? "Cancelar" : "Novo Processo"}
+          Novo Processo
         </Button>
       }
     >
-      {showForm && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{isEditing ? 'Editar Processo' : 'Novo Processo'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nome do Processo *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={currentProcess.name}
-                  onChange={handleInputChange}
-                  placeholder="Ex: Processo de Admissão"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="type">Tipo *</Label>
-                <Select
-                  name="type"
-                  value={currentProcess.type}
-                  onValueChange={(value) => handleSelectChange('type', value)}
-                >
-                  <SelectTrigger id="type">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="rh">Recursos Humanos</SelectItem>
-                    <SelectItem value="financial">Financeiro</SelectItem>
-                    <SelectItem value="administrative">Administrativo</SelectItem>
-                    <SelectItem value="development">Desenvolvimento</SelectItem>
-                    <SelectItem value="custom">Personalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={currentProcess.description}
-                  onChange={handleInputChange}
-                  placeholder="Descreva o processo"
-                  rows={3}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  name="status"
-                  value={currentProcess.status}
-                  onValueChange={(value) => handleSelectChange('status', value as 'active' | 'inactive')}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Ativo</SelectItem>
-                    <SelectItem value="inactive">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {isEditing ? 'Atualizar' : 'Criar'} Processo
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar processos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 max-w-sm"
+          />
+        </div>
+        <Button variant="outline" size="icon">
+          <Filter className="h-4 w-4" />
+        </Button>
+      </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Processos</CardTitle>
-          <CardDescription>
-            Gerencie os processos de sua empresa
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Input
-              placeholder="Buscar processos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProcesses.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Nenhum processo encontrado
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredProcesses.map((process) => (
-                    <TableRow key={process.id}>
-                      <TableCell>{process.id}</TableCell>
-                      <TableCell>{process.name}</TableCell>
-                      <TableCell>
-                        <Badge variant={process.type === 'development' ? 'outline' : 'secondary'}>
-                          {getTypeLabel(process.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={process.status === 'active' ? 'default' : 'outline'}>
-                          {process.status === 'active' ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            title="Editar"
-                            onClick={() => handleEdit(process)}
-                          >
-                            <PenTool className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant={process.status === 'active' ? 'destructive' : 'outline'} 
-                            size="icon" 
-                            onClick={() => toggleProcessStatus(process.id)}
-                            title={process.status === 'active' ? 'Desativar' : 'Ativar'}
-                          >
-                            <Tags className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="text-sm text-muted-foreground">
-            Total de processos: {processes.length}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Ativos: {processes.filter(p => p.status === 'active').length} | 
-            Inativos: {processes.filter(p => p.status === 'inactive').length}
-          </div>
-        </CardFooter>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredProcesses.length === 0 ? (
+          <Card className="col-span-full">
+            <CardContent className="flex items-center justify-center h-32">
+              <p className="text-muted-foreground">Nenhum processo encontrado</p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredProcesses.map((process) => (
+            <Card key={process.id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{process.name}</CardTitle>
+                    <div className="mt-1 flex items-center">
+                      <Badge variant="outline" className={getTypeColor(process.type)}>
+                        {getTypeLabel(process.type)}
+                      </Badge>
+                      <Badge variant={process.status === 'active' ? 'default' : 'outline'} className="ml-2">
+                        {process.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    #{process.id}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-2">{process.description}</p>
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2 pt-0">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleEdit(process)}
+                >
+                  <PenTool className="h-4 w-4 mr-1" /> Editar
+                </Button>
+                <Button 
+                  variant={process.status === 'active' ? 'destructive' : 'outline'} 
+                  size="sm"
+                  onClick={() => toggleProcessStatus(process.id)}
+                >
+                  <Tags className="h-4 w-4 mr-1" /> {process.status === 'active' ? 'Desativar' : 'Ativar'}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        )}
+      </div>
+      
+      <div className="mt-6 flex justify-between items-center text-sm text-muted-foreground">
+        <div>Total de processos: {processes.length}</div>
+        <div>
+          Ativos: {processes.filter(p => p.status === 'active').length} | 
+          Inativos: {processes.filter(p => p.status === 'inactive').length}
+        </div>
+      </div>
+
+      {/* Dialog for adding/editing processes */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditing ? 'Editar Processo' : 'Novo Processo'}</DialogTitle>
+            <DialogDescription>
+              {isEditing ? 'Edite as informações do processo abaixo.' : 'Preencha as informações abaixo para criar um novo processo.'}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nome do Processo *</Label>
+              <Input
+                id="name"
+                name="name"
+                value={currentProcess.name}
+                onChange={handleInputChange}
+                placeholder="Ex: Processo de Admissão"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="type">Tipo *</Label>
+              <Select
+                name="type"
+                value={currentProcess.type}
+                onValueChange={(value) => handleSelectChange('type', value)}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rh">Recursos Humanos</SelectItem>
+                  <SelectItem value="financial">Financeiro</SelectItem>
+                  <SelectItem value="administrative">Administrativo</SelectItem>
+                  <SelectItem value="development">Desenvolvimento</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="description">Descrição</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={currentProcess.description}
+                onChange={handleInputChange}
+                placeholder="Descreva o processo"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                name="status"
+                value={currentProcess.status}
+                onValueChange={(value) => handleSelectChange('status', value as 'active' | 'inactive')}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <DialogFooter className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {isEditing ? 'Atualizar' : 'Criar'} Processo
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </SegmentPageLayout>
   );
 };
