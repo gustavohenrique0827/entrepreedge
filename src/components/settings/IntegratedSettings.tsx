@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ const IntegratedSettings = () => {
   const { currentSegment, segmentName, getVisualPreferences, applySegmentVisuals } = useSegment();
   
   // Preferences state
-  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Fênix');
+  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName') || 'Sua Empresa');
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'pt-BR');
   const [currency, setCurrency] = useState(localStorage.getItem('currency') || 'BRL');
   const [segment, setSegment] = useState(localStorage.getItem('segment') || 'generic');

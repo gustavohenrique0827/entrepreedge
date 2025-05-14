@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,18 +23,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NewPayslipDialog } from '@/components/personnel/NewPayslipDialog';
-import { PayslipViewDialog } from '@/components/personnel/PayslipViewDialog';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface Payslip {
   id: number;
@@ -52,11 +39,6 @@ const Payslips = () => {
   const [periodFilter, setPeriodFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState<keyof Payslip>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [newPayslipDialogOpen, setNewPayslipDialogOpen] = useState(false);
-  const [viewPayslipDialogOpen, setViewPayslipDialogOpen] = useState(false);
-  const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
-  const [editAlertOpen, setEditAlertOpen] = useState(false);
-  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const { toast } = useToast();
 
   const handleDownload = (id: number) => {
@@ -83,45 +65,9 @@ const Payslips = () => {
   };
 
   const handleGeneratePayslip = () => {
-    setNewPayslipDialogOpen(true);
-  };
-
-  const handleViewPayslip = (payslip: Payslip) => {
-    setSelectedPayslip(payslip);
-    setViewPayslipDialogOpen(true);
-  };
-
-  const handleEditPayslip = (payslip: Payslip) => {
-    setSelectedPayslip(payslip);
-    setEditAlertOpen(true);
-  };
-
-  const handleDeletePayslip = (payslip: Payslip) => {
-    setSelectedPayslip(payslip);
-    setDeleteAlertOpen(true);
-  };
-
-  const confirmEdit = () => {
     toast({
-      title: "Modo de edição",
-      description: "Funcionalidade de edição estará disponível em breve.",
-    });
-    setEditAlertOpen(false);
-  };
-
-  const confirmDelete = () => {
-    toast({
-      title: "Holerite removido",
-      description: `O holerite de ${selectedPayslip?.employee} foi removido com sucesso.`,
-      variant: "destructive",
-    });
-    setDeleteAlertOpen(false);
-  };
-
-  const handleExport = () => {
-    toast({
-      title: "Exportando dados",
-      description: "Os dados dos holerites estão sendo exportados para CSV.",
+      title: "Gerar Holerite",
+      description: "Processo de geração de holerite iniciado.",
     });
   };
 
@@ -240,7 +186,7 @@ const Payslips = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={handleGeneratePayslip}>
+                    <Button>
                       <Plus className="mr-2 h-4 w-4" />
                       Gerar Holerite
                     </Button>
@@ -328,7 +274,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" onClick={() => handleViewPayslip(payslip)}>
+                                    <Button variant="ghost" size="sm">
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -339,7 +285,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" onClick={() => handleEditPayslip(payslip)}>
+                                    <Button variant="ghost" size="sm">
                                       <Edit className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -350,7 +296,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" onClick={() => handleDeletePayslip(payslip)}>
+                                    <Button variant="ghost" size="sm">
                                       <FileText className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -400,7 +346,7 @@ const Payslips = () => {
                     <Printer className="mr-2 h-4 w-4" />
                     Imprimir
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Button variant="outline" size="sm">
                     <Download className="mr-2 h-4 w-4" />
                     Exportar
                   </Button>
@@ -408,52 +354,14 @@ const Payslips = () => {
               </CardFooter>
             </Card>
           </div>
+
+          <Button 
+            onClick={handleGeneratePayslip} 
+            className="absolute top-4 right-4"
+          >
+            Gerar Novo Holerite
+          </Button>
         </PageContainer>
-
-        <NewPayslipDialog 
-          open={newPayslipDialogOpen} 
-          onOpenChange={setNewPayslipDialogOpen} 
-        />
-
-        <PayslipViewDialog
-          open={viewPayslipDialogOpen}
-          onOpenChange={setViewPayslipDialogOpen}
-          payslip={selectedPayslip}
-        />
-
-        <AlertDialog open={editAlertOpen} onOpenChange={setEditAlertOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Editar Holerite</AlertDialogTitle>
-              <AlertDialogDescription>
-                Você está prestes a editar o holerite de {selectedPayslip?.employee}.
-                Deseja continuar?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmEdit}>Continuar</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Excluir Holerite</AlertDialogTitle>
-              <AlertDialogDescription>
-                Você está prestes a excluir o holerite de {selectedPayslip?.employee}.
-                Esta ação não pode ser desfeita. Deseja continuar?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );

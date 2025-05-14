@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -51,7 +52,6 @@ import GenericSegmentPage from "./pages/segment/GenericSegmentPage";
 import OnlineSales from "./pages/segment/ecommerce/OnlineSales";
 import Products from "./pages/segment/ecommerce/Products";
 import Checkout from "./pages/segment/ecommerce/Checkout";
-import ProductionOrdersPage from "./components/segment/ProductionOrdersPage";
 
 const queryClient = new QueryClient();
 
@@ -235,13 +235,6 @@ const App = () => {
                     <Route path="/segment/:pageId" element={
                       <ProtectedRoute>
                         <GenericSegmentPage />
-                      </ProtectedRoute>
-                    } />
-                    
-                    {/* New Production Orders Page */}
-                    <Route path="/segment/production-orders" element={
-                      <ProtectedRoute>
-                        <ProductionOrdersPage />
                       </ProtectedRoute>
                     } />
                     

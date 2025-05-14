@@ -19,18 +19,6 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
-import { NewProcessDialog } from '@/components/personnel/NewProcessDialog';
-import { ProcessStepsDialog } from '@/components/personnel/ProcessStepsDialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 type Process = {
   id: string;
@@ -48,18 +36,21 @@ type Process = {
 };
 
 const HRProcesses = () => {
-  const [selectedProcess, setSelectedProcess] = useState('all');
+  const [selectedProcess, setSelectedProcess] = useState('onboarding');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [newProcessDialog, setNewProcessDialog] = useState(false);
-  const [processStepsDialog, setProcessStepsDialog] = useState(false);
-  const [selectedProcessData, setSelectedProcessData] = useState<Process | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState(false);
-  const [processToComplete, setProcessToComplete] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Definir os itens de navegação para o Navbar
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Metas', href: '/goals', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { name: 'Aprendizados', href: '/learn', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> }
+  ];
+
   // Dados de exemplo para processos de RH
-  const [processes, setProcesses] = useState<Process[]>([
+  const processes: Process[] = [
     {
       id: "1",
       title: "Onboarding de Novo Funcionário",
@@ -116,7 +107,7 @@ const HRProcesses = () => {
         { id: "4-3", description: "Revogar acessos aos sistemas", completed: false }
       ]
     }
-  ]);
+  ];
 
   // Filtrar processos baseado no filtro de status e busca
   const filteredProcesses = processes.filter(process => {
@@ -135,45 +126,21 @@ const HRProcesses = () => {
 
   // Filtrar processos por categoria atual selecionada na tab
   const processesForTab = filteredProcesses.filter(
-    process => selectedProcess === 'all' || process.category.toLowerCase() === selectedProcess.toLowerCase()
+    process => selectedProcess === 'all' || process.category.toLowerCase() === selectedProcess
   );
 
   const handleProcessComplete = (processId: string) => {
-    setProcessToComplete(processId);
-    setConfirmDialog(true);
-  };
-
-  const confirmProcessComplete = () => {
-    if (!processToComplete) return;
-    
-    setProcesses(processes.map(p => {
-      if (p.id === processToComplete) {
-        return {
-          ...p,
-          status: p.status === 'concluido' ? 'em_andamento' : 'concluido',
-          steps: p.status === 'concluido' 
-            ? p.steps 
-            : p.steps.map(step => ({ ...step, completed: true }))
-        };
-      }
-      return p;
-    }));
-    
-    const targetProcess = processes.find(p => p.id === processToComplete);
-    const newStatus = targetProcess?.status === 'concluido' ? 'reaberto' : 'concluído';
-    
     toast({
-      title: `Processo ${newStatus}`,
-      description: `O processo foi marcado como ${newStatus} com sucesso.`,
+      title: "Processo Concluído",
+      description: "O processo foi marcado como concluído com sucesso.",
     });
-    
-    setConfirmDialog(false);
-    setProcessToComplete(null);
   };
 
-  const handleViewProcess = (process: Process) => {
-    setSelectedProcessData(process);
-    setProcessStepsDialog(true);
+  const handleStepComplete = (processId: string, stepId: string) => {
+    toast({
+      title: "Etapa Concluída",
+      description: "A etapa foi marcada como concluída.",
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -213,14 +180,6 @@ const HRProcesses = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
-  // Definir os itens de navegação para o Navbar
-  const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V9C4 9.55228 4.44772 10 5 10H9C9.55228 10 10 9.55228 10 9V5C10 4.44772 9.55228 4 9 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 4H15C14.4477 4 14 4.44772 14 5V9C14 9.55228 14.4477 10 15 10H19C19.5523 10 20 9.55228 20 9V5C20 4.44772 19.5523 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 14H5C4.44772 14 4 14.4477 4 15V19C4 19.5523 4.44772 20 5 20H9C9.55228 20 10 19.5523 10 19V15C10 14.4477 9.55228 14 9 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 14H15C14.4477 14 14 14.4477 14 15V19C14 19.5523 14.4477 20 15 20H19C19.5523 20 20 19.5523 20 19V15C20 14.4477 19.5523 14 19 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-    { name: 'Finanças', href: '/finances', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-    { name: 'Metas', href: '/goals', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-    { name: 'Aprendizados', href: '/learn', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> }
-  ];
-
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -257,7 +216,7 @@ const HRProcesses = () => {
                 </SelectContent>
               </Select>
               
-              <Button className="w-full sm:w-auto" onClick={() => setNewProcessDialog(true)}>
+              <Button className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Processo
               </Button>
@@ -328,24 +287,14 @@ const HRProcesses = () => {
                         <p className="text-xs text-muted-foreground">
                           {process.steps.filter(s => s.completed).length} de {process.steps.length} etapas
                         </p>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="secondary"
-                            className="text-xs"
-                            onClick={() => handleViewProcess(process)}
-                          >
-                            Gerenciar
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant={process.status === 'concluido' ? "outline" : "default"}
-                            className="text-xs"
-                            onClick={() => handleProcessComplete(process.id)}
-                          >
-                            {process.status === 'concluido' ? 'Reabrir' : 'Concluir'}
-                          </Button>
-                        </div>
+                        <Button 
+                          size="sm" 
+                          variant={process.status === 'concluido' ? "secondary" : "default"}
+                          className="text-xs"
+                          onClick={() => handleProcessComplete(process.id)}
+                        >
+                          {process.status === 'concluido' ? 'Reabrir' : 'Concluir'}
+                        </Button>
                       </CardFooter>
                     </Card>
                   ))
@@ -356,7 +305,7 @@ const HRProcesses = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Não foram encontrados processos que correspondam aos critérios de busca.
                     </p>
-                    <Button onClick={() => setNewProcessDialog(true)}>
+                    <Button>
                       <Plus className="mr-2 h-4 w-4" />
                       Criar Novo Processo
                     </Button>
@@ -366,36 +315,6 @@ const HRProcesses = () => {
             </TabsContent>
           </Tabs>
         </PageContainer>
-        
-        <NewProcessDialog 
-          open={newProcessDialog}
-          onOpenChange={setNewProcessDialog}
-        />
-
-        <ProcessStepsDialog
-          open={processStepsDialog}
-          onOpenChange={setProcessStepsDialog}
-          process={selectedProcessData}
-        />
-
-        <AlertDialog open={confirmDialog} onOpenChange={setConfirmDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Alterar Status do Processo</AlertDialogTitle>
-              <AlertDialogDescription>
-                {processToComplete && processes.find(p => p.id === processToComplete)?.status === 'concluido' ? (
-                  "Tem certeza que deseja reabrir este processo?"
-                ) : (
-                  "Tem certeza que deseja marcar este processo como concluído? Todas as etapas serão marcadas como concluídas."
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmProcessComplete}>Confirmar</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );

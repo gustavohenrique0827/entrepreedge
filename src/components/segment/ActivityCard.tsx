@@ -3,36 +3,59 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { FileText, Package, ShoppingCart, Settings, Users, BarChart, Calendar } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 interface ActivityCardProps {
   title: string;
-  description: string;
+  description?: string;
   path: string;
   icon: string;
   className?: string;
 }
 
-// Helper function to get icons by string name
-const getIcon = (iconName: string, size: number = 18) => {
-  switch (iconName) {
-    case 'package':
-      return <Package size={size} />;
-    case 'shopping-cart':
-      return <ShoppingCart size={size} />;
-    case 'file-text':
-      return <FileText size={size} />;
-    case 'settings':
-      return <Settings size={size} />;
-    case 'users':
-      return <Users size={size} />;
-    case 'chart-bar':
-      return <BarChart size={size} />;
-    case 'calendar':
-      return <Calendar size={size} />;
-    default:
-      return <FileText size={size} />;
-  }
+// Helper function to get icons by name
+const getIconByName = (iconName: string, size: number = 18) => {
+  const iconMap: Record<string, keyof typeof LucideIcons> = {
+    'package': 'Package',
+    'clipboard-list': 'ClipboardList',
+    'shopping-cart': 'ShoppingCart',
+    'wrench': 'Wrench',
+    'truck': 'Truck',
+    'file-text': 'FileText',
+    'user-plus': 'UserPlus',
+    'book': 'BookOpen',
+    'user-check': 'UserCheck',
+    'edit': 'Edit',
+    'award': 'Award',
+    'calendar': 'Calendar',
+    'folder-open': 'FolderOpen',
+    'calendar-clock': 'Clock',
+    'users': 'Users',
+    'bar-chart': 'BarChart',
+    'kanban': 'Kanban',
+    'headphones': 'Headphones',
+    'git-branch': 'GitBranch',
+    'settings': 'Settings',
+    'line-chart': 'LineChart',
+    'message-square': 'MessageSquare',
+    'layers': 'Layers',
+    'image': 'Image',
+    'refresh-cw': 'RefreshCw',
+    'bed': 'BedDouble',
+    'dollar-sign': 'DollarSign',
+    'credit-card': 'CreditCard',
+    'megaphone': 'Megaphone',
+    'map': 'Map',
+    'wifi': 'Wifi',
+  };
+
+  const IconName = iconMap[iconName.toLowerCase()]
+    ? iconMap[iconName.toLowerCase()]
+    : 'FileText';
+
+  // Use the correct approach to render icons
+  const IconComponent = LucideIcons[IconName];
+  return IconComponent ? <IconComponent size={size} /> : <LucideIcons.FileText size={size} />;
 };
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({ 
@@ -43,17 +66,19 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   className = ""
 }) => {
   return (
-    <Link to={path} className="no-underline">
-      <Card className={`h-full hover:shadow-md transition-shadow ${className}`}>
+    <Link to={path} className="block">
+      <Card className={`glass h-full hover:shadow-md transition-all ${className}`}>
         <CardContent className="p-4 flex flex-col h-full">
           <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
             <span className="text-primary">
-              {getIcon(icon)}
+              {getIconByName(icon)}
             </span>
           </div>
           <h3 className="font-semibold mb-1">{title}</h3>
-          <p className="text-sm text-muted-foreground flex-grow mb-4">{description}</p>
-          <Button variant="outline" className="w-full justify-center">
+          {description && (
+            <p className="text-sm text-muted-foreground mb-auto">{description}</p>
+          )}
+          <Button variant="link" className="p-0 h-auto justify-start mt-4 text-primary text-sm">
             Acessar
           </Button>
         </CardContent>

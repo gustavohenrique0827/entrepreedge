@@ -85,46 +85,6 @@ class ApiService {
     }
   }
   
-  // Products API
-  async getProducts() {
-    try {
-      return await api.products.getAll();
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      throw new Error('Failed to fetch products');
-    }
-  }
-
-  async addProduct(product) {
-    try {
-      await api.products.add(product);
-      return product;
-    } catch (error) {
-      console.error('Error adding product:', error);
-      throw new Error('Failed to add product');
-    }
-  }
-
-  async updateProduct(product) {
-    try {
-      await api.products.update(product);
-      return product;
-    } catch (error) {
-      console.error('Error updating product:', error);
-      throw new Error('Failed to update product');
-    }
-  }
-
-  async deleteProduct(id) {
-    try {
-      await api.products.delete(id);
-      return true;
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      throw new Error('Failed to delete product');
-    }
-  }
-  
   // Sync offline data with server (Mock implementation)
   async syncWithServer() {
     console.log('Synchronizing data with server...');
