@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Plus, PenTool, Tags } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { DataTable } from '@/components/segment/DataTable';
 
 // Tipo para os processos
 interface Process {
@@ -41,6 +40,7 @@ const Processes = () => {
     description: '',
     status: 'active'
   });
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -124,58 +124,10 @@ const Processes = () => {
     }
   };
 
-  const columns = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'name', header: 'Nome' },
-    { 
-      accessorKey: 'type', 
-      header: 'Tipo',
-      cell: ({ getValue }: { getValue: () => string }) => (
-        <Badge variant={getValue() === 'development' ? 'outline' : 'secondary'}>
-          {getTypeLabel(getValue())}
-        </Badge>
-      )
-    },
-    { 
-      accessorKey: 'status', 
-      header: 'Status',
-      cell: ({ getValue }: { getValue: () => string }) => (
-        <Badge variant={getValue() === 'active' ? 'default' : 'outline'}>
-          {getValue() === 'active' ? 'Ativo' : 'Inativo'}
-        </Badge>
-      )
-    },
-    { 
-      accessorKey: 'actions', 
-      header: 'Ações',
-      cell: ({ row }: { row: { original: Process } }) => (
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            title="Editar"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(row.original);
-            }}
-          >
-            <PenTool className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant={row.original.status === 'active' ? 'destructive' : 'outline'} 
-            size="icon" 
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleProcessStatus(row.original.id);
-            }}
-            title={row.original.status === 'active' ? 'Desativar' : 'Ativar'}
-          >
-            <Tags className="h-4 w-4" />
-          </Button>
-        </div>
-      )
-    }
-  ];
+  const filteredProcesses = processes.filter(process => 
+    process.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    getTypeLabel(process.type).toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <SegmentPageLayout 
@@ -276,13 +228,73 @@ const Processes = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable 
-            columns={columns} 
-            data={processes}
-            searchable={true}
-            pagination={true}
-            emptyMessage="Nenhum processo encontrado"
-          />
+          <div className="mb-4">
+            <Input
+              placeholder="Buscar processos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProcesses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      Nenhum processo encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProcesses.map((process) => (
+                    <TableRow key={process.id}>
+                      <TableCell>{process.id}</TableCell>
+                      <TableCell>{process.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={process.type === 'development' ? 'outline' : 'secondary'}>
+                          {getTypeLabel(process.type)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={process.status === 'active' ? 'default' : 'outline'}>
+                          {process.status === 'active' ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            title="Editar"
+                            onClick={() => handleEdit(process)}
+                          >
+                            <PenTool className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant={process.status === 'active' ? 'destructive' : 'outline'} 
+                            size="icon" 
+                            onClick={() => toggleProcessStatus(process.id)}
+                            title={process.status === 'active' ? 'Desativar' : 'Ativar'}
+                          >
+                            <Tags className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="text-sm text-muted-foreground">
