@@ -1,15 +1,19 @@
 
 import * as React from "react"
-import { Toast, ToastActionElement, ToastProps } from "@/components/ui/toast"
+import { Toast, ToastActionElement } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 10
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = ToastProps & {
+type ToasterToast = {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  open: boolean
+  variant?: "default" | "destructive" | "success"
+  duration?: number
+  onOpenChange?: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -31,7 +35,7 @@ type ActionType = typeof actionTypes
 type Action =
   | {
       type: ActionType["ADD_TOAST"]
-      toast: Omit<ToasterToast, "id">
+      toast: Omit<ToasterToast, "id" | "open">
     }
   | {
       type: ActionType["UPDATE_TOAST"]
@@ -59,7 +63,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: [
           ...state.toasts,
-          { ...action.toast, id: action.toast.id ?? genId() },
+          { ...action.toast, id: action.toast.id ?? genId(), open: true },
         ],
       }
 
@@ -117,8 +121,8 @@ function dispatch(action: Action) {
   })
 }
 
-// Define a type for the toast props that can include an optional id
-interface ToastProps extends Omit<ToasterToast, "id"> {
+// Define the public toast props interface
+export interface ToastProps extends Omit<ToasterToast, "id" | "open" | "onOpenChange"> {
   id?: string
 }
 
@@ -137,7 +141,6 @@ function toast(props: ToastProps) {
     type: actionTypes.ADD_TOAST,
     toast: {
       ...props,
-      open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
