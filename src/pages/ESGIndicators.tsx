@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, LineChart, PieChart, Activity, Leaf, Building2, Users, AreaChart, DollarSign, BarChart2, PenLine } from 'lucide-react';
+import { BarChart, LineChart, PieChart, Activity, Leaf, Building2, Users, AreaChart, DollarSign, BarChart2, PenLine, Plus } from 'lucide-react';
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart as RechartsLineChart, Line, AreaChart as RechartsAreaChart, Area } from 'recharts';
 import { useSegment } from '@/contexts/SegmentContext';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -98,6 +98,9 @@ const CHART_TYPES = [
   { id: 'area', label: 'Área', icon: <AreaChart className="h-4 w-4" /> },
 ];
 
+// Color palette for new indicators
+const COLOR_PALETTE = ['#00A3C4', '#36B37E', '#6554C0', '#FF8B00', '#FF5630', '#0052CC', '#5243AA', '#EF5350', '#FFB400', '#00875A'];
+
 const ESGIndicators = () => {
   const { getVisualPreferences } = useSegment();
   const [activeTab, setActiveTab] = useState('environmental');
@@ -105,8 +108,16 @@ const ESGIndicators = () => {
   const [timeframe, setTimeframe] = useState('actual');
   const [esgData, setEsgData] = useState(ESG_DATA);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddIndicatorOpen, setIsAddIndicatorOpen] = useState(false);
   const [editCategory, setEditCategory] = useState('');
   const [editValues, setEditValues] = useState<any>([]);
+  const [newIndicator, setNewIndicator] = useState({
+    name: '',
+    value: 0,
+    target: 0,
+    category: 'environmental',
+    color: '#00A3C4'
+  });
   
   const primaryColor = getVisualPreferences().primaryColor;
   const secondaryColor = getVisualPreferences().secondaryColor;
@@ -138,6 +149,18 @@ const ESGIndicators = () => {
     setIsDialogOpen(true);
   };
 
+  // Open add new indicator dialog
+  const openAddIndicatorDialog = () => {
+    setNewIndicator({
+      name: '',
+      value: 0,
+      target: 0,
+      category: activeTab,
+      color: COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]
+    });
+    setIsAddIndicatorOpen(true);
+  };
+
   // Handle value changes in the dialog
   const handleValueChange = (index, newValue) => {
     const updatedValues = [...editValues];
@@ -163,6 +186,51 @@ const ESGIndicators = () => {
       title: "Dados atualizados",
       description: `Os dados de ${editCategory === 'environmental' ? 'Ambiental' : 
                      editCategory === 'social' ? 'Social' : 'Governança'} foram atualizados com sucesso.`,
+      variant: "success",
+    });
+  };
+
+  // Handle new indicator input changes
+  const handleNewIndicatorChange = (field, value) => {
+    setNewIndicator(prev => ({
+      ...prev,
+      [field]: field === 'value' || field === 'target' 
+        ? Math.min(Math.max(0, Number(value)), 100)
+        : value
+    }));
+  };
+
+  // Add new indicator
+  const addNewIndicator = () => {
+    if (!newIndicator.name) {
+      toast({
+        title: "Erro ao adicionar indicador",
+        description: "O nome do indicador é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const category = newIndicator.category;
+    const updatedData = {...esgData};
+    
+    updatedData[category] = [
+      ...updatedData[category],
+      {
+        name: newIndicator.name,
+        value: newIndicator.value,
+        target: newIndicator.target,
+        color: newIndicator.color
+      }
+    ];
+
+    setEsgData(updatedData);
+    setIsAddIndicatorOpen(false);
+    setActiveTab(category);
+    
+    toast({
+      title: "Indicador adicionado",
+      description: `O indicador "${newIndicator.name}" foi adicionado com sucesso.`,
       variant: "success",
     });
   };
@@ -281,11 +349,16 @@ const ESGIndicators = () => {
                 Métricas ambientais, sociais e de governança da sua empresa
               </p>
             </div>
-            <Button onClick={() => openEditDialog(activeTab)} className="flex items-center gap-2">
-              <PenLine size={16} />
-              <span>Editar Indicadores {activeTab === 'environmental' ? 'Ambientais' : 
-                     activeTab === 'social' ? 'Sociais' : 'de Governança'}</span>
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={openAddIndicatorDialog} className="flex items-center gap-2">
+                <Plus size={16} />
+                <span>Adicionar Indicador</span>
+              </Button>
+              <Button onClick={() => openEditDialog(activeTab)} className="flex items-center gap-2">
+                <PenLine size={16} />
+                <span>Editar Indicadores</span>
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -614,6 +687,89 @@ const ESGIndicators = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
             <Button onClick={saveValues}>Salvar Alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Indicator Dialog */}
+      <Dialog open={isAddIndicatorOpen} onOpenChange={setIsAddIndicatorOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Adicionar Novo Indicador ESG</DialogTitle>
+            <DialogDescription>
+              Preencha os dados para adicionar um novo indicador ESG ao seu painel.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="indicator-name">Nome do Indicador</Label>
+                <Input
+                  id="indicator-name"
+                  placeholder="Ex: Consumo de Papel"
+                  value={newIndicator.name}
+                  onChange={(e) => handleNewIndicatorChange('name', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="indicator-category">Categoria</Label>
+                <select 
+                  id="indicator-category"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={newIndicator.category}
+                  onChange={(e) => handleNewIndicatorChange('category', e.target.value)}
+                >
+                  <option value="environmental">Ambiental</option>
+                  <option value="social">Social</option>
+                  <option value="governance">Governança</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="indicator-value">Valor Atual (%)</Label>
+                  <Input
+                    id="indicator-value"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={newIndicator.value}
+                    onChange={(e) => handleNewIndicatorChange('value', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="indicator-target">Meta (%)</Label>
+                  <Input
+                    id="indicator-target"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={newIndicator.target}
+                    onChange={(e) => handleNewIndicatorChange('target', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                <div 
+                  className={`h-1.5 rounded-full ${newIndicator.value >= newIndicator.target ? 'bg-green-500' : 'bg-red-500'}`} 
+                  style={{ width: `${newIndicator.value}%` }}
+                ></div>
+              </div>
+
+              <div className="flex items-center justify-between text-muted-foreground text-sm">
+                <span>Valor Atual: {newIndicator.value}%</span>
+                <span>Meta: {newIndicator.target}%</span>
+                <span className={newIndicator.value >= newIndicator.target ? 'text-green-600' : 'text-red-600'}>
+                  {newIndicator.value >= newIndicator.target ? '+' : ''}{newIndicator.value - newIndicator.target}%
+                </span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddIndicatorOpen(false)}>Cancelar</Button>
+            <Button onClick={addNewIndicator}>Adicionar Indicador</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
