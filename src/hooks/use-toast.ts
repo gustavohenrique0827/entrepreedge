@@ -1,23 +1,24 @@
 
 import { useState, useEffect } from 'react';
 
-type ToastProps = {
+export type ToastProps = {
   title: string;
   description?: string;
   duration?: number;
   variant?: 'default' | 'destructive' | 'success';
+  action?: React.ReactNode;
 };
 
-type Toast = ToastProps & {
+export type Toast = ToastProps & {
   id: string;
 };
 
 export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = ({ title, description, duration = 5000, variant = 'default' }: ToastProps) => {
+  const toast = ({ title, description, duration = 5000, variant = 'default', action }: ToastProps) => {
     const id = Math.random().toString(36).slice(2, 11);
-    const newToast = { id, title, description, duration, variant };
+    const newToast = { id, title, description, duration, variant, action };
     setToasts((prev) => [...prev, newToast]);
     
     setTimeout(() => {
@@ -47,7 +48,7 @@ export const toast = (props: ToastProps) => {
 // Global toast handler (optional, for use with the stand-alone toast function)
 if (typeof window !== 'undefined') {
   window.addEventListener('toast', (e: any) => {
-    const { title, description, duration, variant } = e.detail;
+    const { title, description, duration, variant, action } = e.detail;
     const toastContainer = document.getElementById('toast-container');
     
     if (toastContainer) {
@@ -69,6 +70,14 @@ if (typeof window !== 'undefined') {
       }
       
       toastElement.appendChild(toastContent);
+      
+      if (action) {
+        const actionContainer = document.createElement('div');
+        actionContainer.className = 'toast-action';
+        actionContainer.innerHTML = typeof action === 'string' ? action : '';
+        toastElement.appendChild(actionContainer);
+      }
+      
       toastContainer.appendChild(toastElement);
       
       setTimeout(() => {
