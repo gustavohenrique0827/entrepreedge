@@ -5,9 +5,13 @@ import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, LineChart, PieChart, Activity, Leaf, Building2, Users, AreaChart, DollarSign, BarChart2 } from 'lucide-react';
+import { BarChart, LineChart, PieChart, Activity, Leaf, Building2, Users, AreaChart, DollarSign, BarChart2, PenLine } from 'lucide-react';
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart as RechartsLineChart, Line, AreaChart as RechartsAreaChart, Area } from 'recharts';
 import { useSegment } from '@/contexts/SegmentContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 
 const ESG_DATA = {
   environmental: [
@@ -99,6 +103,10 @@ const ESGIndicators = () => {
   const [activeTab, setActiveTab] = useState('environmental');
   const [selectedChart, setSelectedChart] = useState('bar');
   const [timeframe, setTimeframe] = useState('actual');
+  const [esgData, setEsgData] = useState(ESG_DATA);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editCategory, setEditCategory] = useState('');
+  const [editValues, setEditValues] = useState<any>([]);
   
   const primaryColor = getVisualPreferences().primaryColor;
   const secondaryColor = getVisualPreferences().secondaryColor;
@@ -114,7 +122,7 @@ const ESGIndicators = () => {
   
   // Calculate overall score for a category
   const calculateCategoryScore = (category) => {
-    const data = ESG_DATA[category];
+    const data = esgData[category];
     return Math.round(data.reduce((acc, item) => acc + item.value, 0) / data.length);
   };
   
@@ -123,9 +131,45 @@ const ESGIndicators = () => {
     return value >= target ? '#36B37E' : '#FF5630';
   };
 
+  // Open dialog to edit ESG values for a specific category
+  const openEditDialog = (category) => {
+    setEditCategory(category);
+    setEditValues([...esgData[category]]);
+    setIsDialogOpen(true);
+  };
+
+  // Handle value changes in the dialog
+  const handleValueChange = (index, newValue) => {
+    const updatedValues = [...editValues];
+    updatedValues[index] = { ...updatedValues[index], value: Math.min(Math.max(0, Number(newValue)), 100) };
+    setEditValues(updatedValues);
+  };
+
+  // Handle target changes in the dialog
+  const handleTargetChange = (index, newTarget) => {
+    const updatedValues = [...editValues];
+    updatedValues[index] = { ...updatedValues[index], target: Math.min(Math.max(0, Number(newTarget)), 100) };
+    setEditValues(updatedValues);
+  };
+
+  // Save the edited values
+  const saveValues = () => {
+    setEsgData(prev => ({
+      ...prev,
+      [editCategory]: editValues
+    }));
+    setIsDialogOpen(false);
+    toast({
+      title: "Dados atualizados",
+      description: `Os dados de ${editCategory === 'environmental' ? 'Ambiental' : 
+                     editCategory === 'social' ? 'Social' : 'Governança'} foram atualizados com sucesso.`,
+      variant: "success",
+    });
+  };
+
   // Render the selected chart type for the active category
   const renderChart = () => {
-    const categoryData = ESG_DATA[activeTab];
+    const categoryData = esgData[activeTab];
     
     switch (selectedChart) {
       case 'bar':
@@ -230,11 +274,18 @@ const ESGIndicators = () => {
         <Navbar />
         
         <div className="container px-4 py-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">Indicadores ESG</h1>
-            <p className="text-sm text-muted-foreground">
-              Métricas ambientais, sociais e de governança da sua empresa
-            </p>
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">Indicadores ESG</h1>
+              <p className="text-sm text-muted-foreground">
+                Métricas ambientais, sociais e de governança da sua empresa
+              </p>
+            </div>
+            <Button onClick={() => openEditDialog(activeTab)} className="flex items-center gap-2">
+              <PenLine size={16} />
+              <span>Editar Indicadores {activeTab === 'environmental' ? 'Ambientais' : 
+                     activeTab === 'social' ? 'Sociais' : 'de Governança'}</span>
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -252,13 +303,22 @@ const ESGIndicators = () => {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant={activeTab === 'environmental' ? 'default' : 'outline'} 
-                    onClick={() => setActiveTab('environmental')}
-                    size="sm"
-                  >
-                    {activeTab === 'environmental' ? 'Visualizando' : 'Visualizar'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={activeTab === 'environmental' ? 'default' : 'outline'} 
+                      onClick={() => setActiveTab('environmental')}
+                      size="sm"
+                    >
+                      {activeTab === 'environmental' ? 'Visualizando' : 'Visualizar'}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog('environmental')}
+                    >
+                      Editar
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -277,13 +337,22 @@ const ESGIndicators = () => {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant={activeTab === 'social' ? 'default' : 'outline'} 
-                    onClick={() => setActiveTab('social')}
-                    size="sm"
-                  >
-                    {activeTab === 'social' ? 'Visualizando' : 'Visualizar'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={activeTab === 'social' ? 'default' : 'outline'} 
+                      onClick={() => setActiveTab('social')}
+                      size="sm"
+                    >
+                      {activeTab === 'social' ? 'Visualizando' : 'Visualizar'}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog('social')}
+                    >
+                      Editar
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -302,13 +371,22 @@ const ESGIndicators = () => {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant={activeTab === 'governance' ? 'default' : 'outline'} 
-                    onClick={() => setActiveTab('governance')}
-                    size="sm"
-                  >
-                    {activeTab === 'governance' ? 'Visualizando' : 'Visualizar'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={activeTab === 'governance' ? 'default' : 'outline'} 
+                      onClick={() => setActiveTab('governance')}
+                      size="sm"
+                    >
+                      {activeTab === 'governance' ? 'Visualizando' : 'Visualizar'}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog('governance')}
+                    >
+                      Editar
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -351,7 +429,7 @@ const ESGIndicators = () => {
                   <div className="mt-4 pt-4 border-t">
                     <h3 className="font-medium text-sm mb-2">Detalhes</h3>
                     <div className="text-xs space-y-1">
-                      {ESG_DATA[activeTab].map((item, idx) => (
+                      {esgData[activeTab].map((item, idx) => (
                         <div key={idx} className="py-1 border-b last:border-b-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-medium">{item.name}</span>
@@ -482,6 +560,63 @@ const ESGIndicators = () => {
           </Card>
         </div>
       </div>
+
+      {/* ESG Data Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Editar Indicadores {editCategory === 'environmental' ? 'Ambientais' : 
+                       editCategory === 'social' ? 'Sociais' : 'de Governança'}</DialogTitle>
+            <DialogDescription>
+              Atualize os valores atuais e as metas para cada indicador.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {editValues.map((item, index) => (
+                <div key={index} className="grid gap-2">
+                  <h4 className="font-medium text-sm">{item.name}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`value-${index}`}>Valor Atual (%)</Label>
+                      <Input
+                        id={`value-${index}`}
+                        type="number"
+                        value={item.value}
+                        min={0}
+                        max={100}
+                        onChange={(e) => handleValueChange(index, e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`target-${index}`}>Meta (%)</Label>
+                      <Input
+                        id={`target-${index}`}
+                        type="number"
+                        value={item.target}
+                        min={0}
+                        max={100}
+                        onChange={(e) => handleTargetChange(index, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                    <div 
+                      className={`h-1.5 rounded-full ${item.value >= item.target ? 'bg-green-500' : 'bg-red-500'}`} 
+                      style={{ width: `${item.value}%` }}
+                    ></div>
+                  </div>
+                  {index < editValues.length - 1 && <hr className="my-2" />}
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={saveValues}>Salvar Alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
