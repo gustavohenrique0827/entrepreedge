@@ -102,23 +102,24 @@
 
 /* Sidebar specific styles */
 .bg-sidebar {
-  @apply bg-sidebar text-sidebar-foreground;
+  background-color: hsl(var(--sidebar));
+  color: hsl(var(--sidebar-foreground));
 }
 
 .border-sidebar-border {
-  @apply border-sidebar-border;
+  border-color: hsl(var(--sidebar-border));
 }
 
 .text-sidebar-foreground {
-  @apply text-sidebar-foreground;
+  color: hsl(var(--sidebar-foreground));
 }
 
 .bg-sidebar-accent {
-  @apply bg-sidebar-accent;
+  background-color: hsl(var(--sidebar-accent));
 }
 
 .text-sidebar-accent-foreground {
-  @apply text-sidebar-accent-foreground;
+  color: hsl(var(--sidebar-accent-foreground));
 }
 
 /* Custom Animations */
