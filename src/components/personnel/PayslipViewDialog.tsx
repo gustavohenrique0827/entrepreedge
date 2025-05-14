@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import { Download, Printer, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// Update interface to match the Payslip interface in Payslips.tsx
 interface PayslipData {
   id: number;
   employee: string;

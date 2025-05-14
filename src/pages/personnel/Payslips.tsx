@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,8 +42,8 @@ interface Payslip {
   employee: string;
   period: string;
   status: string;
-  amount: string; // Changed from optional to required to match PayslipData
-  department: string; // Changed from optional to required to match PayslipData
+  amount?: string;
+  department?: string;
 }
 
 const Payslips = () => {
