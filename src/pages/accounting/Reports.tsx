@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +7,45 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, FileText, Download, Calendar, Printer, ExternalLink, BarChart2, PieChart, TrendingUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { viewReport, exportReport } from '@/utils/reportUtils';
+import { toast } from "@/hooks/use-toast";
 
 const Reports = () => {
   const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const [selectedPeriod, setSelectedPeriod] = useState('abril');
+  
+  const handleViewReport = (reportName: string) => {
+    viewReport({
+      reportName,
+      reportPeriod: getPeriodLabel(selectedPeriod),
+    });
+  };
+  
+  const handleExportReport = (reportName: string, format: 'pdf' | 'xlsx' | 'csv' = 'pdf') => {
+    exportReport({
+      reportName,
+      reportPeriod: getPeriodLabel(selectedPeriod),
+      format,
+    });
+  };
+  
+  const handlePrintReport = (reportName: string) => {
+    toast({
+      title: "Imprimindo Relatório",
+      description: `${reportName} - ${getPeriodLabel(selectedPeriod)}`,
+      duration: 3000,
+    });
+  };
+  
+  const getPeriodLabel = (period: string): string => {
+    const periodMap: Record<string, string> = {
+      'janeiro': 'Janeiro 2025',
+      'fevereiro': 'Fevereiro 2025',
+      'marco': 'Março 2025',
+      'abril': 'Abril 2025',
+    };
+    return periodMap[period] || 'Abril 2025';
+  };
   
   return (
     <div className="min-h-screen bg-background flex">
@@ -41,7 +76,7 @@ const Reports = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Select defaultValue="abril">
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Selecione o período" />
                 </SelectTrigger>
@@ -78,17 +113,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Balanço Patrimonial</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Balanço Patrimonial")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Balanço Patrimonial")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Balanço Patrimonial", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -101,17 +151,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">DRE - Demonstração do Resultado do Exercício</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("DRE - Demonstração do Resultado do Exercício")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("DRE - Demonstração do Resultado do Exercício")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("DRE - Demonstração do Resultado do Exercício", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -124,17 +189,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Fluxo de Caixa</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Fluxo de Caixa")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Fluxo de Caixa")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Fluxo de Caixa", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -147,17 +227,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">DMPL - Demonstração das Mutações do Patrimônio Líquido</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("DMPL - Demonstração das Mutações do Patrimônio Líquido")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("DMPL - Demonstração das Mutações do Patrimônio Líquido")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("DMPL - Demonstração das Mutações do Patrimônio Líquido", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -180,17 +275,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Livro Diário</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Livro Diário")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Livro Diário")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Livro Diário", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -203,17 +313,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Livro Razão</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Livro Razão")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Livro Razão")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Livro Razão", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -226,17 +351,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Balancete de Verificação</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Balancete de Verificação")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Balancete de Verificação")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Balancete de Verificação", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -249,17 +389,32 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Conciliação Bancária</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Conciliação Bancária")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Imprimir">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Imprimir"
+                            onClick={() => handlePrintReport("Conciliação Bancária")}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Conciliação Bancária", "pdf")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -286,14 +441,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Apuração de Impostos</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Apuração de Impostos")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Apuração de Impostos", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -306,14 +471,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Registro de Inventário</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Registro de Inventário")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Registro de Inventário", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -326,14 +501,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Livro de Entrada e Saída</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Livro de Entrada e Saída")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Livro de Entrada e Saída", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -348,14 +533,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Registro de Apuração de ICMS</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Registro de Apuração de ICMS")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Registro de Apuração de ICMS", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -368,14 +563,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Apuração PIS/COFINS</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Apuração PIS/COFINS")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Apuração PIS/COFINS", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -388,14 +593,24 @@ const Reports = () => {
                           </div>
                           <div>
                             <p className="font-medium">Relatório de Retenções</p>
-                            <p className="text-xs text-muted-foreground">Abril/2025</p>
+                            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" title="Visualizar">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Visualizar"
+                            onClick={() => handleViewReport("Relatório de Retenções")}
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Download">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Download"
+                            onClick={() => handleExportReport("Relatório de Retenções", "xlsx")}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -415,7 +630,13 @@ const Reports = () => {
                         </p>
                       </div>
                       <div className="ml-auto">
-                        <Button>Configurar</Button>
+                        <Button onClick={() => {
+                          toast({
+                            title: "Configuração de Relatórios",
+                            description: "Abrindo painel de configuração de relatórios automáticos",
+                            duration: 3000,
+                          });
+                        }}>Configurar</Button>
                       </div>
                     </div>
                   </div>
@@ -438,19 +659,19 @@ const Reports = () => {
                   <CardContent className="space-y-2">
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Análise de Liquidez</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Análise de Liquidez")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Capital de Giro</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Capital de Giro")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Ciclo Financeiro</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Ciclo Financeiro")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Endividamento</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Endividamento")}>Visualizar</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -468,19 +689,19 @@ const Reports = () => {
                   <CardContent className="space-y-2">
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Margem de Lucro</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Margem de Lucro")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">ROI por Produto</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("ROI por Produto")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">ROA e ROE</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("ROA e ROE")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Ponto de Equilíbrio</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Ponto de Equilíbrio")}>Visualizar</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -498,19 +719,19 @@ const Reports = () => {
                   <CardContent className="space-y-2">
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">KPIs Financeiros</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("KPIs Financeiros")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Comparativo Mensal</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Comparativo Mensal")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Indicadores de Cashflow</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Indicadores de Cashflow")}>Visualizar</Button>
                     </div>
                     <div className="border rounded-md p-3 flex justify-between items-center">
                       <span className="text-sm">Previsão Financeira</span>
-                      <Button variant="ghost" size="sm">Visualizar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReport("Previsão Financeira")}>Visualizar</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -528,7 +749,13 @@ const Reports = () => {
                       <p className="text-sm text-muted-foreground mb-3">
                         Crie relatórios customizados selecionando as métricas e indicadores relevantes para seu negócio.
                       </p>
-                      <Button>Criar Relatório</Button>
+                      <Button onClick={() => {
+                        toast({
+                          title: "Construtor de Relatórios",
+                          description: "Abrindo ferramenta de criação de relatórios personalizados",
+                          duration: 3000,
+                        });
+                      }}>Criar Relatório</Button>
                     </div>
                     
                     <div className="border rounded-lg p-5">
@@ -536,7 +763,13 @@ const Reports = () => {
                       <p className="text-sm text-muted-foreground mb-3">
                         Configure a geração automática e envio periódico de relatórios para sua equipe.
                       </p>
-                      <Button>Agendar Entregas</Button>
+                      <Button onClick={() => {
+                        toast({
+                          title: "Agendamento de Relatórios",
+                          description: "Abrindo painel de agendamento de relatórios",
+                          duration: 3000,
+                        });
+                      }}>Agendar Entregas</Button>
                     </div>
                   </div>
                 </CardContent>
