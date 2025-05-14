@@ -1,5 +1,6 @@
 
-import { useToast as useToastInternal, toast as toastInternal } from "@/components/ui/use-toast"
+import { useToast as useToastOriginal, toast as toastOriginal } from "@/components/ui/use-toast"
 
-export const useToast = useToastInternal;
-export const toast = toastInternal;
+// Re-export to avoid circular dependency
+export const useToast = useToastOriginal;
+export const toast = toastOriginal;
