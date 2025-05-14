@@ -53,9 +53,9 @@ const getIconByName = (iconName: string, size: number = 18) => {
     ? iconMap[iconName.toLowerCase()]
     : 'FileText';
 
-  // Use the correct approach to render icons
+  // Use the correct way to render icons
   const IconComponent = LucideIcons[IconName];
-  return IconComponent ? <IconComponent size={size} /> : <LucideIcons.FileText size={size} />;
+  return <IconComponent size={size} />;
 };
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({ 
