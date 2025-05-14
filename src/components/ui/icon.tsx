@@ -20,8 +20,9 @@ export const Icon: React.FC<IconProps> = ({ name, color, size = 24, className })
 
   const iconName = formatIconName(name);
   
-  // Get the icon component safely
-  const LucideIcon = (LucideIcons as Record<string, React.ComponentType<any>>)[iconName];
+  // Cast LucideIcons to a Record with proper type assertion
+  const iconSet = LucideIcons as unknown as Record<string, React.ComponentType<any>>;
+  const LucideIcon = iconSet[iconName];
   
   if (!LucideIcon) {
     console.warn(`Icon ${name} not found, using fallback`);

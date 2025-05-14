@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import * as LucideIcons from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface ActivityCardProps {
   title: string;
@@ -12,51 +12,6 @@ interface ActivityCardProps {
   icon: string;
   className?: string;
 }
-
-// Helper function to get icons by name
-const getIconByName = (iconName: string, size: number = 18) => {
-  const iconMap: Record<string, keyof typeof LucideIcons> = {
-    'package': 'Package',
-    'clipboard-list': 'ClipboardList',
-    'shopping-cart': 'ShoppingCart',
-    'wrench': 'Wrench',
-    'truck': 'Truck',
-    'file-text': 'FileText',
-    'user-plus': 'UserPlus',
-    'book': 'BookOpen',
-    'user-check': 'UserCheck',
-    'edit': 'Edit',
-    'award': 'Award',
-    'calendar': 'Calendar',
-    'folder-open': 'FolderOpen',
-    'calendar-clock': 'Clock',
-    'users': 'Users',
-    'bar-chart': 'BarChart',
-    'kanban': 'Kanban',
-    'headphones': 'Headphones',
-    'git-branch': 'GitBranch',
-    'settings': 'Settings',
-    'line-chart': 'LineChart',
-    'message-square': 'MessageSquare',
-    'layers': 'Layers',
-    'image': 'Image',
-    'refresh-cw': 'RefreshCw',
-    'bed': 'BedDouble',
-    'dollar-sign': 'DollarSign',
-    'credit-card': 'CreditCard',
-    'megaphone': 'Megaphone',
-    'map': 'Map',
-    'wifi': 'Wifi',
-  };
-
-  const IconName = iconMap[iconName.toLowerCase()]
-    ? iconMap[iconName.toLowerCase()]
-    : 'FileText';
-
-  // Create the actual icon element directly without storing it in a variable
-  const IconComponent = LucideIcons[IconName as keyof typeof LucideIcons];
-  return React.createElement(IconComponent, { size });
-};
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({ 
   title, 
@@ -71,7 +26,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         <CardContent className="p-4 flex flex-col h-full">
           <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-4">
             <span className="text-primary">
-              {getIconByName(icon)}
+              <Icon name={icon} size={18} />
             </span>
           </div>
           <h3 className="font-semibold mb-1">{title}</h3>

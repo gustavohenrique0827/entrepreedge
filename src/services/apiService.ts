@@ -1,161 +1,248 @@
+import { dbService } from './dbService';
 
-import api from './dbService';
-
-// This service wraps the database service to provide additional functionality
-// like error handling, caching, and offline support
-
-// Define proper types for transactions
-interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: string;
-  date: string;
-  account: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Define correct Product type to match what's expected in Products.tsx
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  category: string;
-  sku: string;
-  status: 'active' | 'out_of_stock' | 'inactive';
-  createdAt: string;
-  updatedAt: string;
-}
-
-class ApiService {
-  // Goals API
-  async getGoals() {
-    try {
-      return await api.goals.getAll();
-    } catch (error) {
-      console.error('Error fetching goals:', error);
-      throw new Error('Failed to fetch goals');
-    }
-  }
-
-  async addGoal(goal: any) {
-    try {
-      await api.goals.add(goal);
-      return goal;
-    } catch (error) {
-      console.error('Error adding goal:', error);
-      throw new Error('Failed to add goal');
-    }
-  }
-
-  async updateGoal(goal: any) {
-    try {
-      await api.goals.update(goal);
-      return goal;
-    } catch (error) {
-      console.error('Error updating goal:', error);
-      throw new Error('Failed to update goal');
-    }
-  }
-
-  async deleteGoal(id: string) {
-    try {
-      await api.goals.delete(id);
-      return true;
-    } catch (error) {
-      console.error('Error deleting goal:', error);
-      throw new Error('Failed to delete goal');
-    }
-  }
-
-  // Transactions API
-  async getTransactions(): Promise<Transaction[]> {
-    try {
-      // Mock implementation until api.transactions.getAll() is implemented
-      console.warn('Transactions API not implemented, returning mock data');
-      return [
-        {
-          id: '1',
-          description: 'Salário',
-          amount: 5000,
-          type: 'income',
-          category: 'Salário',
-          date: '2023-05-05',
-          account: 'Nubank',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          description: 'Aluguel',
-          amount: 1200,
-          type: 'expense',
-          category: 'Moradia',
-          date: '2023-05-10',
-          account: 'Nubank',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ];
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      throw new Error('Failed to fetch transactions');
-    }
-  }
-
-  async addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
-    try {
-      console.warn('Transactions API not implemented, mocking successful add');
-      return {
-        ...transaction,
-        id: Math.random().toString(36).substring(2, 9),
+export const api = {
+  courses: {
+    getAll: async () => {
+      const courses = await dbService.courses.getAll();
+      return courses;
+    },
+    getById: async (id: string) => {
+      const courses = await dbService.courses.getAll();
+      const course = courses.find(c => c.id === id);
+      return course;
+    },
+    add: async (course: any) => {
+      const courses = await dbService.courses.getAll();
+      const newCourse = {
+        id: Date.now().toString(),
+        ...course,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      } as Transaction;
-    } catch (error) {
-      console.error('Error adding transaction:', error);
-      throw new Error('Failed to add transaction');
+      };
+      courses.push(newCourse);
+      await dbService.courses.saveAll(courses);
+      return newCourse;
+    },
+    update: async (course: any) => {
+      const courses = await dbService.courses.getAll();
+      const index = courses.findIndex(c => c.id === course.id);
+      if (index !== -1) {
+        courses[index] = {
+          ...courses[index],
+          ...course,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.courses.saveAll(courses);
+        return courses[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const courses = await dbService.courses.getAll();
+      const index = courses.findIndex(c => c.id === id);
+      if (index !== -1) {
+        const deletedCourse = courses[index];
+        courses.splice(index, 1);
+        await dbService.courses.saveAll(courses);
+        return deletedCourse;
+      }
+      return null;
     }
-  }
-
-  async updateTransaction(transaction: Transaction): Promise<Transaction> {
-    try {
-      console.warn('Transactions API not implemented, mocking successful update');
-      return {
-        ...transaction,
+  },
+  users: {
+    getAll: async () => {
+      const users = await dbService.users.getAll();
+      return users;
+    },
+    getById: async (id: string) => {
+      const users = await dbService.users.getAll();
+      const user = users.find(u => u.id === id);
+      return user;
+    },
+    add: async (user: any) => {
+       const users = await dbService.users.getAll();
+        const newUser = {
+          id: Date.now().toString(),
+          ...user,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        users.push(newUser);
+        await dbService.users.saveAll(users);
+        return newUser;
+    },
+    update: async (user: any) => {
+      const users = await dbService.users.getAll();
+      const index = users.findIndex(u => u.id === user.id);
+      if (index !== -1) {
+        users[index] = {
+          ...users[index],
+          ...user,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.users.saveAll(users);
+        return users[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const users = await dbService.users.getAll();
+      const index = users.findIndex(u => u.id === id);
+      if (index !== -1) {
+        const deletedUser = users[index];
+        users.splice(index, 1);
+        await dbService.users.saveAll(users);
+        return deletedUser;
+      }
+      return null;
+    }
+  },
+  tasks: {
+    getAll: async () => {
+      const tasks = await dbService.tasks.getAll();
+      return tasks;
+    },
+    getById: async (id: string) => {
+      const tasks = await dbService.tasks.getAll();
+      const task = tasks.find(t => t.id === id);
+      return task;
+    },
+    add: async (task: any) => {
+      const tasks = await dbService.tasks.getAll();
+      const newTask = {
+        id: Date.now().toString(),
+        ...task,
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-    } catch (error) {
-      console.error('Error updating transaction:', error);
-      throw new Error('Failed to update transaction');
+      tasks.push(newTask);
+      await dbService.tasks.saveAll(tasks);
+      return newTask;
+    },
+    update: async (task: any) => {
+      const tasks = await dbService.tasks.getAll();
+      const index = tasks.findIndex(t => t.id === task.id);
+      if (index !== -1) {
+        tasks[index] = {
+          ...tasks[index],
+          ...task,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.tasks.saveAll(tasks);
+        return tasks[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const tasks = await dbService.tasks.getAll();
+      const index = tasks.findIndex(t => t.id === id);
+      if (index !== -1) {
+        const deletedTask = tasks[index];
+        tasks.splice(index, 1);
+        await dbService.tasks.saveAll(tasks);
+        return deletedTask;
+      }
+      return null;
+    }
+  },
+  products: {
+    getAll: async () => {
+      const products = await dbService.products.getAll();
+      return products;
+    },
+    getById: async (id: string) => {
+      const products = await dbService.products.getAll();
+      const product = products.find(p => p.id === id);
+      return product;
+    },
+    add: async (product: any) => {
+      const products = await dbService.products.getAll();
+      const newProduct = {
+        id: Date.now().toString(),
+        ...product,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      products.push(newProduct);
+      await dbService.products.saveAll(products);
+      return newProduct;
+    },
+    update: async (product: any) => {
+      const products = await dbService.products.getAll();
+      const index = products.findIndex(p => p.id === product.id);
+      if (index !== -1) {
+        products[index] = {
+          ...products[index],
+          ...product,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.products.saveAll(products);
+        return products[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const products = await dbService.products.getAll();
+      const index = products.findIndex(p => p.id === id);
+      if (index !== -1) {
+        const deletedProduct = products[index];
+        products.splice(index, 1);
+        await dbService.products.saveAll(products);
+        return deletedProduct;
+      }
+      return null;
     }
   }
+};
 
-  async deleteTransaction(id: string): Promise<boolean> {
-    try {
-      console.warn('Transactions API not implemented, mocking successful delete');
-      return true;
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
-      throw new Error('Failed to delete transaction');
+// If api object doesn't have transactions, add it
+if (!api.transactions) {
+  api.transactions = {
+    getAll: async () => {
+      const transactions = await dbService.transactions.getAll();
+      return transactions;
+    },
+    getById: async (id: string) => {
+      const transactions = await dbService.transactions.getAll();
+      const transaction = transactions.find(t => t.id === id);
+      return transaction;
+    },
+    add: async (transaction: any) => {
+      const transactions = await dbService.transactions.getAll();
+      const newTransaction = {
+        id: Date.now().toString(),
+        ...transaction,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      transactions.push(newTransaction);
+      await dbService.transactions.saveAll(transactions);
+      return newTransaction;
+    },
+    update: async (transaction: any) => {
+      const transactions = await dbService.transactions.getAll();
+      const index = transactions.findIndex(t => t.id === transaction.id);
+      if (index !== -1) {
+        transactions[index] = {
+          ...transactions[index],
+          ...transaction,
+          updatedAt: new Date().toISOString()
+        };
+        await dbService.transactions.saveAll(transactions);
+        return transactions[index];
+      }
+      return null;
+    },
+    delete: async (id: string) => {
+      const transactions = await dbService.transactions.getAll();
+      const index = transactions.findIndex(t => t.id === id);
+      if (index !== -1) {
+        const deletedTransaction = transactions[index];
+        transactions.splice(index, 1);
+        await dbService.transactions.saveAll(transactions);
+        return deletedTransaction;
+      }
+      return null;
     }
-  }
-  
-  // Sync offline data with server (Mock implementation)
-  async syncWithServer() {
-    console.log('Synchronizing data with server...');
-    return new Promise(resolve => {
-      setTimeout(() => {
-        console.log('Data synchronized successfully!');
-        resolve(true);
-      }, 1500);
-    });
-  }
+  };
 }
-
-export default new ApiService();
