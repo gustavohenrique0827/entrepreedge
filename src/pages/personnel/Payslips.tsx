@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,15 @@ import { PageHeader } from '@/components/PageHeader';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
   Select,
   SelectContent,
   SelectItem,
@@ -23,6 +33,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Label } from '@/components/ui/label';
+import { format } from 'date-fns';
 
 interface Payslip {
   id: number;
@@ -39,6 +51,9 @@ const Payslips = () => {
   const [periodFilter, setPeriodFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState<keyof Payslip>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState(format(new Date(), 'yyyy-MM'));
   const { toast } = useToast();
 
   const handleDownload = (id: number) => {
@@ -62,14 +77,79 @@ const Payslips = () => {
       title: "Imprimindo holerites",
       description: "Todos os holerites filtrados serão enviados para impressão.",
     });
+    
+    // Simulate print dialog after a short delay
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
 
   const handleGeneratePayslip = () => {
+    if (!selectedEmployee) {
+      toast({
+        title: "Erro ao Gerar Holerite",
+        description: "Por favor, selecione um colaborador.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
-      title: "Gerar Holerite",
-      description: "Processo de geração de holerite iniciado.",
+      title: "Holerite Gerado com Sucesso",
+      description: `Holerite para ${selectedEmployee} referente ao período ${selectedPeriod} foi gerado.`,
+    });
+    
+    setIsGenerateDialogOpen(false);
+    
+    // Add the new payslip to the list (in a real app, this would come from the API)
+    const newPayslip = {
+      id: payslipsData.length + 1,
+      employee: selectedEmployee,
+      period: selectedPeriod,
+      status: 'Pendente',
+      amount: 'R$ ' + (Math.floor(Math.random() * 5000) + 2000).toFixed(2),
+      department: employees.find(emp => emp.name === selectedEmployee)?.department || 'Não especificado'
+    };
+    
+    payslipsData.push(newPayslip);
+    
+    // Reset the form
+    setSelectedEmployee('');
+    setSelectedPeriod(format(new Date(), 'yyyy-MM'));
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "Exportando holerites",
+      description: "Os holerites filtrados estão sendo exportados em formato PDF.",
     });
   };
+
+  const handleViewDetails = (id: number) => {
+    toast({
+      title: "Visualizando detalhes",
+      description: `Detalhes do holerite #${id} estão sendo carregados.`,
+    });
+  };
+
+  const handleEdit = (id: number) => {
+    toast({
+      title: "Editando holerite",
+      description: `Edição do holerite #${id} iniciada.`,
+    });
+  };
+
+  // Sample employee data
+  const employees = [
+    { name: 'João Silva', department: 'Comercial' },
+    { name: 'Maria Santos', department: 'Tecnologia' },
+    { name: 'Alice Oliveira', department: 'Marketing' },
+    { name: 'Carlos Mendes', department: 'Comercial' },
+    { name: 'Fernanda Lima', department: 'Tecnologia' },
+    { name: 'Roberto Alves', department: 'RH' },
+    { name: 'Paula Sousa', department: 'Financeiro' },
+    { name: 'Miguel Costa', department: 'Marketing' },
+  ];
 
   const payslipsData: Payslip[] = [
     { id: 1, employee: 'João Silva', period: '2024-01', status: 'Pago', amount: 'R$ 3.450,00', department: 'Comercial' },
@@ -183,19 +263,56 @@ const Payslips = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button>
-                      <Plus className="mr-2 h-4 w-4" />
+              <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Gerar Holerite
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Gerar Novo Holerite</DialogTitle>
+                    <DialogDescription>
+                      Preencha as informações abaixo para gerar um novo holerite para o colaborador.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="employee">Colaborador</Label>
+                      <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                        <SelectTrigger id="employee">
+                          <SelectValue placeholder="Selecione um colaborador" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {employees.map(emp => (
+                            <SelectItem key={emp.name} value={emp.name}>
+                              {emp.name} - {emp.department}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="period">Período de Referência</Label>
+                      <Input
+                        id="period"
+                        type="month"
+                        value={selectedPeriod}
+                        onChange={(e) => setSelectedPeriod(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsGenerateDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleGeneratePayslip}>
                       Gerar Holerite
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Criar novo holerite para um colaborador</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Card>
@@ -274,7 +391,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm">
+                                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(payslip.id)}>
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -285,7 +402,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm">
+                                    <Button variant="ghost" size="sm" onClick={() => handleEdit(payslip.id)}>
                                       <Edit className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -296,7 +413,7 @@ const Payslips = () => {
                                 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm">
+                                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(payslip.id)}>
                                       <FileText className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -346,7 +463,7 @@ const Payslips = () => {
                     <Printer className="mr-2 h-4 w-4" />
                     Imprimir
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={handleExport}>
                     <Download className="mr-2 h-4 w-4" />
                     Exportar
                   </Button>
@@ -355,12 +472,17 @@ const Payslips = () => {
             </Card>
           </div>
 
-          <Button 
-            onClick={handleGeneratePayslip} 
-            className="absolute top-4 right-4"
-          >
-            Gerar Novo Holerite
-          </Button>
+          <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={() => setIsGenerateDialogOpen(true)} 
+                className="fixed bottom-4 right-4 sm:absolute sm:top-4 sm:right-4 sm:bottom-auto"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Gerar Novo Holerite
+              </Button>
+            </DialogTrigger>
+          </Dialog>
         </PageContainer>
       </div>
     </div>
