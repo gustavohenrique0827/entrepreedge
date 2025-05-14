@@ -59,7 +59,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: [
           ...state.toasts,
-          { ...action.toast, id: action.toast.id || genId() },
+          { ...action.toast, id: action.toast.id ?? genId() },
         ],
       }
 
@@ -117,14 +117,15 @@ function dispatch(action: Action) {
   })
 }
 
-interface Toast extends Omit<ToasterToast, "id"> {
+// Define a type for the toast props that can include an optional id
+interface ToastProps extends Omit<ToasterToast, "id"> {
   id?: string
 }
 
-function toast(props: Toast) {
+function toast(props: ToastProps) {
   const id = props.id || genId()
 
-  const update = (props: ToasterToast) =>
+  const update = (props: ToastProps) =>
     dispatch({
       type: actionTypes.UPDATE_TOAST,
       toast: { ...props, id },
@@ -136,7 +137,6 @@ function toast(props: Toast) {
     type: actionTypes.ADD_TOAST,
     toast: {
       ...props,
-      id,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
