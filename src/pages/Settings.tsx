@@ -22,7 +22,7 @@ const Settings = () => {
   const { segmentName } = useSegment();
   const { applyThemeColors } = useTheme();
   const [activeTab, setActiveTab] = useState(localStorage.getItem('settingsTab') || "subscription");
-  const companyName = localStorage.getItem('companyName') || 'Sua Empresa';
+  const companyName = localStorage.getItem('companyName') || 'Fênix';
   const [isAdmin, setIsAdmin] = useState(localStorage.getItem('userRole') === 'admin');
 
   // Salvar tab ativa no localStorage sempre que mudar

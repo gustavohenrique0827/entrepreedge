@@ -1,62 +1,37 @@
 
-import { Toast as ToastComponent, ToastActionElement, ToastProps } from "@/components/ui/toast"
+import * as React from "react"
+import {
+  Toast,
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+} from "@/components/ui/toast"
+import { useToast as useToastOriginal } from "@/components/ui/use-toast"
 
-type ToastVariant = 'default' | 'destructive' | 'success';
+export const Toaster = () => {
+  const { toasts } = useToastOriginal()
 
-const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000
-
-type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-  variant?: ToastVariant
+  return (
+    <ToastProvider>
+      {toasts.map(function ({ id, title, description, action, ...props }) {
+        return (
+          <Toast key={id} {...props}>
+            <div className="grid gap-1">
+              {title && <ToastTitle>{title}</ToastTitle>}
+              {description && (
+                <ToastDescription>{description}</ToastDescription>
+              )}
+            </div>
+            {action}
+            <ToastClose />
+          </Toast>
+        )
+      })}
+      <ToastViewport />
+    </ToastProvider>
+  )
 }
 
-let count = 0
-
-function genId() {
-  count = (count + 1) % Number.MAX_VALUE
-  return count.toString()
-}
-
-const toasts: ToasterToast[] = []
-
-type ToasterToastOptions = Omit<ToasterToast, "id">
-
-function toast(options: ToasterToastOptions) {
-  const id = genId()
-
-  const toast: ToasterToast = {
-    id,
-    ...options,
-    open: true,
-    onOpenChange: open => {
-      if (!open) {
-        // Remove toast from DOM after it's been closed
-        setTimeout(() => {
-          toasts.splice(toasts.indexOf(toast), 1)
-        }, TOAST_REMOVE_DELAY)
-      }
-    },
-  }
-
-  toasts.push(toast)
-  return toast
-}
-
-function useToast() {
-  return {
-    toast,
-    toasts,
-    dismiss: (toastId: string) => {
-      const toast = toasts.find(toast => toast.id === toastId)
-      if (toast) {
-        toast.open = false
-      }
-    },
-  }
-}
-
-export { toast, useToast }
+export { useToastOriginal as useToast, toast } from "@/components/ui/use-toast"
