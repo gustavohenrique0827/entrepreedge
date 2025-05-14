@@ -10,7 +10,7 @@ import { Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useSegment } from '@/contexts/SegmentContext';
-import api from '@/services/dbService';
+import { api } from '@/services/apiService';
 import { DataTable } from '@/components/ui/data-table';
 import { Product } from '@/components/ecommerce/types';
 import { columns } from '@/components/ecommerce/ProductColumn';

@@ -1,6 +1,6 @@
-import { dbService } from './dbService';
+import dbService from './dbService';
 
-export const api = {
+const api = {
   courses: {
     getAll: async () => {
       const courses = await dbService.courses.getAll();
@@ -192,12 +192,8 @@ export const api = {
       }
       return null;
     }
-  }
-};
-
-// If api object doesn't have transactions, add it
-if (!api.transactions) {
-  api.transactions = {
+  },
+  transactions: {
     getAll: async () => {
       const transactions = await dbService.transactions.getAll();
       return transactions;
@@ -244,5 +240,19 @@ if (!api.transactions) {
       }
       return null;
     }
-  };
-}
+  }
+};
+
+export const syncWithServer = async () => {
+  // Mock implementation for synchronizing with a server
+  console.log('Syncing data with server...');
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log('Sync complete');
+      resolve(true);
+    }, 1000);
+  });
+};
+
+export { api };
+export default api;

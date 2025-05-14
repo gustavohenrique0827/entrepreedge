@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cloud, CloudOff, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import apiService from '@/services/apiService';
+import { api, syncWithServer } from '@/services/apiService';
 
 export const SyncStatus = () => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -33,7 +33,7 @@ export const SyncStatus = () => {
       
       setIsSyncing(true);
       try {
-        await apiService.syncWithServer();
+        await syncWithServer();
         setLastSync(new Date());
       } catch (error) {
         console.error('Sync failed:', error);

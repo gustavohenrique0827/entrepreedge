@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { PageContainer } from "@/components/PageContainer";
@@ -13,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ChevronDown, Filter, Search, Calendar, KanbanSquare, List, AlertTriangle, CalendarClock, Clock } from 'lucide-react';
-import api from '@/services/dbService';
+import { api } from '@/services/apiService';
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import {
