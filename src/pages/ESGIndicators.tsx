@@ -12,28 +12,61 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { Select } from "@/components/ui/select";
 
-const ESG_DATA = {
+// Define units for the different metrics
+const METRIC_UNITS = {
+  environmental: {
+    'Emissões de CO2': 'toneladas',
+    'Consumo de Energia': 'MWh',
+    'Uso de Água': 'm³',
+    'Geração de Resíduos': 'toneladas',
+    'Reciclagem': 'toneladas',
+    'Consumo de Papel': 'kg',
+    'Resíduos Sólidos': 'toneladas',
+  },
+  social: {
+    'Diversidade de Gênero': '%',
+    'Inclusão Racial': '%',
+    'Saúde e Segurança': 'incidentes',
+    'Treinamento': 'horas/funcionário',
+    'Engajamento Comunitário': 'horas',
+    'Satisfação dos Funcionários': 'pontos',
+    'Rotatividade': '%',
+  },
+  governance: {
+    'Transparência': 'pontos',
+    'Ética Empresarial': 'pontos',
+    'Gestão de Riscos': 'pontos',
+    'Diversidade no Conselho': '%',
+    'Políticas Anticorrupção': 'pontos',
+    'Conformidade Regulatória': 'violações',
+    'Remuneração Executiva': 'razão',
+  }
+};
+
+// Define base metrics for each category
+const BASE_METRICS = {
   environmental: [
-    { name: 'Emissões de CO2', value: 30, target: 25, color: '#00A3C4' },
-    { name: 'Consumo de Energia', value: 45, target: 40, color: '#36B37E' },
-    { name: 'Uso de Água', value: 20, target: 15, color: '#6554C0' },
-    { name: 'Geração de Resíduos', value: 35, target: 30, color: '#FF8B00' },
-    { name: 'Reciclagem', value: 60, target: 75, color: '#FF5630' },
+    { name: 'Emissões de CO2', value: 30, target: 25, unit: 'toneladas', color: '#00A3C4', description: 'Emissões totais de CO2 da empresa' },
+    { name: 'Consumo de Energia', value: 450, target: 400, unit: 'MWh', color: '#36B37E', description: 'Consumo total de energia' },
+    { name: 'Uso de Água', value: 2000, target: 1500, unit: 'm³', color: '#6554C0', description: 'Consumo total de água' },
+    { name: 'Geração de Resíduos', value: 35, target: 30, unit: 'toneladas', color: '#FF8B00', description: 'Quantidade de resíduos gerados' },
+    { name: 'Reciclagem', value: 12, target: 15, unit: 'toneladas', color: '#FF5630', description: 'Quantidade de material reciclado' },
   ],
   social: [
-    { name: 'Diversidade de Gênero', value: 62, target: 50, color: '#00A3C4' },
-    { name: 'Inclusão Racial', value: 48, target: 50, color: '#36B37E' },
-    { name: 'Saúde e Segurança', value: 75, target: 80, color: '#6554C0' },
-    { name: 'Treinamento', value: 55, target: 60, color: '#FF8B00' },
-    { name: 'Engajamento Comunitário', value: 40, target: 45, color: '#FF5630' },
+    { name: 'Diversidade de Gênero', value: 62, target: 50, unit: '%', color: '#00A3C4', description: 'Percentual de diversidade de gênero' },
+    { name: 'Inclusão Racial', value: 48, target: 50, unit: '%', color: '#36B37E', description: 'Percentual de diversidade racial' },
+    { name: 'Saúde e Segurança', value: 5, target: 3, unit: 'incidentes', color: '#6554C0', description: 'Número de incidentes de segurança' },
+    { name: 'Treinamento', value: 22, target: 25, unit: 'horas/funcionário', color: '#FF8B00', description: 'Horas médias de treinamento por funcionário' },
+    { name: 'Engajamento Comunitário', value: 120, target: 150, unit: 'horas', color: '#FF5630', description: 'Horas dedicadas a projetos comunitários' },
   ],
   governance: [
-    { name: 'Transparência', value: 80, target: 85, color: '#00A3C4' },
-    { name: 'Ética Empresarial', value: 75, target: 80, color: '#36B37E' },
-    { name: 'Gestão de Riscos', value: 65, target: 70, color: '#6554C0' },
-    { name: 'Diversidade no Conselho', value: 50, target: 60, color: '#FF8B00' },
-    { name: 'Políticas Anticorrupção', value: 85, target: 90, color: '#FF5630' },
+    { name: 'Transparência', value: 80, target: 85, unit: 'pontos', color: '#00A3C4', description: 'Pontuação em transparência corporativa' },
+    { name: 'Ética Empresarial', value: 75, target: 80, unit: 'pontos', color: '#36B37E', description: 'Pontuação em ética empresarial' },
+    { name: 'Gestão de Riscos', value: 65, target: 70, unit: 'pontos', color: '#6554C0', description: 'Eficácia da gestão de riscos' },
+    { name: 'Diversidade no Conselho', value: 50, target: 60, unit: '%', color: '#FF8B00', description: 'Percentual de diversidade no conselho diretor' },
+    { name: 'Políticas Anticorrupção', value: 85, target: 90, unit: 'pontos', color: '#FF5630', description: 'Robustez das políticas anticorrupção' },
   ]
 };
 
@@ -69,17 +102,17 @@ const TIME_DATA = {
 const COMPARISON_DATA = {
   environmental: [
     { name: 'Emissões de CO2', company: 30, industry: 35 },
-    { name: 'Consumo de Energia', company: 45, industry: 50 },
-    { name: 'Uso de Água', company: 20, industry: 25 },
+    { name: 'Consumo de Energia', company: 450, industry: 500 },
+    { name: 'Uso de Água', company: 2000, industry: 2500 },
     { name: 'Geração de Resíduos', company: 35, industry: 38 },
-    { name: 'Reciclagem', company: 60, industry: 55 },
+    { name: 'Reciclagem', company: 12, industry: 10 },
   ],
   social: [
     { name: 'Diversidade de Gênero', company: 62, industry: 45 },
     { name: 'Inclusão Racial', company: 48, industry: 40 },
-    { name: 'Saúde e Segurança', company: 75, industry: 70 },
-    { name: 'Treinamento', company: 55, industry: 50 },
-    { name: 'Engajamento Comunitário', company: 40, industry: 35 },
+    { name: 'Saúde e Segurança', company: 5, industry: 7 },
+    { name: 'Treinamento', company: 22, industry: 20 },
+    { name: 'Engajamento Comunitário', company: 120, industry: 100 },
   ],
   governance: [
     { name: 'Transparência', company: 80, industry: 75 },
@@ -101,22 +134,35 @@ const CHART_TYPES = [
 // Color palette for new indicators
 const COLOR_PALETTE = ['#00A3C4', '#36B37E', '#6554C0', '#FF8B00', '#FF5630', '#0052CC', '#5243AA', '#EF5350', '#FFB400', '#00875A'];
 
+// Helper function to calculate percentage from actual values and targets
+const calculatePercentage = (value, target, higherIsBetter = false) => {
+  if (target === 0) return 0;
+  
+  if (higherIsBetter) {
+    // For metrics where higher is better (e.g., recycling)
+    return Math.round((value / target) * 100);
+  } else {
+    // For metrics where lower is better (e.g., CO2 emissions)
+    return Math.round((1 - (value / target)) * 100);
+  }
+};
+
 const ESGIndicators = () => {
   const { getVisualPreferences } = useSegment();
   const [activeTab, setActiveTab] = useState('environmental');
   const [selectedChart, setSelectedChart] = useState('bar');
   const [timeframe, setTimeframe] = useState('actual');
-  const [esgData, setEsgData] = useState(ESG_DATA);
+  const [esgData, setEsgData] = useState(BASE_METRICS);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddIndicatorOpen, setIsAddIndicatorOpen] = useState(false);
-  const [editCategory, setEditCategory] = useState('');
-  const [editValues, setEditValues] = useState<any>([]);
   const [newIndicator, setNewIndicator] = useState({
     name: '',
     value: 0,
     target: 0,
+    unit: '',
     category: 'environmental',
-    color: '#00A3C4'
+    color: '#00A3C4',
+    description: ''
   });
   
   const primaryColor = getVisualPreferences().primaryColor;
@@ -134,19 +180,47 @@ const ESGIndicators = () => {
   // Calculate overall score for a category
   const calculateCategoryScore = (category) => {
     const data = esgData[category];
-    return Math.round(data.reduce((acc, item) => acc + item.value, 0) / data.length);
+    let totalScore = 0;
+    
+    data.forEach(item => {
+      // Determine if higher is better based on the unit
+      const higherIsBetter = !(item.name.includes('Emissões') || 
+                              item.name.includes('Consumo') || 
+                              item.name.includes('Resíduos') || 
+                              item.name.includes('incidentes') || 
+                              item.name.includes('violações'));
+                              
+      const itemScore = calculatePercentage(item.value, item.target, higherIsBetter);
+      totalScore += itemScore;
+    });
+    
+    return Math.round(totalScore / data.length);
   };
   
   // Get color based on performance (red if below target, green if above)
-  const getPerformanceColor = (value, target) => {
-    return value >= target ? '#36B37E' : '#FF5630';
+  const getPerformanceColor = (item) => {
+    const higherIsBetter = !(item.name.includes('Emissões') || 
+                            item.name.includes('Consumo') || 
+                            item.name.includes('Resíduos') || 
+                            item.name.includes('incidentes') || 
+                            item.name.includes('violações'));
+                            
+    if (higherIsBetter) {
+      return item.value >= item.target ? '#36B37E' : '#FF5630';
+    } else {
+      return item.value <= item.target ? '#36B37E' : '#FF5630';
+    }
   };
 
-  // Open dialog to edit ESG values for a specific category
-  const openEditDialog = (category) => {
-    setEditCategory(category);
-    setEditValues([...esgData[category]]);
-    setIsDialogOpen(true);
+  // Check if value is meeting target
+  const isMeetingTarget = (item) => {
+    const higherIsBetter = !(item.name.includes('Emissões') || 
+                            item.name.includes('Consumo') || 
+                            item.name.includes('Resíduos') || 
+                            item.name.includes('incidentes') || 
+                            item.name.includes('violações'));
+                            
+    return higherIsBetter ? item.value >= item.target : item.value <= item.target;
   };
 
   // Open add new indicator dialog
@@ -155,39 +229,12 @@ const ESGIndicators = () => {
       name: '',
       value: 0,
       target: 0,
+      unit: '',
       category: activeTab,
-      color: COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]
+      color: COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)],
+      description: ''
     });
     setIsAddIndicatorOpen(true);
-  };
-
-  // Handle value changes in the dialog
-  const handleValueChange = (index, newValue) => {
-    const updatedValues = [...editValues];
-    updatedValues[index] = { ...updatedValues[index], value: Math.min(Math.max(0, Number(newValue)), 100) };
-    setEditValues(updatedValues);
-  };
-
-  // Handle target changes in the dialog
-  const handleTargetChange = (index, newTarget) => {
-    const updatedValues = [...editValues];
-    updatedValues[index] = { ...updatedValues[index], target: Math.min(Math.max(0, Number(newTarget)), 100) };
-    setEditValues(updatedValues);
-  };
-
-  // Save the edited values
-  const saveValues = () => {
-    setEsgData(prev => ({
-      ...prev,
-      [editCategory]: editValues
-    }));
-    setIsDialogOpen(false);
-    toast({
-      title: "Dados atualizados",
-      description: `Os dados de ${editCategory === 'environmental' ? 'Ambiental' : 
-                     editCategory === 'social' ? 'Social' : 'Governança'} foram atualizados com sucesso.`,
-      variant: "success",
-    });
   };
 
   // Handle new indicator input changes
@@ -195,7 +242,7 @@ const ESGIndicators = () => {
     setNewIndicator(prev => ({
       ...prev,
       [field]: field === 'value' || field === 'target' 
-        ? Math.min(Math.max(0, Number(value)), 100)
+        ? Number(value)
         : value
     }));
   };
@@ -211,6 +258,15 @@ const ESGIndicators = () => {
       return;
     }
 
+    if (!newIndicator.unit) {
+      toast({
+        title: "Erro ao adicionar indicador",
+        description: "A unidade de medida é obrigatória.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const category = newIndicator.category;
     const updatedData = {...esgData};
     
@@ -220,7 +276,9 @@ const ESGIndicators = () => {
         name: newIndicator.name,
         value: newIndicator.value,
         target: newIndicator.target,
-        color: newIndicator.color
+        unit: newIndicator.unit,
+        color: newIndicator.color,
+        description: newIndicator.description || `Medição de ${newIndicator.name}`
       }
     ];
 
@@ -247,7 +305,20 @@ const ESGIndicators = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-white p-2 border rounded shadow">
+                      <p className="font-medium">{data.name}</p>
+                      <p>Valor: {data.value} {data.unit}</p>
+                      <p>Meta: {data.target} {data.unit}</p>
+                      <p>{data.description}</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}/>
               <Legend />
               <Bar name="Valor Atual" dataKey="value" fill={primaryColor} />
               <Bar name="Meta" dataKey="target" fill={secondaryColor} />
@@ -283,13 +354,26 @@ const ESGIndicators = () => {
                 fill="#8884d8"
                 dataKey="value"
                 nameKey="name"
-                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({name, value, unit}) => `${name}: ${value} ${unit}`}
               >
                 {categoryData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-white p-2 border rounded shadow">
+                      <p className="font-medium">{data.name}</p>
+                      <p>Valor: {data.value} {data.unit}</p>
+                      <p>Meta: {data.target} {data.unit}</p>
+                      <p>{data.description}</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}/>
               <Legend />
             </RechartsPieChart>
           </ResponsiveContainer>
@@ -354,10 +438,6 @@ const ESGIndicators = () => {
                 <Plus size={16} />
                 <span>Adicionar Indicador</span>
               </Button>
-              <Button onClick={() => openEditDialog(activeTab)} className="flex items-center gap-2">
-                <PenLine size={16} />
-                <span>Editar Indicadores</span>
-              </Button>
             </div>
           </div>
           
@@ -383,13 +463,6 @@ const ESGIndicators = () => {
                       size="sm"
                     >
                       {activeTab === 'environmental' ? 'Visualizando' : 'Visualizar'}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog('environmental')}
-                    >
-                      Editar
                     </Button>
                   </div>
                 </div>
@@ -418,13 +491,6 @@ const ESGIndicators = () => {
                     >
                       {activeTab === 'social' ? 'Visualizando' : 'Visualizar'}
                     </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog('social')}
-                    >
-                      Editar
-                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -451,13 +517,6 @@ const ESGIndicators = () => {
                       size="sm"
                     >
                       {activeTab === 'governance' ? 'Visualizando' : 'Visualizar'}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog('governance')}
-                    >
-                      Editar
                     </Button>
                   </div>
                 </div>
@@ -506,21 +565,22 @@ const ESGIndicators = () => {
                         <div key={idx} className="py-1 border-b last:border-b-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-medium">{item.name}</span>
-                            <span className={item.value >= item.target ? 'text-green-600' : 'text-red-600'}>
-                              {item.value}%
+                            <span style={{ color: getPerformanceColor(item) }}>
+                              {item.value} {item.unit}
                             </span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground mt-1 mb-2">
+                            <span>Meta: {item.target} {item.unit}</span>
+                            <span>{item.description}</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-1.5">
                             <div 
-                              className={`h-1.5 rounded-full ${item.value >= item.target ? 'bg-green-500' : 'bg-red-500'}`} 
-                              style={{ width: `${item.value}%` }}
+                              className="h-1.5 rounded-full" 
+                              style={{ 
+                                width: `${Math.min(100, Math.abs(item.value / item.target * 100))}%`,
+                                backgroundColor: getPerformanceColor(item)
+                              }}
                             ></div>
-                          </div>
-                          <div className="flex items-center justify-between text-muted-foreground mt-1">
-                            <span>Meta: {item.target}%</span>
-                            <span className={item.value >= item.target ? 'text-green-600' : 'text-red-600'}>
-                              {item.value >= item.target ? '+' : ''}{item.value - item.target}%
-                            </span>
                           </div>
                         </div>
                       ))}
@@ -582,7 +642,7 @@ const ESGIndicators = () => {
                   <ul className="pl-4 text-sm space-y-1 list-disc">
                     <li>Implementar programa de eficiência energética</li>
                     <li>Reduzir consumo de água em 10% nos próximos 6 meses</li>
-                    <li>Aumentar taxa de reciclagem para 75%</li>
+                    <li>Aumentar taxa de reciclagem para 15 toneladas</li>
                     <li>Implementar programa de compensação de carbono</li>
                   </ul>
                 </div>
@@ -634,63 +694,6 @@ const ESGIndicators = () => {
         </div>
       </div>
 
-      {/* ESG Data Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
-          <DialogHeader>
-            <DialogTitle>Editar Indicadores {editCategory === 'environmental' ? 'Ambientais' : 
-                       editCategory === 'social' ? 'Sociais' : 'de Governança'}</DialogTitle>
-            <DialogDescription>
-              Atualize os valores atuais e as metas para cada indicador.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-              {editValues.map((item, index) => (
-                <div key={index} className="grid gap-2">
-                  <h4 className="font-medium text-sm">{item.name}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`value-${index}`}>Valor Atual (%)</Label>
-                      <Input
-                        id={`value-${index}`}
-                        type="number"
-                        value={item.value}
-                        min={0}
-                        max={100}
-                        onChange={(e) => handleValueChange(index, e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`target-${index}`}>Meta (%)</Label>
-                      <Input
-                        id={`target-${index}`}
-                        type="number"
-                        value={item.target}
-                        min={0}
-                        max={100}
-                        onChange={(e) => handleTargetChange(index, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                    <div 
-                      className={`h-1.5 rounded-full ${item.value >= item.target ? 'bg-green-500' : 'bg-red-500'}`} 
-                      style={{ width: `${item.value}%` }}
-                    ></div>
-                  </div>
-                  {index < editValues.length - 1 && <hr className="my-2" />}
-                </div>
-              ))}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={saveValues}>Salvar Alterações</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Add New Indicator Dialog */}
       <Dialog open={isAddIndicatorOpen} onOpenChange={setIsAddIndicatorOpen}>
         <DialogContent className="sm:max-w-[500px]">
@@ -726,44 +729,51 @@ const ESGIndicators = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="indicator-description">Descrição</Label>
+                <Input
+                  id="indicator-description"
+                  placeholder="Descrição do indicador"
+                  value={newIndicator.description}
+                  onChange={(e) => handleNewIndicatorChange('description', e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="indicator-value">Valor Atual (%)</Label>
+                  <Label htmlFor="indicator-value">Valor Atual</Label>
                   <Input
                     id="indicator-value"
                     type="number"
                     min={0}
-                    max={100}
                     value={newIndicator.value}
                     onChange={(e) => handleNewIndicatorChange('value', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="indicator-target">Meta (%)</Label>
+                  <Label htmlFor="indicator-target">Meta</Label>
                   <Input
                     id="indicator-target"
                     type="number"
                     min={0}
-                    max={100}
                     value={newIndicator.target}
                     onChange={(e) => handleNewIndicatorChange('target', e.target.value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="indicator-unit">Unidade</Label>
+                  <Input
+                    id="indicator-unit"
+                    placeholder="Ex: toneladas, kWh, %"
+                    value={newIndicator.unit}
+                    onChange={(e) => handleNewIndicatorChange('unit', e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                <div 
-                  className={`h-1.5 rounded-full ${newIndicator.value >= newIndicator.target ? 'bg-green-500' : 'bg-red-500'}`} 
-                  style={{ width: `${newIndicator.value}%` }}
-                ></div>
-              </div>
-
-              <div className="flex items-center justify-between text-muted-foreground text-sm">
-                <span>Valor Atual: {newIndicator.value}%</span>
-                <span>Meta: {newIndicator.target}%</span>
-                <span className={newIndicator.value >= newIndicator.target ? 'text-green-600' : 'text-red-600'}>
-                  {newIndicator.value >= newIndicator.target ? '+' : ''}{newIndicator.value - newIndicator.target}%
-                </span>
+              <div className="flex items-center justify-between text-muted-foreground text-sm mt-2">
+                <span>Valor Atual: {newIndicator.value} {newIndicator.unit || '-'}</span>
+                <span>Meta: {newIndicator.target} {newIndicator.unit || '-'}</span>
               </div>
             </div>
           </div>
@@ -778,3 +788,4 @@ const ESGIndicators = () => {
 };
 
 export default ESGIndicators;
+
