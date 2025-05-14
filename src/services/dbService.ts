@@ -1,3 +1,4 @@
+
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Define our database schema
@@ -99,6 +100,23 @@ export const deleteTransaction = async (id: string) => {
   return db.delete('transactions', id);
 };
 
+// Define the proper type for Product status
+type ProductStatus = 'active' | 'out_of_stock' | 'inactive';
+
+// Define correct Product type
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: string;
+  sku: string;
+  status: ProductStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Mock API endpoints - these methods simulate a REST API using the IndexedDB
 export const api = {
   goals: {
@@ -108,9 +126,16 @@ export const api = {
     delete: deleteGoal,
   },
   
+  transactions: {
+    getAll: getTransactions,
+    add: addTransaction,
+    update: updateTransaction,
+    delete: deleteTransaction,
+  },
+  
   products: {
-    getAll: async () => {
-      // Mock data for products
+    getAll: async (): Promise<Product[]> => {
+      // Mock data for products with correct status types
       return [
         {
           id: '1',
@@ -151,19 +176,27 @@ export const api = {
       ];
     },
 
-    add: async (product) => {
+    add: async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> => {
       // Mock API call
       console.log('Adding product:', product);
-      return product;
+      return {
+        ...product,
+        id: Math.random().toString(36).substring(2, 9),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      } as Product;
     },
 
-    update: async (product) => {
+    update: async (product: Product): Promise<Product> => {
       // Mock API call
       console.log('Updating product:', product);
-      return product;
+      return {
+        ...product,
+        updatedAt: new Date().toISOString()
+      };
     },
 
-    delete: async (id) => {
+    delete: async (id: string): Promise<boolean> => {
       // Mock API call
       console.log('Deleting product:', id);
       return true;

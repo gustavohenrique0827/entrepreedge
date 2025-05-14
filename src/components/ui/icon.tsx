@@ -20,12 +20,11 @@ export const Icon: React.FC<IconProps> = ({ name, color, size = 24, className })
 
   const iconName = formatIconName(name);
   
-  // @ts-ignore - Dynamic icon loading
-  const LucideIcon = LucideIcons[iconName];
+  // Get the icon component safely
+  const LucideIcon = (LucideIcons as Record<string, React.ComponentType<any>>)[iconName];
   
   if (!LucideIcon) {
     console.warn(`Icon ${name} not found, using fallback`);
-    // @ts-ignore
     const FallbackIcon = LucideIcons.FileText;
     return <FallbackIcon color={color} size={size} className={className} />;
   }

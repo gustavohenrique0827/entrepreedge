@@ -77,11 +77,31 @@ class ApiService {
   async getTransactions(): Promise<Transaction[]> {
     try {
       // Mock implementation until api.transactions.getAll() is implemented
-      if (api.transactions && typeof api.transactions.getAll === 'function') {
-        return await api.transactions.getAll();
-      }
       console.warn('Transactions API not implemented, returning mock data');
-      return [];
+      return [
+        {
+          id: '1',
+          description: 'Salário',
+          amount: 5000,
+          type: 'income',
+          category: 'Salário',
+          date: '2023-05-05',
+          account: 'Nubank',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          description: 'Aluguel',
+          amount: 1200,
+          type: 'expense',
+          category: 'Moradia',
+          date: '2023-05-10',
+          account: 'Nubank',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
     } catch (error) {
       console.error('Error fetching transactions:', error);
       throw new Error('Failed to fetch transactions');
@@ -90,11 +110,7 @@ class ApiService {
 
   async addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
     try {
-      if (api.transactions && typeof api.transactions.add === 'function') {
-        await api.transactions.add(transaction);
-      } else {
-        console.warn('Transactions API not implemented, mocking successful add');
-      }
+      console.warn('Transactions API not implemented, mocking successful add');
       return {
         ...transaction,
         id: Math.random().toString(36).substring(2, 9),
@@ -109,11 +125,7 @@ class ApiService {
 
   async updateTransaction(transaction: Transaction): Promise<Transaction> {
     try {
-      if (api.transactions && typeof api.transactions.update === 'function') {
-        await api.transactions.update(transaction);
-      } else {
-        console.warn('Transactions API not implemented, mocking successful update');
-      }
+      console.warn('Transactions API not implemented, mocking successful update');
       return {
         ...transaction,
         updatedAt: new Date().toISOString()
@@ -126,11 +138,7 @@ class ApiService {
 
   async deleteTransaction(id: string): Promise<boolean> {
     try {
-      if (api.transactions && typeof api.transactions.delete === 'function') {
-        await api.transactions.delete(id);
-      } else {
-        console.warn('Transactions API not implemented, mocking successful delete');
-      }
+      console.warn('Transactions API not implemented, mocking successful delete');
       return true;
     } catch (error) {
       console.error('Error deleting transaction:', error);
