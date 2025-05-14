@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -61,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
     toggleDarkMode(!darkMode);
   };
 
-  const companyName = localStorage.getItem('companyName') || 'EntrepreEdge';
+  const companyName = localStorage.getItem('companyName') || 'Fênix';
   
   const handleHelpClick = () => {
     navigate('/contact');
@@ -86,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
                 type="search" 
-                placeholder="Pesquisar..." 
+                placeholder="Pesquisar na plataforma Fênix..." 
                 className="w-full pl-9 bg-background/50 text-sm"
               />
             </div>
@@ -94,7 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
 
           {/* Title on mobile */}
           <div className="md:hidden font-semibold text-sm">
-            {companyName}
+            {companyName} <span className="text-primary font-bold">Fênix</span>
           </div>
 
           {/* User navigation */}
@@ -226,7 +225,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
                 type="search" 
-                placeholder="Pesquisar..." 
+                placeholder="Pesquisar na plataforma Fênix..." 
                 className="w-full pl-9 text-sm"
               />
             </div>
