@@ -63,7 +63,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: [
           ...state.toasts,
-          { ...action.toast, id: action.toast.id ?? genId(), open: true },
+          { ...action.toast, id: genId(), open: true },
         ],
       }
 
