@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -52,6 +51,7 @@ import GenericSegmentPage from "./pages/segment/GenericSegmentPage";
 import OnlineSales from "./pages/segment/ecommerce/OnlineSales";
 import Products from "./pages/segment/ecommerce/Products";
 import Checkout from "./pages/segment/ecommerce/Checkout";
+import Processes from "./pages/personnel/Processes";
 
 const queryClient = new QueryClient();
 
@@ -285,7 +285,7 @@ const App = () => {
                     } />
                     <Route path="/personnel/processes" element={
                       <ProtectedRoute>
-                        <HRProcesses />
+                        <Processes />
                       </ProtectedRoute>
                     } />
                     
