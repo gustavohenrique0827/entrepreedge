@@ -1,8 +1,10 @@
+
 import * as React from "react"
 import type { ToastActionElement, ToastProps } from "./toast"
 
+// Updated to a more reasonable default timeout (5 seconds instead of over 16 minutes)
 const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000 // Changed from 1000000 (16+ minutes) to 5 seconds
 
 type ToasterToast = ToastProps & {
   id: string
@@ -69,14 +71,45 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
+// Add automatic toast dismissal based on duration
+const addToDismissQueue = (toastId: string, duration?: number) => {
+  if (toastTimeouts.has(`dismiss-${toastId}`)) {
+    return
+  }
+
+  // Use toast-specific duration or default to 5 seconds
+  const actualDuration = duration || 5000;
+  
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(`dismiss-${toastId}`);
+    dispatch({
+      type: actionTypes.DISMISS_TOAST,
+      toastId,
+    });
+  }, actualDuration);
+
+  toastTimeouts.set(`dismiss-${toastId}`, timeout);
+};
+
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case actionTypes.ADD_TOAST:
+      const newToast = { 
+        ...action.toast, 
+        id: genId(), 
+        open: true 
+      };
+      
+      // Auto-dismiss toast based on duration
+      if (newToast.duration !== Infinity) {
+        addToDismissQueue(newToast.id, newToast.duration);
+      }
+      
       return {
         ...state,
         toasts: [
           ...state.toasts,
-          { ...action.toast, id: genId(), open: true },
+          newToast,
         ],
       }
 
@@ -90,6 +123,12 @@ export const reducer = (state: State, action: Action): State => {
 
     case actionTypes.DISMISS_TOAST: {
       const { toastId } = action
+
+      // Clear any existing dismiss timeout
+      if (toastId && toastTimeouts.has(`dismiss-${toastId}`)) {
+        clearTimeout(toastTimeouts.get(`dismiss-${toastId}`)!);
+        toastTimeouts.delete(`dismiss-${toastId}`);
+      }
 
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
@@ -138,22 +177,49 @@ function dispatch(action: Action) {
   })
 }
 
+// Clean all timeouts when adding or updating a toast
+const clearTimeoutsForToast = (toastId: string) => {
+  // Clear dismiss timeout if it exists
+  if (toastTimeouts.has(`dismiss-${toastId}`)) {
+    clearTimeout(toastTimeouts.get(`dismiss-${toastId}`)!)
+    toastTimeouts.delete(`dismiss-${toastId}`)
+  }
+  
+  // Clear remove timeout if it exists
+  if (toastTimeouts.has(toastId)) {
+    clearTimeout(toastTimeouts.get(toastId)!)
+    toastTimeouts.delete(toastId)
+  }
+}
+
 type Toast = Omit<ToasterToast, "id" | "open">
 
 export function toast({ ...props }: Toast) {
+  // Default duration is 5000ms (5 seconds) if not specified
+  const actualProps = {
+    ...props,
+    duration: props.duration ?? 5000,
+  }
+
   dispatch({
     type: actionTypes.ADD_TOAST,
-    toast: {
-      ...props,
-    },
+    toast: actualProps,
   })
 }
 
 toast.update = (id: string, props: Partial<Toast>) => {
+  // Reset timers when updating a toast
+  clearTimeoutsForToast(id)
+  
   dispatch({
     type: actionTypes.UPDATE_TOAST,
     toast: { id, ...props },
   })
+  
+  // Re-add to dismiss queue if needed
+  if (props.duration !== Infinity) {
+    addToDismissQueue(id, props.duration);
+  }
 }
 
 toast.dismiss = (toastId?: string) => {
@@ -161,6 +227,24 @@ toast.dismiss = (toastId?: string) => {
     type: actionTypes.DISMISS_TOAST,
     toastId,
   })
+}
+
+// Force remove a toast immediately without animation
+toast.remove = (toastId?: string) => {
+  if (toastId) {
+    clearTimeoutsForToast(toastId);
+  } else {
+    // Clear all timeouts
+    toastTimeouts.forEach((_, key) => {
+      clearTimeout(toastTimeouts.get(key)!);
+    });
+    toastTimeouts.clear();
+  }
+  
+  dispatch({
+    type: actionTypes.REMOVE_TOAST,
+    toastId,
+  });
 }
 
 export function useToast() {
@@ -180,6 +264,7 @@ export function useToast() {
     ...state,
     toast,
     dismiss: toast.dismiss,
+    remove: toast.remove, // Expose the remove function
   }
 }
 

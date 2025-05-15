@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type ThemeContextType = {
@@ -171,6 +170,18 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         .hover\\:border-primary:hover { border-color: var(--primary-color) !important; }
         
         button.bg-primary:hover { background-color: color-mix(in srgb, var(--primary-color) 90%, #000) !important; }
+        
+        /* Toast styling improvements */
+        .fenix-toast {
+          transition: all 0.3s ease-out !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* Make sure toast actions use Fenix colors */
+        .toast-action {
+          background-color: var(--primary-color) !important;
+          color: white !important;
+        }
       `;
       document.head.appendChild(style);
       setIsInitialized(true);
