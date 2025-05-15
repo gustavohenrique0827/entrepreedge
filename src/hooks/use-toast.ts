@@ -4,7 +4,6 @@ import type { ToastProps as ToastPropsOriginal } from "@/components/ui/use-toast
 
 // Re-export with enhanced types
 export interface ToastProps extends ToastPropsOriginal {
-  variant?: "default" | "destructive" | "success" | "warning";
   duration?: number;
   open?: boolean;
 }

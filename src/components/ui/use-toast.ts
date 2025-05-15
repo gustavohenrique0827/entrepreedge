@@ -10,7 +10,6 @@ type ToasterToast = ToastProps & {
   description?: React.ReactNode
   action?: ToastActionElement
   open: boolean
-  variant?: "default" | "destructive" | "success" | "warning"
   duration?: number
 }
 
