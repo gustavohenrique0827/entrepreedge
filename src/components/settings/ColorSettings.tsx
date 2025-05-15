@@ -9,7 +9,7 @@ import { Flame, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ColorSettings = () => {
-  const { primaryColor, secondaryColor, updateThemeColors, applyThemeColors } = useTheme();
+  const { primaryColor, secondaryColor, updateThemeColors, applyThemeColors, setPersistentColors } = useTheme();
   const { toast } = useToast();
 
   // Fenix default theme colors
@@ -27,6 +27,8 @@ const ColorSettings = () => {
 
   const handleApplyChanges = () => {
     applyThemeColors();
+    setPersistentColors();
+    
     toast({
       title: "Cores atualizadas",
       description: "As alterações de cor foram aplicadas com sucesso."
@@ -88,10 +90,10 @@ const ColorSettings = () => {
         </div>
 
         <Button 
-          className="mt-6 w-full" 
+          className="mt-6 w-full"
           onClick={handleApplyChanges}
         >
-          Aplicar Alterações de Cores
+          Aplicar e Salvar Cores
         </Button>
       </CardContent>
     </Card>

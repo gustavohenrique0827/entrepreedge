@@ -10,7 +10,7 @@ const VisualizationSettings = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center gap-3">
-          <Flame size={24} className="text-orange-500" />
+          <Flame size={24} className="text-[var(--primary-color)]" />
           <div>
             <CardTitle>Personalização da Plataforma Fenix</CardTitle>
             <CardDescription>

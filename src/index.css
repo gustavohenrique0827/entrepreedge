@@ -45,6 +45,10 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Fenix platform base colors */
+    --primary-color: #ff5722;
+    --secondary-color: #9c27b0;
   }
 
   .dark {
@@ -122,39 +126,42 @@
     font-size: 1.125rem;
   }
 
-  /* Custom theme colors */
-  :root {
-    --primary-color: #8B5CF6;
-    --secondary-color: #D946EF;
-  }
-
-  /* Update tailwind colors from CSS variables */
+  /* Update tailwind colors from CSS variables - these styles ensure colors are applied everywhere */
   .bg-primary {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
   }
 
   .text-primary {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
   }
 
   .bg-secondary {
-    background-color: var(--secondary-color);
+    background-color: var(--secondary-color) !important;
   }
 
   .text-secondary {
-    color: var(--secondary-color);
+    color: var(--secondary-color) !important;
   }
 
   .hover\:bg-primary:hover {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
   }
 
   .hover\:text-primary:hover {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
   }
 
   .border-primary {
-    border-color: var(--primary-color);
+    border-color: var(--primary-color) !important;
+  }
+  
+  /* Added darker hover states for buttons */
+  button.bg-primary:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 90%, #000) !important;
+  }
+  
+  button.bg-secondary:hover {
+    background-color: color-mix(in srgb, var(--secondary-color) 90%, #000) !important;
   }
 
   /* Custom classes */
@@ -184,5 +191,14 @@
 
   .slide-exit-active {
     @apply opacity-0 translate-y-4 transition duration-300;
+  }
+  
+  /* Fenix platform-specific styling */
+  .fenix-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  }
+  
+  .fenix-shadow {
+    box-shadow: 0 4px 14px rgba(255, 87, 34, 0.2);
   }
 }

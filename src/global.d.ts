@@ -6,5 +6,7 @@ declare interface Window {
     primaryColor: string;
     secondaryColor: string;
     applyColors: () => void;
+    setThemeColors: (primary: string, secondary: string) => void;
+    setPersistentColors: () => void;
   };
 }
