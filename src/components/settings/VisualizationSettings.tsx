@@ -2,14 +2,23 @@
 import React from 'react';
 import ColorSettings from './ColorSettings';
 import DisplaySettings from './DisplaySettings';
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Flame } from 'lucide-react';
 
 const VisualizationSettings = () => {
   return (
     <div className="space-y-6">
-      <div className="prose max-w-none">
-        <h3>Configurações de Visualização</h3>
-        <p>Personalize as cores, modo de exibição e tamanho da fonte do sistema.</p>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center gap-3">
+          <Flame size={24} className="text-orange-500" />
+          <div>
+            <CardTitle>Personalização da Plataforma Fenix</CardTitle>
+            <CardDescription>
+              Personalize as cores, modo de exibição e tamanho da fonte do sistema.
+            </CardDescription>
+          </div>
+        </CardHeader>
+      </Card>
       
       <ColorSettings />
       <DisplaySettings />

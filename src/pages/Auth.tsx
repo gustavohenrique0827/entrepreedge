@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessSegmentType, useSegment } from '@/contexts/SegmentContext';
+import { Flame } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ const Auth = () => {
       
       toast({
         title: "Login bem-sucedido",
-        description: "Bem-vindo ao sistema de teste!",
+        description: "Bem-vindo à plataforma Fenix!",
       });
       
       navigate('/');
@@ -199,20 +200,16 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-block bg-primary rounded-md p-2 mb-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L17 7H14V13H10V7H7L12 2Z" fill="white" />
-              <path d="M19 14H5V17H19V14Z" fill="white" />
-              <path d="M17 18H7V22H17V18Z" fill="white" />
-            </svg>
+          <div className="inline-block bg-primary rounded-full p-4 mb-2">
+            <Flame size={32} className="text-white animate-pulse" />
           </div>
-          <h1 className="text-2xl font-bold">EntrepreEdge</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-purple-500 bg-clip-text text-transparent">Fenix</h1>
           <p className="text-muted-foreground text-sm">Sua plataforma completa de gestão empresarial</p>
         </div>
         
         <Card className="glass">
           <CardHeader>
-            <CardTitle className="text-xl text-center">Bem-vindo</CardTitle>
+            <CardTitle className="text-xl text-center">Bem-vindo à Plataforma Fenix</CardTitle>
             <CardDescription className="text-center">
               Faça login ou cadastre sua empresa para começar
             </CardDescription>

@@ -28,10 +28,10 @@ const ThemeContext = createContext<ThemeContextType>(defaultContext);
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#8B5CF6');
-  const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('secondaryColor') || '#D946EF');
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
-  const [fontSize, setFontSizeState] = useState(localStorage.getItem('fontSize') || 'medium');
+  const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('fenix_primaryColor') || '#8B5CF6');
+  const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('fenix_secondaryColor') || '#D946EF');
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('fenix_darkMode') === 'true');
+  const [fontSize, setFontSizeState] = useState(localStorage.getItem('fenix_fontSize') || 'medium');
 
   // Convert hex to HSL for Tailwind variables
   const hexToHSL = (hex: string) => {
@@ -113,19 +113,28 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const updateThemeColors = (primary: string, secondary: string) => {
     setPrimaryColor(primary);
     setSecondaryColor(secondary);
-    localStorage.setItem('primaryColor', primary);
-    localStorage.setItem('secondaryColor', secondary);
+    localStorage.setItem('fenix_primaryColor', primary);
+    localStorage.setItem('fenix_secondaryColor', secondary);
   };
 
   const toggleDarkMode = (enabled: boolean) => {
     setDarkMode(enabled);
-    localStorage.setItem('darkMode', enabled.toString());
+    localStorage.setItem('fenix_darkMode', enabled.toString());
   };
 
   const setFontSize = (size: string) => {
     setFontSizeState(size);
-    localStorage.setItem('fontSize', size);
+    localStorage.setItem('fenix_fontSize', size);
   };
+
+  // Make theme colors globally accessible
+  useEffect(() => {
+    window.fenixColors = {
+      primaryColor,
+      secondaryColor,
+      applyColors: applyThemeColors
+    };
+  }, [primaryColor, secondaryColor]);
 
   // Apply theme settings whenever they change
   useEffect(() => {
@@ -136,17 +145,17 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [primaryColor, secondaryColor, darkMode, fontSize]);
 
-  // Apply theme settings on initial load
+  // Apply theme settings on initial load and setup event listeners
   useEffect(() => {
     try {
       applyThemeColors();
 
       // Listen for storage events to sync settings across tabs
       const handleStorageChange = () => {
-        const storedPrimaryColor = localStorage.getItem('primaryColor');
-        const storedSecondaryColor = localStorage.getItem('secondaryColor');
-        const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-        const storedFontSize = localStorage.getItem('fontSize');
+        const storedPrimaryColor = localStorage.getItem('fenix_primaryColor');
+        const storedSecondaryColor = localStorage.getItem('fenix_secondaryColor');
+        const storedDarkMode = localStorage.getItem('fenix_darkMode') === 'true';
+        const storedFontSize = localStorage.getItem('fenix_fontSize');
         
         if (storedPrimaryColor && storedPrimaryColor !== primaryColor) {
           setPrimaryColor(storedPrimaryColor);
@@ -166,7 +175,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       };
 
       window.addEventListener('storage', handleStorageChange);
-      return () => window.removeEventListener('storage', handleStorageChange);
+      
+      // Additional event listener for page reload/refresh
+      window.addEventListener('load', applyThemeColors);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('load', applyThemeColors);
+      };
     } catch (error) {
       console.error("Erro na inicialização do tema:", error);
     }

@@ -1,19 +1,17 @@
-
 import * as React from "react"
-import { Toast, ToastActionElement } from "@/components/ui/toast"
+import type { ToastActionElement, ToastProps } from "./toast"
 
-const TOAST_LIMIT = 10
+const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = {
+type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
   open: boolean
-  variant?: "default" | "destructive" | "success"
+  variant?: "default" | "destructive" | "success" | "warning"
   duration?: number
-  onOpenChange?: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -26,7 +24,7 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
+  count = (count + 1) % Number.MAX_VALUE
   return count.toString()
 }
 
@@ -56,7 +54,23 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-const reducer = (state: State, action: Action): State => {
+const addToRemoveQueue = (toastId: string) => {
+  if (toastTimeouts.has(toastId)) {
+    return
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId)
+    dispatch({
+      type: actionTypes.REMOVE_TOAST,
+      toastId: toastId,
+    })
+  }, TOAST_REMOVE_DELAY)
+
+  toastTimeouts.set(toastId, timeout)
+}
+
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case actionTypes.ADD_TOAST:
       return {
@@ -78,24 +92,28 @@ const reducer = (state: State, action: Action): State => {
     case actionTypes.DISMISS_TOAST: {
       const { toastId } = action
 
-      if (toastId === undefined) {
-        return {
-          ...state,
-          toasts: state.toasts.map((t) => ({
-            ...t,
-            open: false,
-          })),
-        }
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
+      if (toastId) {
+        addToRemoveQueue(toastId)
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id)
+        })
       }
 
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId ? { ...t, open: false } : t
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t
         ),
       }
     }
-
     case actionTypes.REMOVE_TOAST:
       if (action.toastId === undefined) {
         return {
@@ -121,40 +139,32 @@ function dispatch(action: Action) {
   })
 }
 
-// Define the public toast props interface
-export interface ToastProps extends Omit<ToasterToast, "id" | "open" | "onOpenChange"> {
-  id?: string
-}
+type Toast = Omit<ToasterToast, "id" | "open">
 
-function toast(props: ToastProps) {
-  const id = props.id || genId()
-
-  const update = (props: ToastProps) =>
-    dispatch({
-      type: actionTypes.UPDATE_TOAST,
-      toast: { ...props, id },
-    })
-
-  const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
-
+export function toast({ ...props }: Toast) {
   dispatch({
     type: actionTypes.ADD_TOAST,
     toast: {
       ...props,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
     },
   })
-
-  return {
-    id: id,
-    dismiss,
-    update,
-  }
 }
 
-function useToast() {
+toast.update = (id: string, props: Partial<Toast>) => {
+  dispatch({
+    type: actionTypes.UPDATE_TOAST,
+    toast: { id, ...props },
+  })
+}
+
+toast.dismiss = (toastId?: string) => {
+  dispatch({
+    type: actionTypes.DISMISS_TOAST,
+    toastId,
+  })
+}
+
+export function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
@@ -170,8 +180,8 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
+    dismiss: toast.dismiss,
   }
 }
 
-export { useToast, toast }
+export type { ToastActionElement, ToastProps }
